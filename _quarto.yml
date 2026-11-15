@@ -1,0 +1,37 @@
+project:
+  type: book
+
+book:
+  title: "codigo-datos-criterio"
+  author: "Norah Jones"
+  date: "15/11/2026"
+  chapters:
+        - index.qmd
+        - summary.qmd
+        - 01-introduccion.qmd
+        - 02-importacion.qmd
+        - 03-exportacion.qmd
+        - 04-estructuras-y-transformacion.qmd
+        - 05-calidad-y-exploracion.qmd
+        - 06-graficos.qmd
+        - 07-funciones.qmd
+        - 08-flujos-de-trabajo.qmd
+        - 09-expresiones-regulares.qmd
+        - 10-automatizacion.qmd
+        - 11-reportes.qmd
+        - 12-practica-integral.qmd
+        - references.qmd
+
+bibliography: references.bib
+
+format:
+  html:
+    theme:
+      - cosmo
+      - brand
+  pdf:
+    documentclass: scrreprt
+
+
+
+

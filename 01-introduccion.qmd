@@ -1,0 +1,40 @@
+# Cómo usar este libro
+
+## Qué aprenderás
+
+Este libro enseña conceptos y prácticas para importar, organizar, analizar y comunicar datos. R será el lenguaje principal de los ejemplos; Python aparecerá en pestañas paralelas para comparar soluciones.
+
+## Cómo están organizados los ejemplos
+
+Las explicaciones presentan primero la idea general. Cuando el concepto se implementa de manera distinta, encontrarás ejemplos en pestañas para R y Python. SQL aparecerá en consultas y vistas; PowerShell, en tareas de automatización.
+
+## Materiales y preguntas
+
+Los archivos de práctica, datos de ejemplo y otros materiales complementarios estarán disponibles en el repositorio de GitHub del libro. Allí también podrás reportar errores o hacer preguntas creando un *issue*.
+
+Al abrir un *issue*, describe qué estabas intentando hacer, qué resultado esperabas y qué ocurrió. Si el problema incluye código o un mensaje de error, añádelo para facilitar su revisión.
+
+## Una forma de estudiar
+
+Para cada tema:
+
+1. Lee la explicación y trata de anticipar el resultado del ejemplo.
+2. Ejecuta el código y compáralo con tu predicción.
+3. Modifica el ejemplo para responder una pregunta propia.
+4. Revisa alternativas y rendimiento después de comprender la solución básica.
+5. Completa los ejercicios antes de consultar sus soluciones.
+
+## Uso de inteligencia artificial
+
+La IA puede ayudarte a aclarar conceptos, interpretar errores o comparar enfoques. Primero intenta resolver cada ejercicio por tu cuenta. Después, verifica las sugerencias ejecutando el código y explicando qué hace cada parte.
+
+## Convenciones del libro
+
+- Los ejemplos usarán datos pequeños para explicar los conceptos antes de pasar a casos de mayor tamaño.
+- Las rutas y los archivos se construirán de forma reproducible dentro del proyecto.
+- Los paquetes necesarios se indicarán junto con cada ejemplo.
+- Las soluciones priorizarán claridad; las alternativas más rápidas se discutirán cuando aporten una ventaja concreta.
+
+## Requisitos iniciales
+
+Necesitarás Positron, Quarto y una instalación de R. Para ejecutar los ejemplos en Python, también necesitarás Python y los paquetes que se indiquen en cada capítulo.

@@ -1,0 +1,48 @@
+# Archivos generados al renderizar con Quarto
+/.quarto/
+**/*.quarto_ipynb
+/_book/
+/_site/
+*.html
+*.pdf
+*.epub
+*.docx
+
+# Archivos temporales y de respaldo
+*~
+*.tmp
+*.bak
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# R: historial, datos de sesión y archivos temporales
+.Rhistory
+.RData
+.Ruserdata
+.Rproj.user/
+*.Rproj
+
+# Python: caché y entornos locales
+__pycache__/
+*.py[cod]
+.venv/
+venv/
+env/
+
+# Positron / VS Code: configuración personal
+.vscode/
+
+# Datos locales o sensibles
+/data-private/
+/datos-privados/
+.env
+.env.*
+!.env.example
+*.pem
+*.key
+
+# Salidas y archivos de prueba generados
+/output/
+/outputs/
+/scratch/

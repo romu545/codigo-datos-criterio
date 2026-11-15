@@ -1,0 +1,1 @@
+En el README.md de cada repositorio, una línea con el titular y la licencia, por ejemplo: © 2026 Rafael Mendoza. Texto bajo CC BY-NC-SA 4.0. Ponlo en el README y no dentro del archivo LICENSE, para no alterar el texto oficial.

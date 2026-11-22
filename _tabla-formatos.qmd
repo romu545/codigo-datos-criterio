@@ -1,0 +1,57 @@
+## Cómo elegir un formato {#sec-elegir-formato}
+
+No existe un formato que sirva para todo. La elección depende de qué haremos con los datos: intercambiarlos, analizarlos, archivarlos o consultarlos con frecuencia. La @tbl-formatos resume las características de cada formato y la @tbl-escenarios indica cuándo conviene usarlo y cuándo evitarlo.
+
+Los comparativos de peso y velocidad son **relativos**: dependen del contenido de los datos y del equipo. Por eso no fijamos cifras exactas: como comprobaste en el ejercicio de conversión a Parquet, las medidas dependen de tus datos y de tu equipo.
+
+| Formato | Peso y velocidad | Ventajas | Desventajas |
+|---|---|---|---|
+| **CSV / TXT** | Texto plano sin compresión: pesa más que un formato binario equivalente. Se lee completo aunque se necesiten pocas columnas. | Universal, legible y compatible con casi cualquier herramienta. | No guarda los tipos de dato. Hay problemas frecuentes de codificación, separadores y decimales. |
+| **Excel** | Pesa más que un formato binario y se lee con lentitud. Se vuelve incómodo mucho antes de llegar a su límite de filas. | Familiar para mucha gente; admite varias hojas y formato visual. | Mezcla datos con presentación. Celdas combinadas, encabezados múltiples y fechas ambiguas complican la lectura. |
+| **JSON** | Pesa mucho para tablas, porque repite los nombres de los campos en cada registro. | Representa datos anidados. Es el formato habitual de las APIs. | Hay que aplanarlo para obtener una tabla. Es poco eficiente para datos tabulares grandes. |
+| **Parquet** | Comprimido y organizado por columnas: suele ocupar una fracción del CSV equivalente (varía según los datos) y permite leer solo las columnas necesarias. | Compacto, rápido y conserva los tipos de dato. Funciona en R, Python y DuckDB. | No se puede abrir en un editor de texto. Requiere herramientas que lo lean. |
+| **RDS / RData / pickle** | Eficientes dentro de un solo lenguaje. | Cómodos para guardar objetos de trabajo propios. | Atados a R o a Python y a sus versiones. Riesgo de seguridad al abrir archivos de origen desconocido. |
+| **Base de datos** | Consulta sin leer todo el contenido. DuckDB guarda sus datos de forma compacta y por columnas. | Consultas potentes con SQL; maneja datos que crecen y cambian. | Requiere configuración y conocer SQL. |
+
+: Características de los formatos de datos {#tbl-formatos}
+
+| Formato | Mejor escenario | Evítalo cuando |
+|---|---|---|
+| **CSV / TXT** | Intercambiar datos pequeños o medianos entre personas y programas. | El archivo ocupa una parte importante de la memoria del equipo o necesitas conservar tipos exactos. |
+| **Excel** | Recibir datos de quien trabaja en Excel, o compartir tablas con formato. | Lo usas como formato de almacenamiento o el volumen es grande. |
+| **JSON** | Consumir APIs o guardar datos jerárquicos. | Tus datos son tablas planas y voluminosas. |
+| **Parquet** | Guardar datos para análisis cuando el CSV equivalente ya es pesado, o cuando se leen pocas columnas. | Alguien necesita revisar el archivo a simple vista. |
+| **RDS / RData / pickle** | Guardar un objeto temporal de tu propio trabajo, en el mismo lenguaje y versión. | Compartes, archivas o recibes datos de fuentes no confiables. |
+| **Base de datos** | Los datos cambian, crecen, los usan varias personas o se consultan con frecuencia. | Haces un análisis puntual con pocos datos. |
+
+: Cuándo usar cada formato {#tbl-escenarios}
+
+### El peso importa
+
+El tamaño de un archivo influye en el tiempo de lectura, en la memoria que consume y en la facilidad para compartirlo. Estos criterios ayudan a decidir:
+
+- **Compara el archivo con la memoria de tu equipo, no con un número fijo.** Si ocupa una fracción pequeña, el CSV es práctico. Si ocupa una parte importante, conviene Parquet o consultarlo con DuckDB. Si se acerca a la memoria disponible o la supera, no lo cargues completo. Ten en cuenta que, una vez en memoria, un *data frame* puede ocupar más que el archivo en disco.
+- **El ahorro de Parquet depende de los datos.** Las columnas con valores repetidos (categorías, fechas, códigos) se comprimen mucho. Los números casi aleatorios, bastante menos. Por eso conviene medir con tus propios datos.
+- **El peso no es solo espacio en disco.** Parquet guarda los datos por columnas, de modo que se puede leer solo lo necesario. Con un CSV hay que leer todo el archivo aunque se usen dos columnas.
+- **Un CSV puede comprimirse.** Un archivo `.csv.gz` pesa menos y lo leen R, Python y DuckDB. Es un paso intermedio útil, aunque no ofrece las ventajas de Parquet en tipos y lectura por columnas.
+- **Excel tiene un límite duro.** Una hoja admite hasta 1.048.576 filas, y mucho antes de ese límite el archivo ya se vuelve lento.
+
+### Por qué no usar RDS, RData ni pickle
+
+Son formatos nativos y cómodos: guardan un objeto tal como existe en la memoria. Aun así, no los recomendamos para guardar o compartir datos:
+
+- **Dependen de un lenguaje.** Un RDS o un RData solo se lee con R, y un pickle solo con Python. Un colega que use la otra herramienta no puede abrirlos.
+- **Dependen de versiones.** Un archivo guardado hoy puede dar problemas con versiones futuras de R, de Python o de los paquetes que definieron el objeto.
+- **Pueden ser inseguros.** Cargar un pickle de origen desconocido puede ejecutar código en tu equipo. En R también se corrigió, en la versión 4.4.0, una vulnerabilidad (CVE-2024-27322) que permitía ejecutar código al leer un RDS malicioso. Nunca abras estos archivos si no confías en quien los creó.
+- **No describen los datos.** Para saber qué contiene un archivo hay que cargarlo en el lenguaje correspondiente.
+
+Parquet resuelve estos problemas: se lee en varios lenguajes, conserva los tipos y no ejecuta código al abrirse.
+
+### Una guía rápida
+
+- ¿Intercambias datos pequeños con otras personas? **CSV**.
+- ¿Recibes un archivo de Excel? **Léelo y guarda el resultado en CSV o Parquet**.
+- ¿Los datos vienen de una API o están anidados? **JSON**, y luego aplánalos.
+- ¿Son datos para analizar que ya pesan bastante? **Parquet**.
+- ¿Cambian, crecen o los usan varias personas? **Base de datos**.
+- ¿Es un objeto temporal de tu propio trabajo? **RDS o pickle**, solo para uso propio y no como archivo de datos.

@@ -1,37 +1,70 @@
 project:
   type: book
 
+execute: 
+  echo: true
+  freeze: auto
+
+knitr: 
+  opts_chunk: 
+    comment: "#>"
+    collapse: true
+
+
+
 book:
-  title: "codigo-datos-criterio"
-  author: "Norah Jones"
-  date: "15/11/2026"
+  title: "Código, datos y criterio"
+  subtitle: "Un libro sobre análisis de datos con R y Python"
+  author: "Rafael Mendoza"
+  date: today
+  language: es
+  repo-url: https://github.com/romu545/codigo-datos-criterio
+  repo-branch: main
+  repo-actions: [issue, edit]
+  code-links:
+    - text: "Materiales del libro"
+      href: "https://github.com/romu545/codigo-datos-criterio-material"
   chapters:
-        - index.qmd
-        - summary.qmd
+    - index.qmd
+    - part: "Punto de partida"
+      chapters:
         - 01-introduccion.qmd
-        - 02-importacion.qmd
-        - 03-exportacion.qmd
-        - 04-estructuras-y-transformacion.qmd
-        - 05-calidad-y-exploracion.qmd
-        - 06-graficos.qmd
-        - 07-funciones.qmd
-        - 08-flujos-de-trabajo.qmd
-        - 09-expresiones-regulares.qmd
-        - 10-automatizacion.qmd
-        - 11-reportes.qmd
-        - 12-practica-integral.qmd
-        - references.qmd
+        - 02-fundamentos-y-preparacion-del-entorno.qmd
+    - part: "Obtener los datos"
+      chapters:
+        - 03-importacion-de-datos.qmd
+        - 04-importacion-formatos-y-fuentes.qmd
+ #  - part: "Preparar y guardar los datos"
+ #    chapters:
+ #      - 05-tipos-de-datos-y-calidad.qmd
+ #      - 06-transformacion-y-limpieza.qmd
+ #      - 07-estructuras-formatos-y-almacenamiento.qmd
+ #      - 08-exportacion-de-datos.qmd
+ #  - part: "Analizar y programar"
+ #    chapters:
+ #      - 09-estadistica-descriptiva-exploracion-y-graficos.qmd
+ #      - 10-funciones-personalizadas.qmd
+ #      - 11-flujos-reproducibles-y-depuracion.qmd
+ #  - part: "Automatizar, comunicar y mantener"
+ #    chapters:
+ #      - 12-automatizacion-y-programacion-de-tareas.qmd
+ #      - 13-reportes-reproducibles-y-comunicacion.qmd
+ #      - 14-pruebas-seguridad-publicacion-y-mantenimiento.qmd
+ #  - references.qmd
+
+  page-footer:
+    left: "© 2026 Rafael Mendoza. Texto bajo licencia [CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/deed.es)."
+    right:
+      - icon: github
+        href: https://github.com/romu545/codigo-datos-criterio
+        aria-label: Repositorio del libro en GitHub
+
 
 bibliography: references.bib
+license: "CC BY-NC-SA"
 
 format:
   html:
-    theme:
-      - cosmo
-      - brand
+    theme: cosmo
   pdf:
     documentclass: scrreprt
-
-
-
-

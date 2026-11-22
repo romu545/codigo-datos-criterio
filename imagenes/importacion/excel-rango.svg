@@ -1,0 +1,101 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 56 960 324" width="960" height="324" role="img" aria-labelledby="titulo desc" xmlns:c2pa="http://c2pa.org/manifest">
+<title id="titulo">Leer la hoja Sucursales saltando las filas decorativas</title>
+<desc id="desc">La hoja Sucursales de catalogo_sucursales.xlsx tiene tres filas de título y metadatos; los encabezados reales están en la fila 4. En R y Python se saltan con skip igual a 3; en DuckDB se indica el rango desde A4.</desc>
+<style>
+  text{font-family:"Source Sans 3","Source Sans Pro","Segoe UI",Helvetica,Arial,sans-serif;fill:#1a1a1a}
+  .t{font-size:22px;font-weight:700}
+  .h{font-size:17px;font-weight:700}
+  .b{font-size:15.5px}
+  .s{font-size:14px;fill:#3d3d3d}
+  .m{font-family:"Source Code Pro",Consolas,"DejaVu Sans Mono",monospace;font-size:14px}
+  .w{fill:#ffffff}
+</style>
+<defs>
+  <marker id="fl" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#555555"/></marker>
+  <marker id="flr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#7a7a7a"/></marker>
+  <marker id="flv" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#1a1a1a"/></marker>
+</defs>
+
+<rect x="0" y="0" width="960" height="380" fill="#ffffff"/>
+<rect x="70" y="90" width="575" height="24" rx="0" fill="#f2f2f2" stroke="#c4c4c4" stroke-width="1"/>
+<text x="135.0" y="107" class="s" text-anchor="middle" style="font-weight:700"><tspan x="135.0" dy="0">A</tspan></text>
+<text x="275.0" y="107" class="s" text-anchor="middle" style="font-weight:700"><tspan x="275.0" dy="0">B</tspan></text>
+<text x="400.0" y="107" class="s" text-anchor="middle" style="font-weight:700"><tspan x="400.0" dy="0">C</tspan></text>
+<text x="502.5" y="107" class="s" text-anchor="middle" style="font-weight:700"><tspan x="502.5" dy="0">D</tspan></text>
+<text x="600.0" y="107" class="s" text-anchor="middle" style="font-weight:700"><tspan x="600.0" dy="0">E</tspan></text>
+<rect x="70" y="114" width="575" height="30" rx="0" fill="#f7f7f7" stroke="#c4c4c4" stroke-width="1"/>
+<rect x="36" y="114" width="34" height="30" rx="0" fill="#f2f2f2" stroke="#c4c4c4" stroke-width="1"/>
+<text x="53" y="134" class="s" text-anchor="middle" style="font-weight:700"><tspan x="53" dy="0">1</tspan></text>
+<text x="78" y="134" class="s" text-anchor="start" style="fill:#8a8a8a"><tspan x="78" dy="0">Catálogo de sucursales</tspan></text>
+<rect x="70" y="144" width="575" height="30" rx="0" fill="#f7f7f7" stroke="#c4c4c4" stroke-width="1"/>
+<rect x="36" y="144" width="34" height="30" rx="0" fill="#f2f2f2" stroke="#c4c4c4" stroke-width="1"/>
+<text x="53" y="164" class="s" text-anchor="middle" style="font-weight:700"><tspan x="53" dy="0">2</tspan></text>
+<text x="78" y="164" class="s" text-anchor="start" style="fill:#8a8a8a"><tspan x="78" dy="0">Fuente: Área administrativa</tspan></text>
+<rect x="70" y="174" width="575" height="30" rx="0" fill="#f7f7f7" stroke="#c4c4c4" stroke-width="1"/>
+<rect x="36" y="174" width="34" height="30" rx="0" fill="#f2f2f2" stroke="#c4c4c4" stroke-width="1"/>
+<text x="53" y="194" class="s" text-anchor="middle" style="font-weight:700"><tspan x="53" dy="0">3</tspan></text>
+<text x="78" y="194" class="s" text-anchor="start" style="fill:#8a8a8a"><tspan x="78" dy="0">Actualizado: 2026-01-31</tspan></text>
+<rect x="70" y="204" width="575" height="30" rx="0" fill="#e6e6e6" stroke="#c4c4c4" stroke-width="1"/>
+<rect x="36" y="204" width="34" height="30" rx="0" fill="#f2f2f2" stroke="#c4c4c4" stroke-width="1"/>
+<text x="53" y="224" class="s" text-anchor="middle" style="font-weight:700"><tspan x="53" dy="0">4</tspan></text>
+<text x="78" y="224" class="s" text-anchor="start" style="fill:#1a1a1a;font-weight:700"><tspan x="78" dy="0">codigo_sucursal</tspan></text>
+<line x1="70" y1="204" x2="70" y2="234" stroke="#c4c4c4" stroke-width="1"/>
+<text x="208" y="224" class="s" text-anchor="start" style="fill:#1a1a1a;font-weight:700"><tspan x="208" dy="0">nombre_sucursal</tspan></text>
+<line x1="200" y1="204" x2="200" y2="234" stroke="#c4c4c4" stroke-width="1"/>
+<text x="358" y="224" class="s" text-anchor="start" style="fill:#1a1a1a;font-weight:700"><tspan x="358" dy="0">ciudad</tspan></text>
+<line x1="350" y1="204" x2="350" y2="234" stroke="#c4c4c4" stroke-width="1"/>
+<text x="458" y="224" class="s" text-anchor="start" style="fill:#1a1a1a;font-weight:700"><tspan x="458" dy="0">codigo_dane</tspan></text>
+<line x1="450" y1="204" x2="450" y2="234" stroke="#c4c4c4" stroke-width="1"/>
+<text x="563" y="224" class="s" text-anchor="start" style="fill:#1a1a1a;font-weight:700"><tspan x="563" dy="0">region</tspan></text>
+<line x1="555" y1="204" x2="555" y2="234" stroke="#c4c4c4" stroke-width="1"/>
+<rect x="70" y="234" width="575" height="30" rx="0" fill="#fff" stroke="#c4c4c4" stroke-width="1"/>
+<rect x="36" y="234" width="34" height="30" rx="0" fill="#f2f2f2" stroke="#c4c4c4" stroke-width="1"/>
+<text x="53" y="254" class="s" text-anchor="middle" style="font-weight:700"><tspan x="53" dy="0">5</tspan></text>
+<text x="78" y="254" class="s" text-anchor="start" style="fill:#1a1a1a"><tspan x="78" dy="0">S01</tspan></text>
+<line x1="70" y1="234" x2="70" y2="264" stroke="#c4c4c4" stroke-width="1"/>
+<text x="208" y="254" class="s" text-anchor="start" style="fill:#1a1a1a"><tspan x="208" dy="0">Sucursal Bogotá</tspan></text>
+<line x1="200" y1="234" x2="200" y2="264" stroke="#c4c4c4" stroke-width="1"/>
+<text x="358" y="254" class="s" text-anchor="start" style="fill:#1a1a1a"><tspan x="358" dy="0">Bogotá</tspan></text>
+<line x1="350" y1="234" x2="350" y2="264" stroke="#c4c4c4" stroke-width="1"/>
+<text x="458" y="254" class="s" text-anchor="start" style="fill:#1a1a1a"><tspan x="458" dy="0">11001</tspan></text>
+<line x1="450" y1="234" x2="450" y2="264" stroke="#c4c4c4" stroke-width="1"/>
+<text x="563" y="254" class="s" text-anchor="start" style="fill:#1a1a1a"><tspan x="563" dy="0">Andina</tspan></text>
+<line x1="555" y1="234" x2="555" y2="264" stroke="#c4c4c4" stroke-width="1"/>
+<rect x="70" y="264" width="575" height="30" rx="0" fill="#fff" stroke="#c4c4c4" stroke-width="1"/>
+<rect x="36" y="264" width="34" height="30" rx="0" fill="#f2f2f2" stroke="#c4c4c4" stroke-width="1"/>
+<text x="53" y="284" class="s" text-anchor="middle" style="font-weight:700"><tspan x="53" dy="0">6</tspan></text>
+<text x="78" y="284" class="s" text-anchor="start" style="fill:#1a1a1a"><tspan x="78" dy="0">S02</tspan></text>
+<line x1="70" y1="264" x2="70" y2="294" stroke="#c4c4c4" stroke-width="1"/>
+<text x="208" y="284" class="s" text-anchor="start" style="fill:#1a1a1a"><tspan x="208" dy="0">Sucursal Medellín</tspan></text>
+<line x1="200" y1="264" x2="200" y2="294" stroke="#c4c4c4" stroke-width="1"/>
+<text x="358" y="284" class="s" text-anchor="start" style="fill:#1a1a1a"><tspan x="358" dy="0">Medellín</tspan></text>
+<line x1="350" y1="264" x2="350" y2="294" stroke="#c4c4c4" stroke-width="1"/>
+<text x="458" y="284" class="s" text-anchor="start" style="fill:#1a1a1a"><tspan x="458" dy="0">05001</tspan></text>
+<line x1="450" y1="264" x2="450" y2="294" stroke="#c4c4c4" stroke-width="1"/>
+<text x="563" y="284" class="s" text-anchor="start" style="fill:#1a1a1a"><tspan x="563" dy="0">Andina</tspan></text>
+<line x1="555" y1="264" x2="555" y2="294" stroke="#c4c4c4" stroke-width="1"/>
+<rect x="70" y="294" width="575" height="30" rx="0" fill="#fff" stroke="#c4c4c4" stroke-width="1"/>
+<rect x="36" y="294" width="34" height="30" rx="0" fill="#f2f2f2" stroke="#c4c4c4" stroke-width="1"/>
+<text x="53" y="314" class="s" text-anchor="middle" style="font-weight:700"><tspan x="53" dy="0">7</tspan></text>
+<text x="78" y="314" class="s" text-anchor="start" style="fill:#1a1a1a"><tspan x="78" dy="0">S03</tspan></text>
+<line x1="70" y1="294" x2="70" y2="324" stroke="#c4c4c4" stroke-width="1"/>
+<text x="208" y="314" class="s" text-anchor="start" style="fill:#1a1a1a"><tspan x="208" dy="0">Sucursal Cali</tspan></text>
+<line x1="200" y1="294" x2="200" y2="324" stroke="#c4c4c4" stroke-width="1"/>
+<text x="358" y="314" class="s" text-anchor="start" style="fill:#1a1a1a"><tspan x="358" dy="0">Cali</tspan></text>
+<line x1="350" y1="294" x2="350" y2="324" stroke="#c4c4c4" stroke-width="1"/>
+<text x="458" y="314" class="s" text-anchor="start" style="fill:#1a1a1a"><tspan x="458" dy="0">76001</tspan></text>
+<line x1="450" y1="294" x2="450" y2="324" stroke="#c4c4c4" stroke-width="1"/>
+<text x="563" y="314" class="s" text-anchor="start" style="fill:#1a1a1a"><tspan x="563" dy="0">Pacífico</tspan></text>
+<line x1="555" y1="294" x2="555" y2="324" stroke="#c4c4c4" stroke-width="1"/>
+<rect x="68" y="202" width="579" height="124" rx="4" fill="none" stroke="#1a1a1a" stroke-width="2.5"/>
+<path d="M 663 116 L 673 116 L 673 202 L 663 202" fill="none" stroke="#7a7a7a" stroke-width="2" stroke-dasharray="7 5"/>
+<text x="685" y="140" class="h" text-anchor="start" style="fill:#7a7a7a"><tspan x="685" dy="0">Filas decorativas</tspan></text>
+<text x="685" y="160" class="s" text-anchor="start"><tspan x="685" dy="0">título, fuente y fecha:</tspan><tspan x="685" dy="18.2">se saltan</tspan></text>
+<text x="685" y="250" class="h" text-anchor="start" style="fill:#1a1a1a"><tspan x="685" dy="0">Tabla real</tspan></text>
+<text x="685" y="270" class="s" text-anchor="start"><tspan x="685" dy="0">encabezados en la fila 4</tspan></text>
+<rect x="679" y="294" width="250" height="82" rx="6" fill="#f2f2f2" stroke="#c4c4c4" stroke-width="1.5"/>
+<text x="689" y="316" class="m" text-anchor="start"><tspan x="689" dy="0">R      skip = 3</tspan></text>
+<text x="689" y="338" class="m" text-anchor="start"><tspan x="689" dy="0">pandas skiprows = 3</tspan></text>
+<text x="689" y="360" class="m" text-anchor="start"><tspan x="689" dy="0">DuckDB range = &#x27;A4:E&#x27;</tspan></text>
+<text x="30" y="362" class="s" text-anchor="start"><tspan x="30" dy="0">Lee todo como texto: así codigo_dane conserva el cero de 05001.</tspan></text>
+<metadata><c2pa:manifest>AAAWgmp1bWIAAAAeanVtZGMycGEAEQAQgAAAqgA4m3EDYzJwYQAAABZcanVtYgAAAEdqdW1kYzJtYQARABCAAACqADibcQN1cm46YzJwYTowMzY0NDJjNi1iZDQ1LTQ4YmUtYjkzZS0xM2FhNDM0ZThlMTYAAAADl2p1bWIAAAApanVtZGMyYXMAEQAQgAAAqgA4m3EDYzJwYS5hc3NlcnRpb25zAAAAALxqdW1iAAAARGp1bWRjYm9yABEAEIAAAKoAOJtxE2MycGEuaW5ncmVkaWVudC52MwAAAAAYYzJzaFfCrTResupzAeekDd3xnLsAAABwY2JvcqNpZGM6Zm9ybWF0bWltYWdlL3N2Zyt4bWxqaW5zdGFuY2VJRHgseG1wOmlpZDpiZjk3NjA3Zi03ODAzLTQyZTYtYTRjZi1hMWJlZTVmM2Y0MmZscmVsYXRpb25zaGlwaHBhcmVudE9mAAAB4mp1bWIAAABBanVtZGNib3IAEQAQgAAAqgA4m3ETYzJwYS5hY3Rpb25zLnYyAAAAABhjMnNoo/pa8dt1U3C9AT3fJVaeCAAAAZljYm9yomdhY3Rpb25zgqJmYWN0aW9ua2MycGEub3BlbmVkanBhcmFtZXRlcnOha2luZ3JlZGllbnRzgaJjdXJseC1zZWxmI2p1bWJmPWMycGEuYXNzZXJ0aW9ucy9jMnBhLmluZ3JlZGllbnQudjNkaGFzaFggmeSgAIiJiSSVYRB3UWQbZmSi3GqLn0VbrWS1PAwSKUOkZmFjdGlvbngdY29tLmFudGhyb3BpYy5jbGF1ZGUucHJvdmlkZWRqcGFyYW1ldGVyc6F4H2NvbS5hbnRocm9waWMub3JpZ2luLWNvbmZpZGVuY2VndW5rbm93bmtkZXNjcmlwdGlvbnhmQ2xhdWRlIHByb3ZpZGVkIHRoaXMgZmlsZSBhdCB0aGUgcmVxdWVzdCBvZiBhIHVzZXIgYW5kIG1heSBoYXZlIGNyZWF0ZWQgb3IgbW9kaWZpZWQgdGhlIGZpbGUgY29udGVudHMubXNvZnR3YXJlQWdlbnShZG5hbWVmQ2xhdWRlcmFsbEFjdGlvbnNJbmNsdWRlZPUAAADIanVtYgAAAEBqdW1kY2JvcgARABCAAACqADibcRNjMnBhLmhhc2guZGF0YQAAAAAYYzJzaJFUAF8180ltG4Oq9RjV1xAAAACAY2JvcqVjYWxnZnNoYTI1NmNwYWRMAAAAAAAAAAAAAAAAZGhhc2hYIHIpA82Qbzq8/WJ303ZuXM91bNewI+qTBw/V/qsWFvDTZG5hbWVuanVtYmYgbWFuaWZlc3RqZXhjbHVzaW9uc4GiZXN0YXJ0GSecZmxlbmd0aBkeBAAAAj5qdW1iAAAAJ2p1bWRjMmNsABEAEIAAAKoAOJtxA2MycGEuY2xhaW0udjIAAAACD2Nib3KlY2FsZ2ZzaGEyNTZpc2lnbmF0dXJleE1zZWxmI2p1bWJmPS9jMnBhL3VybjpjMnBhOjAzNjQ0MmM2LWJkNDUtNDhiZS1iOTNlLTEzYWE0MzRlOGUxNi9jMnBhLnNpZ25hdHVyZWppbnN0YW5jZUlEeCx4bXA6aWlkOjlhMjI2NjI5LWY3ZDEtNDhiMC05YTU3LWYxZmZjYjYwOWYwM3JjcmVhdGVkX2Fzc2VydGlvbnODomN1cmx4LXNlbGYjanVtYmY9YzJwYS5hc3NlcnRpb25zL2MycGEuaW5ncmVkaWVudC52M2RoYXNoWCCZ5KAAiImJJJVhEHdRZBtmZKLcaoufRVutZLU8DBIpQ6JjdXJseCpzZWxmI2p1bWJmPWMycGEuYXNzZXJ0aW9ucy9jMnBhLmFjdGlvbnMudjJkaGFzaFggw59D4ie3TOM7Nz7KSWfoukDRFGLAh9nnpPQwjhtvoveiY3VybHgpc2VsZiNqdW1iZj1jMnBhLmFzc2VydGlvbnMvYzJwYS5oYXNoLmRhdGFkaGFzaFggtN3foLdRdAaLvvS3aOg9x8/cSl1EknMrNMo3467zVjF0Y2xhaW1fZ2VuZXJhdG9yX2luZm+jZG5hbWVvQW50aHJvcGljIEZpbGVzZ3ZlcnNpb25lMS4wLjBrc3BlY1ZlcnNpb25lMi40LjAAABA4anVtYgAAAChqdW1kYzJjcwARABCAAACqADibcQNjMnBhLnNpZ25hdHVyZQAAABAIY2JvctKEWQISogEmGCFZAgowggIGMIIBjaADAgECAhRA5aAK7sI50L64g/oGQgU9Z1UTADAKBggqhkjOPQQDAzBJMRcwFQYDVQQKEw5BbnRocm9waWMsIFBCQzEuMCwGA1UEAxMlQW50aHJvcGljIENvbnRlbnQgQ3JlZGVudGlhbHMgUm9vdCBDQTAeFw0yNjA4MDcxODQzNTZaFw0yODA4MDYxOTQzNTZaMEQxFzAVBgNVBAoTDkFudGhyb3BpYywgUEJDMSkwJwYDVQQDEyBBbnRocm9waWMgQ2xhdWRlIENvbnRlbnQgU2lnbmluZzBZMBMGByqGSM49AgEGCCqGSM49AwEHA0IABJh6CmvLUBgFFNU0vUKlOVtE6djd17L5SuwX0LemFisBM3dkd/3cyjxFA3Qo5S46fX0/ihY0VZ7mfb9KF703t5OjWDBWMA4GA1UdDwEB/wQEAwIHgDAVBgNVHSUEDjAMBgorBgEEAYPoXgIBMAwGA1UdEwEB/wQCMAAwHwYDVR0jBBgwFoAUzlHiBIFOZFsj+OPEz5o+nMHXXMIwCgYIKoZIzj0EAwMDZwAwZAIwMXMdFJ4BetLLVY7ORuE9noqbbAZOZn/aArXyTwFAZfKrPzxF2vPoJNf1+UCdg1XGAjBwX1zd9WGqYkqmL5SFqw1QySjr1zJfpJM9+1rdDwSPLMOPOjKuiXjoU/pUUeG9RwmhY3BhZFkNngAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAPZYQFYAb41eM6xG4FsDUS7GinVK+qlPL65AqKu8ym5h5TazVOrue/xnndzQXPVHMBDXT1wxioVSNzCduNCneh1SOCA=</c2pa:manifest></metadata></svg>

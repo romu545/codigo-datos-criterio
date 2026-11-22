@@ -1,0 +1,303 @@
+# Fundamentos y preparación del entorno
+
+## Propósito del capítulo
+
+Antes de analizar datos, necesitamos preparar un espacio de trabajo que permita encontrar los archivos, ejecutar el código y repetir el análisis más adelante. Este capítulo presenta las herramientas que usaremos y explica qué función cumple cada una.
+
+El entorno del libro estará compuesto por Positron, R, Python, `uv` y DuckDB. No son herramientas intercambiables: cada una resuelve una parte diferente del trabajo.
+
+Al terminar este capítulo tendrás:
+
+- Positron, R y `uv` instalados y comprobados;
+- Python disponible a través de `uv`;
+- los materiales del libro descargados en una carpeta de trabajo;
+- una idea clara de qué hace cada herramienta y cómo se relacionan.
+
+## ¿Qué es un entorno de trabajo?
+
+Un entorno de trabajo reúne los programas, archivos, configuraciones y dependencias que necesitamos para realizar una tarea. En un análisis de datos puede incluir:
+
+- un editor para escribir y revisar código;
+- los intérpretes que ejecutan el código;
+- los paquetes que agregan funciones;
+- los datos de entrada y los resultados;
+- las herramientas que permiten guardar el historial de cambios;
+- la configuración necesaria para repetir el análisis.
+
+Preparar el entorno consiste en organizar esos elementos y establecer cómo se relacionan. El objetivo es poder abrir el proyecto, entender su estructura y volver a ejecutar los pasos sin depender de configuraciones ocultas o de la memoria de quien lo preparó.
+
+## Editor, lenguaje, paquete y herramienta
+
+Conviene distinguir algunos conceptos que suelen confundirse:
+
+- **Editor o IDE:** aplicación donde escribimos y organizamos el código. En este libro usaremos Positron.
+- **Lenguaje:** conjunto de reglas con el que expresamos instrucciones. Los lenguajes principales serán R y Python.
+- **Intérprete:** programa que ejecuta código escrito en un lenguaje, como R o Python.
+- **Paquete o biblioteca:** código reutilizable que se instala para ampliar las capacidades de un lenguaje.
+- **Herramienta de línea de comandos:** programa que se ejecuta desde una terminal. Git, Quarto CLI y DuckDB CLI son ejemplos.
+- **Base de datos:** sistema que organiza y permite consultar datos. Usaremos DuckDB para ejemplos de análisis.
+- **Proyecto:** carpeta que reúne los archivos relacionados con un trabajo y desde la que se organizan sus rutas y herramientas.
+
+Positron puede ayudar a descubrir y seleccionar intérpretes y entornos, pero no reemplaza a R ni a Python. De manera similar, instalar DuckDB no instala automáticamente todos los paquetes que permiten conectarlo desde cada lenguaje.
+
+## ¿Qué significa que un análisis sea reproducible?
+
+Un análisis es reproducible cuando otra persona, o nosotros mismos más adelante, puede volver a ejecutarlo y entender de dónde salieron sus resultados.
+
+Para acercarnos a ese objetivo, procuraremos que:
+
+- los archivos del proyecto tengan una organización clara;
+- las rutas no dependan de una carpeta personal específica;
+- las dependencias y sus versiones queden registradas;
+- el código y las decisiones importantes estén documentados;
+- los datos privados y las credenciales no se incluyan en el repositorio;
+- los pasos necesarios para ejecutar el análisis estén explicados.
+
+La reproducibilidad no exige que todas las computadoras sean idénticas. Exige describir con suficiente claridad las herramientas, versiones, datos y pasos relevantes para que el trabajo pueda repetirse y revisarse.
+
+## Principio de preparación
+
+A lo largo del capítulo instalaremos y configuraremos cada herramienta por separado. En cada caso seguiremos el mismo ciclo:
+
+1.  identificar para qué se necesita la herramienta;
+2.  instalarla o seleccionarla;
+3.  comprobar que el sistema la encuentra;
+4.  conectarla al proyecto;
+5.  registrar las dependencias o la configuración necesaria;
+6.  revisar que los archivos que deben permanecer privados no se publiquen.
+
+Así podremos distinguir un problema del editor de uno del lenguaje, de un paquete, de una ruta o de una conexión a la base de datos.
+
+## Sistemas operativos
+
+Los ejemplos de análisis de este libro sirven tanto para Windows como para macOS. Las instalaciones se presentan por sistema operativo: en Windows usaremos principalmente `winget`; en macOS, el instalador oficial o Homebrew, según la herramienta.
+
+Una vez instalados los programas, el flujo de análisis será el mismo. Cuando una diferencia entre sistemas afecte rutas, terminales o comandos, la indicaremos junto al ejemplo.
+
+Los comandos de `winget` pueden variar según la disponibilidad de los paquetes en el catálogo. Si un comando no encuentra un paquete, se puede buscar su identificador con `winget search nombre-del-programa` o usar el instalador oficial.
+
+## ¿Qué instalaremos?
+
+| Herramienta | Para qué la usaremos |
+|---|---|
+| Positron | Escribir y ejecutar código, y explorar datos desde el IDE. |
+| R | Lenguaje principal de los ejemplos del libro. |
+| Python | Lenguaje complementario para comparar implementaciones. |
+| `uv` | Instalar y administrar versiones de Python y dependencias del proyecto. |
+| DuckDB | Consultar datos con SQL usando una base orientada al análisis. |
+| GitHub y descarga de materiales | Obtener datos y scripts desde el navegador o la terminal. |
+
+## Instalar las herramientas
+
+### Positron
+
+En Windows, abre PowerShell y ejecuta:
+
+```powershell
+winget install --id Posit.Positron
+```
+
+En macOS, descarga el instalador correspondiente a la arquitectura del equipo desde la [página oficial de Positron](https://positron.posit.co/download.html) y sigue las instrucciones del instalador.
+
+La disponibilidad de Positron en `winget` depende de un manifiesto mantenido por la comunidad. Si el comando no encuentra el paquete, usa el instalador oficial.
+
+### R
+
+En Windows, puedes usar `winget search` para buscar el paquete disponible en el catálogo e instalarlo con `winget install`. Si no hay un paquete adecuado, descarga R desde [CRAN para Windows](https://cran.r-project.org/bin/windows/base/).
+
+```powershell
+winget search --id RProject.R
+
+winget install --id RProject.R
+```
+
+En macOS, descarga el instalador apropiado para el procesador (Apple Silicon o Intel) desde [CRAN para macOS](https://cran.r-project.org/bin/macosx/), ábrelo y sigue las instrucciones.
+
+La versión de R con la que se escribió el libro es la 4.6.2, pero puedes instalar una versión más reciente. En ese caso, asegúrate de que los paquetes que usemos sean compatibles con la versión que instales.
+
+### uv
+
+**uv** es un gestor de versiones de Python que permite instalar y administrar múltiples versiones del lenguaje y sus dependencias. Esto es útil para mantener la compatibilidad con proyectos existentes y para probar nuevas versiones sin afectar el entorno global.
+
+Al igual que con R, puedes instalar **uv** en Windows usando `winget install` o descargarlo desde su [página oficial](https://docs.astral.sh/uv/getting-started/installation/).
+
+```powershell
+winget install --id astral-sh.uv
+```
+
+En macOS, puedes usar Homebrew o seguir las instrucciones de la página oficial.
+
+```bash
+brew install uv
+```
+
+Positron también puede instalar o usar **uv** para preparar entornos de Python. En este libro aprenderemos el flujo con **uv** desde la terminal para que los pasos sean visibles y repetibles, y usaremos la integración de Positron cuando facilite el trabajo.
+
+### Python
+
+No instalamos Python por separado: lo hacemos con `uv`. Cierra y vuelve a abrir la terminal para que reconozca `uv` y ejecuta, en Windows o macOS:
+
+```bash
+uv python install
+```
+
+Este comando descarga una versión reciente de Python y la deja disponible para `uv`. Para ver qué versiones tienes instaladas:
+
+```bash
+uv python list --only-installed
+```
+
+Más adelante veremos cómo `uv` crea un entorno de Python para cada proyecto y registra sus dependencias.
+
+### Git: herramienta opcional
+
+No es necesario instalar Git para seguir los primeros capítulos. Los datos y scripts se pueden descargar desde el repositorio de materiales en GitHub, usando el navegador o la terminal.
+
+Más adelante, en el capítulo de publicación y mantenimiento, veremos Git para registrar cambios y mantener un proyecto. Aunque no instales Git, podrás reportar errores o hacer preguntas creando un *issue* en el [repositorio del libro](https://github.com/romu545/codigo-datos-criterio/issues).
+
+### DuckDB
+
+En este libro usaremos DuckDB para enseñar consultas y análisis sobre datos. DuckDB es una base analítica: está diseñada para consultar y resumir datos de manera eficiente, incluso cuando se trabaja con archivos como CSV y Parquet.
+
+Las bases transaccionales suelen atender operaciones frecuentes de aplicaciones, como registrar una compra o actualizar una cuenta. Las bases analíticas se enfocan en consultas que leen y resumen grandes conjuntos de datos. Son cargas de trabajo distintas, con necesidades diferentes.
+
+Esto no significa que una base transaccional nunca pueda analizarse. Significa que, para practicar análisis, conviene usar una herramienta y datos preparados para ese propósito, evitando que ejercicios o consultas pesadas afecten los sistemas que mantienen las operaciones de una aplicación.
+
+DuckDB puede trabajar como una base local dentro del proyecto y también consultar ciertos archivos directamente. En los capítulos posteriores veremos cuándo conviene consultar archivos y cuándo guardar los datos en una base DuckDB.
+
+DuckDB puede instalarse de distintas formas según el uso:
+
+- **Desde R:** instalaremos el paquete duckdb cuando preparemos el entorno de R.
+- **Desde Python:** instalaremos el paquete duckdb en el entorno del proyecto con uv.
+- **Desde la terminal:** instalaremos la CLI de DuckDB solo para los capítulos o ejercicios que la necesiten.
+
+Así evitamos instalar una herramienta global que quizá no se use. Más adelante se explicará cómo las interfaces de R y Python permiten ejecutar consultas sobre una base DuckDB.
+
+### Comprobar las instalaciones
+
+Después de instalar cada herramienta, cierra y vuelve a abrir la terminal para que reconozca los programas agregados al `PATH`. Luego ejecuta estas comprobaciones.
+
+En Windows, desde PowerShell:
+
+```powershell
+uv --version
+uv python list --only-installed
+```
+
+Para R, el instalador de Windows no siempre lo agrega al `PATH`, así que `R --version` puede fallar aunque la instalación haya salido bien. Esta comprobación busca R en su carpeta de instalación habitual:
+
+```powershell
+$r = (Get-ChildItem "C:\Program Files\R\R-*\bin\R.exe" | Select-Object -Last 1).FullName
+& $r --version
+```
+
+También puedes comprobar R y Python desde Positron: abre el programa y, en el selector de intérpretes, verifica que aparezcan las versiones instaladas. Si no aparecen, ahí mismo puedes seleccionarlas manualmente.
+
+Para Positron, `positron --version` puede funcionar desde la terminal. Si no se reconoce el comando, abre el programa desde el menú Inicio: es suficiente para seguir el libro.
+
+En macOS, desde la terminal:
+
+```bash
+R --version
+uv --version
+uv python list --only-installed
+```
+
+En macOS, `positron` puede no estar disponible como comando hasta agregarlo al `PATH` desde la paleta de comandos de Positron. También es posible abrir Positron desde la carpeta de Aplicaciones.
+
+No todas las herramientas muestran la misma información con `--version`. Si un comando no funciona, comprueba primero si la instalación terminó y reinicia la terminal.
+
+## Descargar los materiales del libro
+
+Los datos y scripts de práctica están en el [repositorio público de materiales](https://github.com/romu545/codigo-datos-criterio-material). No necesitas instalar Git para descargarlos.
+
+Sigue estos pasos:
+
+1. **Crea una carpeta** donde quieras trabajar, por ejemplo `Documentos/analisis-datos`. Debe estar vacía.
+2. **Abre la carpeta** y haz clic derecho en un espacio vacío.
+3. Selecciona **Abrir en Terminal**.
+   - En Windows 10, mantén presionada la tecla **Shift**, haz clic derecho y elige **Abrir ventana de PowerShell aquí**.
+   - En macOS, haz clic derecho sobre la carpeta y elige **Servicios → Nueva Terminal en la carpeta**. Si no aparece, actívala en **Ajustes del Sistema → Teclado → Funciones rápidas → Servicios**.
+4. Copia el comando de la pestaña que corresponda a tu sistema, pégalo en la terminal y presiona **Enter**.
+5. Abre la carpeta en Positron con **File → Open Folder…**.
+
+::: {.callout-tip}
+Si no ves la opción en el menú, abre primero la carpeta en Positron (**File → Open Folder…**) y luego una terminal desde ahí (**Terminal → New Terminal**). La terminal se abrirá en esa carpeta.
+:::
+
+::: {.panel-tabset}
+
+### PowerShell (Windows)
+
+```powershell
+$zip = Join-Path $env:TEMP "material.zip"
+Invoke-WebRequest "https://github.com/romu545/codigo-datos-criterio-material/archive/refs/heads/main.zip" -OutFile $zip
+Expand-Archive $zip -DestinationPath . -Force
+Get-ChildItem "codigo-datos-criterio-material-main" -Force | Move-Item -Destination . -Force
+Remove-Item "codigo-datos-criterio-material-main", $zip -Recurse -Force
+```
+
+### Terminal (macOS)
+
+```bash
+curl -L -o material.zip https://github.com/romu545/codigo-datos-criterio-material/archive/refs/heads/main.zip
+unzip -q material.zip
+cp -R codigo-datos-criterio-material-main/. .
+rm -r codigo-datos-criterio-material-main material.zip
+```
+
+### Navegador
+
+1. Abre el repositorio de materiales en GitHub.
+2. Selecciona **Code → Download ZIP**.
+3. Extrae el archivo y copia su contenido dentro de tu carpeta de trabajo.
+4. Abre la carpeta en Positron con **File → Open Folder…**.
+
+### R
+
+Ejecuta este código en la consola de R de Positron, con la carpeta de trabajo abierta y vacía. No lo ejecutes en la terminal.
+
+```r
+zip <- tempfile(fileext = ".zip")
+download.file(
+  "https://github.com/romu545/codigo-datos-criterio-material/archive/refs/heads/main.zip",
+  zip, mode = "wb"
+)
+unzip(zip, exdir = ".")
+file.copy(
+  list.files("codigo-datos-criterio-material-main", full.names = TRUE, all.files = TRUE, no.. = TRUE),
+  ".", recursive = TRUE
+)
+unlink(c("codigo-datos-criterio-material-main", zip), recursive = TRUE)
+```
+
+### Python
+
+Ejecuta este código en la consola de Python de Positron, con la carpeta de trabajo abierta y vacía. No lo ejecutes en la terminal.
+
+```python
+from pathlib import Path
+from shutil import move
+from tempfile import TemporaryDirectory
+from urllib.request import urlretrieve
+from zipfile import ZipFile
+
+url = (
+    "https://github.com/romu545/"
+    "codigo-datos-criterio-material/archive/refs/heads/main.zip"
+)
+
+with TemporaryDirectory() as tmp:
+    zip_path = Path(tmp) / "material.zip"
+    urlretrieve(url, zip_path)
+    with ZipFile(zip_path) as z:
+        z.extractall(tmp)
+    for item in (Path(tmp) / "codigo-datos-criterio-material-main").iterdir():
+        move(str(item), ".")
+
+print("Material descargado en:", Path.cwd())
+```
+
+:::
+
+Para una primera descarga, el navegador es la opción más sencilla. Los ejemplos con código permiten practicar cómo automatizarla.

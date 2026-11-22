@@ -1,0 +1,115 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 56 960 344" width="960" height="344" role="img" aria-labelledby="titulo desc" xmlns:c2pa="http://c2pa.org/manifest">
+<title id="titulo">Almacenamiento por filas (CSV) frente a por columnas (Parquet)</title>
+<desc id="desc">Un CSV guarda los datos fila por fila, de modo que para leer dos columnas hay que recorrer todo el archivo. Parquet guarda cada columna en un bloque comprimido, así que leer dos columnas solo toca esos dos bloques.</desc>
+<style>
+  text{font-family:"Source Sans 3","Source Sans Pro","Segoe UI",Helvetica,Arial,sans-serif;fill:#1a1a1a}
+  .t{font-size:22px;font-weight:700}
+  .h{font-size:17px;font-weight:700}
+  .b{font-size:15.5px}
+  .s{font-size:14px;fill:#3d3d3d}
+  .m{font-family:"Source Code Pro",Consolas,"DejaVu Sans Mono",monospace;font-size:14px}
+  .w{fill:#ffffff}
+</style>
+<defs>
+  <marker id="fl" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#555555"/></marker>
+  <marker id="flr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#7a7a7a"/></marker>
+  <marker id="flv" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#1a1a1a"/></marker>
+</defs>
+
+<rect x="0" y="0" width="960" height="400" fill="#ffffff"/>
+<text x="30" y="100" class="h" text-anchor="start"><tspan x="30" dy="0">CSV: fila por fila</tspan></text>
+<text x="30" y="118" class="s" text-anchor="start"><tspan x="30" dy="0">Para sacar dos columnas hay que leer y separar cada línea completa.</tspan></text>
+<rect x="30" y="134" width="72" height="26" rx="4" fill="#d0d0d0" stroke="none" stroke-width="0"/>
+<rect x="106" y="134" width="72" height="26" rx="4" fill="#3a3a3a" stroke="none" stroke-width="0"/>
+<rect x="182" y="134" width="72" height="26" rx="4" fill="#e0e0e0" stroke="none" stroke-width="0"/>
+<rect x="258" y="134" width="72" height="26" rx="4" fill="#c4c4c4" stroke="none" stroke-width="0"/>
+<rect x="334" y="134" width="72" height="26" rx="4" fill="#3a3a3a" stroke="none" stroke-width="0"/>
+<line x1="416" y1="147" x2="438" y2="147" stroke="#7a7a7a" stroke-width="1.5" marker-end="url(#flr)" stroke-dasharray="7 5"/>
+<rect x="30" y="168" width="72" height="26" rx="4" fill="#d0d0d0" stroke="none" stroke-width="0"/>
+<rect x="106" y="168" width="72" height="26" rx="4" fill="#3a3a3a" stroke="none" stroke-width="0"/>
+<rect x="182" y="168" width="72" height="26" rx="4" fill="#e0e0e0" stroke="none" stroke-width="0"/>
+<rect x="258" y="168" width="72" height="26" rx="4" fill="#c4c4c4" stroke="none" stroke-width="0"/>
+<rect x="334" y="168" width="72" height="26" rx="4" fill="#3a3a3a" stroke="none" stroke-width="0"/>
+<line x1="416" y1="181" x2="438" y2="181" stroke="#7a7a7a" stroke-width="1.5" marker-end="url(#flr)" stroke-dasharray="7 5"/>
+<rect x="30" y="202" width="72" height="26" rx="4" fill="#d0d0d0" stroke="none" stroke-width="0"/>
+<rect x="106" y="202" width="72" height="26" rx="4" fill="#3a3a3a" stroke="none" stroke-width="0"/>
+<rect x="182" y="202" width="72" height="26" rx="4" fill="#e0e0e0" stroke="none" stroke-width="0"/>
+<rect x="258" y="202" width="72" height="26" rx="4" fill="#c4c4c4" stroke="none" stroke-width="0"/>
+<rect x="334" y="202" width="72" height="26" rx="4" fill="#3a3a3a" stroke="none" stroke-width="0"/>
+<line x1="416" y1="215" x2="438" y2="215" stroke="#7a7a7a" stroke-width="1.5" marker-end="url(#flr)" stroke-dasharray="7 5"/>
+<rect x="30" y="236" width="72" height="26" rx="4" fill="#d0d0d0" stroke="none" stroke-width="0"/>
+<rect x="106" y="236" width="72" height="26" rx="4" fill="#3a3a3a" stroke="none" stroke-width="0"/>
+<rect x="182" y="236" width="72" height="26" rx="4" fill="#e0e0e0" stroke="none" stroke-width="0"/>
+<rect x="258" y="236" width="72" height="26" rx="4" fill="#c4c4c4" stroke="none" stroke-width="0"/>
+<rect x="334" y="236" width="72" height="26" rx="4" fill="#3a3a3a" stroke="none" stroke-width="0"/>
+<line x1="416" y1="249" x2="438" y2="249" stroke="#7a7a7a" stroke-width="1.5" marker-end="url(#flr)" stroke-dasharray="7 5"/>
+<rect x="30" y="270" width="72" height="26" rx="4" fill="#d0d0d0" stroke="none" stroke-width="0"/>
+<rect x="106" y="270" width="72" height="26" rx="4" fill="#3a3a3a" stroke="none" stroke-width="0"/>
+<rect x="182" y="270" width="72" height="26" rx="4" fill="#e0e0e0" stroke="none" stroke-width="0"/>
+<rect x="258" y="270" width="72" height="26" rx="4" fill="#c4c4c4" stroke="none" stroke-width="0"/>
+<rect x="334" y="270" width="72" height="26" rx="4" fill="#3a3a3a" stroke="none" stroke-width="0"/>
+<line x1="416" y1="283" x2="438" y2="283" stroke="#7a7a7a" stroke-width="1.5" marker-end="url(#flr)" stroke-dasharray="7 5"/>
+<rect x="30" y="304" width="72" height="26" rx="4" fill="#d0d0d0" stroke="none" stroke-width="0"/>
+<rect x="106" y="304" width="72" height="26" rx="4" fill="#3a3a3a" stroke="none" stroke-width="0"/>
+<rect x="182" y="304" width="72" height="26" rx="4" fill="#e0e0e0" stroke="none" stroke-width="0"/>
+<rect x="258" y="304" width="72" height="26" rx="4" fill="#c4c4c4" stroke="none" stroke-width="0"/>
+<rect x="334" y="304" width="72" height="26" rx="4" fill="#3a3a3a" stroke="none" stroke-width="0"/>
+<line x1="416" y1="317" x2="438" y2="317" stroke="#7a7a7a" stroke-width="1.5" marker-end="url(#flr)" stroke-dasharray="7 5"/>
+<text x="30" y="356" class="b" text-anchor="start" style="fill:#7a7a7a;font-weight:700"><tspan x="30" dy="0">Se leen las 5 columnas de todas las filas.</tspan></text>
+<text x="500" y="100" class="h" text-anchor="start"><tspan x="500" dy="0">Parquet: columna por columna, comprimido</tspan></text>
+<text x="500" y="118" class="s" text-anchor="start"><tspan x="500" dy="0">Cada columna es un bloque; se leen solo los bloques pedidos.</tspan></text>
+<g opacity="0.28">
+<rect x="500" y="134" width="78" height="196" rx="6" fill="#d0d0d0" stroke="none" stroke-width="0"/>
+<line x1="508" y1="150" x2="570" y2="150" stroke="#ffffff" stroke-width="1" opacity="0.6"/>
+<line x1="508" y1="180" x2="570" y2="180" stroke="#ffffff" stroke-width="1" opacity="0.6"/>
+<line x1="508" y1="210" x2="570" y2="210" stroke="#ffffff" stroke-width="1" opacity="0.6"/>
+<line x1="508" y1="240" x2="570" y2="240" stroke="#ffffff" stroke-width="1" opacity="0.6"/>
+<line x1="508" y1="270" x2="570" y2="270" stroke="#ffffff" stroke-width="1" opacity="0.6"/>
+<line x1="508" y1="300" x2="570" y2="300" stroke="#ffffff" stroke-width="1" opacity="0.6"/>
+</g>
+<text x="539" y="348" class="s" text-anchor="middle" style="fill:#8a8a8a"><tspan x="539" dy="0">fecha</tspan></text>
+<g opacity="1">
+<rect x="586" y="134" width="78" height="196" rx="6" fill="#3a3a3a" stroke="none" stroke-width="0"/>
+<line x1="594" y1="150" x2="656" y2="150" stroke="#ffffff" stroke-width="1" opacity="0.6"/>
+<line x1="594" y1="180" x2="656" y2="180" stroke="#ffffff" stroke-width="1" opacity="0.6"/>
+<line x1="594" y1="210" x2="656" y2="210" stroke="#ffffff" stroke-width="1" opacity="0.6"/>
+<line x1="594" y1="240" x2="656" y2="240" stroke="#ffffff" stroke-width="1" opacity="0.6"/>
+<line x1="594" y1="270" x2="656" y2="270" stroke="#ffffff" stroke-width="1" opacity="0.6"/>
+<line x1="594" y1="300" x2="656" y2="300" stroke="#ffffff" stroke-width="1" opacity="0.6"/>
+</g>
+<text x="625" y="348" class="s" text-anchor="middle" style="fill:#1a1a1a;font-weight:700"><tspan x="625" dy="0">codigo_dane</tspan></text>
+<text x="625" y="160" class="s" text-anchor="middle" style="fill:#ffffff;font-weight:700"><tspan x="625" dy="0">se lee</tspan></text>
+<g opacity="0.28">
+<rect x="672" y="134" width="78" height="196" rx="6" fill="#e0e0e0" stroke="none" stroke-width="0"/>
+<line x1="680" y1="150" x2="742" y2="150" stroke="#ffffff" stroke-width="1" opacity="0.6"/>
+<line x1="680" y1="180" x2="742" y2="180" stroke="#ffffff" stroke-width="1" opacity="0.6"/>
+<line x1="680" y1="210" x2="742" y2="210" stroke="#ffffff" stroke-width="1" opacity="0.6"/>
+<line x1="680" y1="240" x2="742" y2="240" stroke="#ffffff" stroke-width="1" opacity="0.6"/>
+<line x1="680" y1="270" x2="742" y2="270" stroke="#ffffff" stroke-width="1" opacity="0.6"/>
+<line x1="680" y1="300" x2="742" y2="300" stroke="#ffffff" stroke-width="1" opacity="0.6"/>
+</g>
+<text x="711" y="348" class="s" text-anchor="middle" style="fill:#8a8a8a"><tspan x="711" dy="0">nit_cliente</tspan></text>
+<g opacity="0.28">
+<rect x="758" y="134" width="78" height="196" rx="6" fill="#c4c4c4" stroke="none" stroke-width="0"/>
+<line x1="766" y1="150" x2="828" y2="150" stroke="#ffffff" stroke-width="1" opacity="0.6"/>
+<line x1="766" y1="180" x2="828" y2="180" stroke="#ffffff" stroke-width="1" opacity="0.6"/>
+<line x1="766" y1="210" x2="828" y2="210" stroke="#ffffff" stroke-width="1" opacity="0.6"/>
+<line x1="766" y1="240" x2="828" y2="240" stroke="#ffffff" stroke-width="1" opacity="0.6"/>
+<line x1="766" y1="270" x2="828" y2="270" stroke="#ffffff" stroke-width="1" opacity="0.6"/>
+<line x1="766" y1="300" x2="828" y2="300" stroke="#ffffff" stroke-width="1" opacity="0.6"/>
+</g>
+<text x="797" y="348" class="s" text-anchor="middle" style="fill:#8a8a8a"><tspan x="797" dy="0">ciudad</tspan></text>
+<g opacity="1">
+<rect x="844" y="134" width="78" height="196" rx="6" fill="#3a3a3a" stroke="none" stroke-width="0"/>
+<line x1="852" y1="150" x2="914" y2="150" stroke="#ffffff" stroke-width="1" opacity="0.6"/>
+<line x1="852" y1="180" x2="914" y2="180" stroke="#ffffff" stroke-width="1" opacity="0.6"/>
+<line x1="852" y1="210" x2="914" y2="210" stroke="#ffffff" stroke-width="1" opacity="0.6"/>
+<line x1="852" y1="240" x2="914" y2="240" stroke="#ffffff" stroke-width="1" opacity="0.6"/>
+<line x1="852" y1="270" x2="914" y2="270" stroke="#ffffff" stroke-width="1" opacity="0.6"/>
+<line x1="852" y1="300" x2="914" y2="300" stroke="#ffffff" stroke-width="1" opacity="0.6"/>
+</g>
+<text x="883" y="348" class="s" text-anchor="middle" style="fill:#1a1a1a;font-weight:700"><tspan x="883" dy="0">valor_venta</tspan></text>
+<text x="883" y="160" class="s" text-anchor="middle" style="fill:#ffffff;font-weight:700"><tspan x="883" dy="0">se lee</tspan></text>
+<text x="500" y="376" class="b" text-anchor="start" style="fill:#1a1a1a;font-weight:700"><tspan x="500" dy="0">Se leen 2 de 5 columnas; el resto ni se toca en el disco.</tspan></text>
+<text x="30" y="390" class="s" text-anchor="start"><tspan x="30" dy="0"></tspan></text>
+<metadata><c2pa:manifest>AAAWgmp1bWIAAAAeanVtZGMycGEAEQAQgAAAqgA4m3EDYzJwYQAAABZcanVtYgAAAEdqdW1kYzJtYQARABCAAACqADibcQN1cm46YzJwYToyNWI0ZGU5ZS1jODhhLTQzYmItOTI4Ny05MzE1YmU0ZGE1ZDgAAAADl2p1bWIAAAApanVtZGMyYXMAEQAQgAAAqgA4m3EDYzJwYS5hc3NlcnRpb25zAAAAALxqdW1iAAAARGp1bWRjYm9yABEAEIAAAKoAOJtxE2MycGEuaW5ncmVkaWVudC52MwAAAAAYYzJzaOPLcKnZkNvpRc4CS7HyIqQAAABwY2JvcqNpZGM6Zm9ybWF0bWltYWdlL3N2Zyt4bWxqaW5zdGFuY2VJRHgseG1wOmlpZDo5OTI3ODNiMi0yMmIzLTRlMDUtYTY1Yy0wYmQ3YmNmM2FlZDBscmVsYXRpb25zaGlwaHBhcmVudE9mAAAB4mp1bWIAAABBanVtZGNib3IAEQAQgAAAqgA4m3ETYzJwYS5hY3Rpb25zLnYyAAAAABhjMnNozPk63Gxz30YNKyN41yw8cwAAAZljYm9yomdhY3Rpb25zgqJmYWN0aW9ua2MycGEub3BlbmVkanBhcmFtZXRlcnOha2luZ3JlZGllbnRzgaJjdXJseC1zZWxmI2p1bWJmPWMycGEuYXNzZXJ0aW9ucy9jMnBhLmluZ3JlZGllbnQudjNkaGFzaFgg4/qVjW1OSryHeShUcocI7Zd4rfIBlV2BaajzQXTKpyOkZmFjdGlvbngdY29tLmFudGhyb3BpYy5jbGF1ZGUucHJvdmlkZWRqcGFyYW1ldGVyc6F4H2NvbS5hbnRocm9waWMub3JpZ2luLWNvbmZpZGVuY2VndW5rbm93bmtkZXNjcmlwdGlvbnhmQ2xhdWRlIHByb3ZpZGVkIHRoaXMgZmlsZSBhdCB0aGUgcmVxdWVzdCBvZiBhIHVzZXIgYW5kIG1heSBoYXZlIGNyZWF0ZWQgb3IgbW9kaWZpZWQgdGhlIGZpbGUgY29udGVudHMubXNvZnR3YXJlQWdlbnShZG5hbWVmQ2xhdWRlcmFsbEFjdGlvbnNJbmNsdWRlZPUAAADIanVtYgAAAEBqdW1kY2JvcgARABCAAACqADibcRNjMnBhLmhhc2guZGF0YQAAAAAYYzJzaLnOXIuwj9vh252tDfueWwwAAACAY2JvcqVjYWxnZnNoYTI1NmNwYWRMAAAAAAAAAAAAAAAAZGhhc2hYIOqN+S7keYNT+X9Nvm58mJ7AR2FYCq6Oxoy8T96GUauXZG5hbWVuanVtYmYgbWFuaWZlc3RqZXhjbHVzaW9uc4GiZXN0YXJ0GSj7Zmxlbmd0aBkeBAAAAj5qdW1iAAAAJ2p1bWRjMmNsABEAEIAAAKoAOJtxA2MycGEuY2xhaW0udjIAAAACD2Nib3KlY2FsZ2ZzaGEyNTZpc2lnbmF0dXJleE1zZWxmI2p1bWJmPS9jMnBhL3VybjpjMnBhOjI1YjRkZTllLWM4OGEtNDNiYi05Mjg3LTkzMTViZTRkYTVkOC9jMnBhLnNpZ25hdHVyZWppbnN0YW5jZUlEeCx4bXA6aWlkOjUyZWVjZDc4LTQ0MGItNDIxMC1iN2MyLThiZmQwN2Y4ZDIzZnJjcmVhdGVkX2Fzc2VydGlvbnODomN1cmx4LXNlbGYjanVtYmY9YzJwYS5hc3NlcnRpb25zL2MycGEuaW5ncmVkaWVudC52M2RoYXNoWCDj+pWNbU5KvId5KFRyhwjtl3it8gGVXYFpqPNBdMqnI6JjdXJseCpzZWxmI2p1bWJmPWMycGEuYXNzZXJ0aW9ucy9jMnBhLmFjdGlvbnMudjJkaGFzaFgggjdcm1Vf/a1cGsIkBlnXHmuKA1gZPBMqMd5S+pyGRrmiY3VybHgpc2VsZiNqdW1iZj1jMnBhLmFzc2VydGlvbnMvYzJwYS5oYXNoLmRhdGFkaGFzaFggs15B80eB0lDUtoTYte4xQoPfHHUQsSXIim9gx+ggtdh0Y2xhaW1fZ2VuZXJhdG9yX2luZm+jZG5hbWVvQW50aHJvcGljIEZpbGVzZ3ZlcnNpb25lMS4wLjBrc3BlY1ZlcnNpb25lMi40LjAAABA4anVtYgAAAChqdW1kYzJjcwARABCAAACqADibcQNjMnBhLnNpZ25hdHVyZQAAABAIY2JvctKEWQISogEmGCFZAgowggIGMIIBjaADAgECAhRA5aAK7sI50L64g/oGQgU9Z1UTADAKBggqhkjOPQQDAzBJMRcwFQYDVQQKEw5BbnRocm9waWMsIFBCQzEuMCwGA1UEAxMlQW50aHJvcGljIENvbnRlbnQgQ3JlZGVudGlhbHMgUm9vdCBDQTAeFw0yNjA4MDcxODQzNTZaFw0yODA4MDYxOTQzNTZaMEQxFzAVBgNVBAoTDkFudGhyb3BpYywgUEJDMSkwJwYDVQQDEyBBbnRocm9waWMgQ2xhdWRlIENvbnRlbnQgU2lnbmluZzBZMBMGByqGSM49AgEGCCqGSM49AwEHA0IABJh6CmvLUBgFFNU0vUKlOVtE6djd17L5SuwX0LemFisBM3dkd/3cyjxFA3Qo5S46fX0/ihY0VZ7mfb9KF703t5OjWDBWMA4GA1UdDwEB/wQEAwIHgDAVBgNVHSUEDjAMBgorBgEEAYPoXgIBMAwGA1UdEwEB/wQCMAAwHwYDVR0jBBgwFoAUzlHiBIFOZFsj+OPEz5o+nMHXXMIwCgYIKoZIzj0EAwMDZwAwZAIwMXMdFJ4BetLLVY7ORuE9noqbbAZOZn/aArXyTwFAZfKrPzxF2vPoJNf1+UCdg1XGAjBwX1zd9WGqYkqmL5SFqw1QySjr1zJfpJM9+1rdDwSPLMOPOjKuiXjoU/pUUeG9RwmhY3BhZFkNngAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAPZYQGIWioY47UUTsGlxA5xU9Wx6h0fpdPPate1kKvHDWbjXUsJoSieBoI4XQm+MIiCRa+mFbrhJnPpk1P+gM1R/bg0=</c2pa:manifest></metadata></svg>

@@ -1,0 +1,94 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 56 960 424" width="960" height="424" role="img" aria-labelledby="titulo desc" xmlns:c2pa="http://c2pa.org/manifest">
+<title id="titulo">Deriva de esquema al apilar los recaudos mensuales</title>
+<desc id="desc">Cuatro archivos de recaudos: los de 2025 nombran el monto vlr_total y el de 2026 lo llama valor_total. El archivo borrador_notas.csv queda fuera por el patrón. Apilar sin cuidado produce dos columnas de monto con vacíos; homologar el nombre y agregar archivo_origen produce una sola columna completa y trazable.</desc>
+<style>
+  text{font-family:"Source Sans 3","Source Sans Pro","Segoe UI",Helvetica,Arial,sans-serif;fill:#1a1a1a}
+  .t{font-size:22px;font-weight:700}
+  .h{font-size:17px;font-weight:700}
+  .b{font-size:15.5px}
+  .s{font-size:14px;fill:#3d3d3d}
+  .m{font-family:"Source Code Pro",Consolas,"DejaVu Sans Mono",monospace;font-size:14px}
+  .w{fill:#ffffff}
+</style>
+<defs>
+  <marker id="fl" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#555555"/></marker>
+  <marker id="flr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#7a7a7a"/></marker>
+  <marker id="flv" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#1a1a1a"/></marker>
+</defs>
+
+<rect x="0" y="0" width="960" height="480" fill="#ffffff"/>
+<rect x="30" y="84" width="172" height="96" rx="10" fill="#fff" stroke="#c4c4c4" stroke-width="1.5"/>
+<text x="40" y="104" class="s" text-anchor="start" style="font-weight:700"><tspan x="40" dy="0">recaudos_2025_10.csv</tspan></text>
+<text x="40" y="126" class="m" text-anchor="start" style="fill:#555555"><tspan x="40" dy="0">id_recaudo, fecha,</tspan></text>
+<text x="40" y="144" class="m" text-anchor="start" style="fill:#555555"><tspan x="40" dy="0">nit_cliente,</tspan></text>
+<rect x="38" y="152" width="80" height="20" rx="4" fill="#e6e6e6" stroke="none" stroke-width="1.5"/>
+<text x="42" y="166" class="m" text-anchor="start" style="fill:#1a1a1a;font-weight:700"><tspan x="42" dy="0">vlr_total</tspan></text>
+<rect x="212" y="84" width="172" height="96" rx="10" fill="#fff" stroke="#c4c4c4" stroke-width="1.5"/>
+<text x="222" y="104" class="s" text-anchor="start" style="font-weight:700"><tspan x="222" dy="0">recaudos_2025_11.csv</tspan></text>
+<text x="222" y="126" class="m" text-anchor="start" style="fill:#555555"><tspan x="222" dy="0">id_recaudo, fecha,</tspan></text>
+<text x="222" y="144" class="m" text-anchor="start" style="fill:#555555"><tspan x="222" dy="0">nit_cliente,</tspan></text>
+<rect x="220" y="152" width="80" height="20" rx="4" fill="#e6e6e6" stroke="none" stroke-width="1.5"/>
+<text x="224" y="166" class="m" text-anchor="start" style="fill:#1a1a1a;font-weight:700"><tspan x="224" dy="0">vlr_total</tspan></text>
+<rect x="394" y="84" width="172" height="96" rx="10" fill="#fff" stroke="#c4c4c4" stroke-width="1.5"/>
+<text x="404" y="104" class="s" text-anchor="start" style="font-weight:700"><tspan x="404" dy="0">recaudos_2025_12.csv</tspan></text>
+<text x="404" y="126" class="m" text-anchor="start" style="fill:#555555"><tspan x="404" dy="0">id_recaudo, fecha,</tspan></text>
+<text x="404" y="144" class="m" text-anchor="start" style="fill:#555555"><tspan x="404" dy="0">nit_cliente,</tspan></text>
+<rect x="402" y="152" width="80" height="20" rx="4" fill="#e6e6e6" stroke="none" stroke-width="1.5"/>
+<text x="406" y="166" class="m" text-anchor="start" style="fill:#1a1a1a;font-weight:700"><tspan x="406" dy="0">vlr_total</tspan></text>
+<rect x="576" y="84" width="172" height="96" rx="10" fill="#fff" stroke="#c4c4c4" stroke-width="1.5"/>
+<text x="586" y="104" class="s" text-anchor="start" style="font-weight:700"><tspan x="586" dy="0">recaudos_2026_01.csv</tspan></text>
+<text x="586" y="126" class="m" text-anchor="start" style="fill:#555555"><tspan x="586" dy="0">id_recaudo, fecha,</tspan></text>
+<text x="586" y="144" class="m" text-anchor="start" style="fill:#555555"><tspan x="586" dy="0">nit_cliente,</tspan></text>
+<rect x="584" y="152" width="96" height="20" rx="4" fill="#bdbdbd" stroke="none" stroke-width="1.5"/>
+<text x="588" y="166" class="m" text-anchor="start" style="fill:#1a1a1a;font-weight:700"><tspan x="588" dy="0">valor_total</tspan></text>
+<rect x="758" y="84" width="172" height="96" rx="10" fill="#f2f2f2" stroke="#c4c4c4" stroke-width="1.5" stroke-dasharray="5 4"/>
+<text x="768" y="104" class="s" text-anchor="start" style="fill:#8a8a8a;font-weight:700"><tspan x="768" dy="0">borrador_notas.csv</tspan></text>
+<text x="768" y="126" class="m" text-anchor="start" style="fill:#8a8a8a"><tspan x="768" dy="0">nota, autor</tspan></text>
+<text x="768" y="166" class="s" text-anchor="start" style="fill:#7a7a7a;font-weight:700"><tspan x="768" dy="0">excluido por el patrón</tspan></text>
+<text x="30" y="202" class="s" text-anchor="start"><tspan x="30" dy="0">300 filas por archivo, 1.200 filas en total</tspan></text>
+<text x="30" y="240" class="h" text-anchor="start" style="fill:#7a7a7a"><tspan x="30" dy="0">Evitar: apilar sin cuidado</tspan></text>
+<rect x="30" y="252" width="425" height="30" rx="4" fill="#ffffff" stroke="#ffffff" stroke-width="1.5"/>
+<text x="40.0" y="272" class="m" text-anchor="start" style="font-weight:700"><tspan x="40.0" dy="0">fecha</tspan></text>
+<text x="181.66666666666666" y="272" class="m" text-anchor="start" style="font-weight:700"><tspan x="181.66666666666666" dy="0">vlr_total</tspan></text>
+<text x="323.3333333333333" y="272" class="m" text-anchor="start" style="font-weight:700"><tspan x="323.3333333333333" dy="0">valor_total</tspan></text>
+<line x1="30" y1="312" x2="455" y2="312" stroke="#c4c4c4" stroke-width="1"/>
+<text x="40.0" y="304" class="m" text-anchor="start" style="fill:#1a1a1a"><tspan x="40.0" dy="0">2025-10-03</tspan></text>
+<text x="181.66666666666666" y="304" class="m" text-anchor="start" style="fill:#1a1a1a"><tspan x="181.66666666666666" dy="0">185400.50</tspan></text>
+<text x="323.3333333333333" y="304" class="m" text-anchor="start" style="fill:#7a7a7a;font-weight:700"><tspan x="323.3333333333333" dy="0">vacío</tspan></text>
+<line x1="30" y1="338" x2="455" y2="338" stroke="#c4c4c4" stroke-width="1"/>
+<text x="40.0" y="330" class="m" text-anchor="start" style="fill:#1a1a1a"><tspan x="40.0" dy="0">2025-12-28</tspan></text>
+<text x="181.66666666666666" y="330" class="m" text-anchor="start" style="fill:#1a1a1a"><tspan x="181.66666666666666" dy="0">92310.00</tspan></text>
+<text x="323.3333333333333" y="330" class="m" text-anchor="start" style="fill:#7a7a7a;font-weight:700"><tspan x="323.3333333333333" dy="0">vacío</tspan></text>
+<line x1="30" y1="364" x2="455" y2="364" stroke="#c4c4c4" stroke-width="1"/>
+<text x="40.0" y="356" class="m" text-anchor="start" style="fill:#1a1a1a"><tspan x="40.0" dy="0">2026-01-05</tspan></text>
+<text x="181.66666666666666" y="356" class="m" text-anchor="start" style="fill:#7a7a7a;font-weight:700"><tspan x="181.66666666666666" dy="0">vacío</tspan></text>
+<text x="323.3333333333333" y="356" class="m" text-anchor="start" style="fill:#1a1a1a"><tspan x="323.3333333333333" dy="0">410220.75</tspan></text>
+<line x1="30" y1="390" x2="455" y2="390" stroke="#c4c4c4" stroke-width="1"/>
+<text x="40.0" y="382" class="m" text-anchor="start" style="fill:#1a1a1a"><tspan x="40.0" dy="0">2026-01-19</tspan></text>
+<text x="181.66666666666666" y="382" class="m" text-anchor="start" style="fill:#7a7a7a;font-weight:700"><tspan x="181.66666666666666" dy="0">vacío</tspan></text>
+<text x="323.3333333333333" y="382" class="m" text-anchor="start" style="fill:#1a1a1a"><tspan x="323.3333333333333" dy="0">77015.20</tspan></text>
+<text x="30" y="416" class="s" text-anchor="start" style="fill:#7a7a7a;font-weight:700"><tspan x="30" dy="0">vlr_total queda con 300 vacíos y valor_total con 900.</tspan><tspan x="30" dy="18.2">Ningún error avisa que algo salió mal.</tspan></text>
+<text x="505" y="240" class="h" text-anchor="start" style="fill:#1a1a1a"><tspan x="505" dy="0">Recomendado: homologar y rastrear</tspan></text>
+<rect x="505" y="252" width="425" height="30" rx="4" fill="#d6d6d6" stroke="#d6d6d6" stroke-width="1.5"/>
+<text x="515.0" y="272" class="m" text-anchor="start" style="font-weight:700"><tspan x="515.0" dy="0">fecha</tspan></text>
+<text x="656.6666666666666" y="272" class="m" text-anchor="start" style="font-weight:700"><tspan x="656.6666666666666" dy="0">valor_total</tspan></text>
+<text x="798.3333333333333" y="272" class="m" text-anchor="start" style="font-weight:700"><tspan x="798.3333333333333" dy="0">archivo_origen</tspan></text>
+<line x1="505" y1="312" x2="930" y2="312" stroke="#c4c4c4" stroke-width="1"/>
+<text x="515.0" y="304" class="m" text-anchor="start" style="fill:#1a1a1a"><tspan x="515.0" dy="0">2025-10-03</tspan></text>
+<text x="656.6666666666666" y="304" class="m" text-anchor="start" style="fill:#1a1a1a"><tspan x="656.6666666666666" dy="0">185400.50</tspan></text>
+<text x="798.3333333333333" y="304" class="m" text-anchor="start" style="fill:#1a1a1a"><tspan x="798.3333333333333" dy="0">…2025_10.csv</tspan></text>
+<line x1="505" y1="338" x2="930" y2="338" stroke="#c4c4c4" stroke-width="1"/>
+<text x="515.0" y="330" class="m" text-anchor="start" style="fill:#1a1a1a"><tspan x="515.0" dy="0">2025-12-28</tspan></text>
+<text x="656.6666666666666" y="330" class="m" text-anchor="start" style="fill:#1a1a1a"><tspan x="656.6666666666666" dy="0">92310.00</tspan></text>
+<text x="798.3333333333333" y="330" class="m" text-anchor="start" style="fill:#1a1a1a"><tspan x="798.3333333333333" dy="0">…2025_12.csv</tspan></text>
+<line x1="505" y1="364" x2="930" y2="364" stroke="#c4c4c4" stroke-width="1"/>
+<text x="515.0" y="356" class="m" text-anchor="start" style="fill:#1a1a1a"><tspan x="515.0" dy="0">2026-01-05</tspan></text>
+<text x="656.6666666666666" y="356" class="m" text-anchor="start" style="fill:#1a1a1a"><tspan x="656.6666666666666" dy="0">410220.75</tspan></text>
+<text x="798.3333333333333" y="356" class="m" text-anchor="start" style="fill:#1a1a1a"><tspan x="798.3333333333333" dy="0">…2026_01.csv</tspan></text>
+<line x1="505" y1="390" x2="930" y2="390" stroke="#c4c4c4" stroke-width="1"/>
+<text x="515.0" y="382" class="m" text-anchor="start" style="fill:#1a1a1a"><tspan x="515.0" dy="0">2026-01-19</tspan></text>
+<text x="656.6666666666666" y="382" class="m" text-anchor="start" style="fill:#1a1a1a"><tspan x="656.6666666666666" dy="0">77015.20</tspan></text>
+<text x="798.3333333333333" y="382" class="m" text-anchor="start" style="fill:#1a1a1a"><tspan x="798.3333333333333" dy="0">…2026_01.csv</tspan></text>
+<text x="505" y="416" class="s" text-anchor="start" style="fill:#1a1a1a;font-weight:700"><tspan x="505" dy="0">Una sola columna de monto, sin vacíos inesperados,</tspan><tspan x="505" dy="18.2">y cada fila sabe de qué archivo vino.</tspan></text>
+<text x="30" y="466" class="s" text-anchor="start" style="fill:#555555"><tspan x="30" dy="0">Valores ilustrativos.</tspan></text>
+<metadata><c2pa:manifest>AAAWgmp1bWIAAAAeanVtZGMycGEAEQAQgAAAqgA4m3EDYzJwYQAAABZcanVtYgAAAEdqdW1kYzJtYQARABCAAACqADibcQN1cm46YzJwYTo4OTEyMTUwNS1kNDNkLTQwYTMtYTM4ZS0yNDdmNzc2NWViZjcAAAADl2p1bWIAAAApanVtZGMyYXMAEQAQgAAAqgA4m3EDYzJwYS5hc3NlcnRpb25zAAAAALxqdW1iAAAARGp1bWRjYm9yABEAEIAAAKoAOJtxE2MycGEuaW5ncmVkaWVudC52MwAAAAAYYzJzaD/UReg4c44VPbx+ytbFIz8AAABwY2JvcqNpZGM6Zm9ybWF0bWltYWdlL3N2Zyt4bWxqaW5zdGFuY2VJRHgseG1wOmlpZDpiNjQxNmY0Yy0wZjk5LTQ5NzEtOTc4Mi0yNjA3YTg5YTQ0ZTRscmVsYXRpb25zaGlwaHBhcmVudE9mAAAB4mp1bWIAAABBanVtZGNib3IAEQAQgAAAqgA4m3ETYzJwYS5hY3Rpb25zLnYyAAAAABhjMnNoY3sLNutW2Sd6a3oj1vfxewAAAZljYm9yomdhY3Rpb25zgqJmYWN0aW9ua2MycGEub3BlbmVkanBhcmFtZXRlcnOha2luZ3JlZGllbnRzgaJjdXJseC1zZWxmI2p1bWJmPWMycGEuYXNzZXJ0aW9ucy9jMnBhLmluZ3JlZGllbnQudjNkaGFzaFggGkRTmunNPvXJ7pW3YwUlvrNrQ85brZpqINmszhF7a5OkZmFjdGlvbngdY29tLmFudGhyb3BpYy5jbGF1ZGUucHJvdmlkZWRqcGFyYW1ldGVyc6F4H2NvbS5hbnRocm9waWMub3JpZ2luLWNvbmZpZGVuY2VndW5rbm93bmtkZXNjcmlwdGlvbnhmQ2xhdWRlIHByb3ZpZGVkIHRoaXMgZmlsZSBhdCB0aGUgcmVxdWVzdCBvZiBhIHVzZXIgYW5kIG1heSBoYXZlIGNyZWF0ZWQgb3IgbW9kaWZpZWQgdGhlIGZpbGUgY29udGVudHMubXNvZnR3YXJlQWdlbnShZG5hbWVmQ2xhdWRlcmFsbEFjdGlvbnNJbmNsdWRlZPUAAADIanVtYgAAAEBqdW1kY2JvcgARABCAAACqADibcRNjMnBhLmhhc2guZGF0YQAAAAAYYzJzaOJyV3iDTH9AzyboUVQ45P0AAACAY2JvcqVjYWxnZnNoYTI1NmNwYWRMAAAAAAAAAAAAAAAAZGhhc2hYIC2jrFGB1NNyx/mq3w+C9mnRqUyVMkXtqFPm25nLUn7jZG5hbWVuanVtYmYgbWFuaWZlc3RqZXhjbHVzaW9uc4GiZXN0YXJ0GSunZmxlbmd0aBkeBAAAAj5qdW1iAAAAJ2p1bWRjMmNsABEAEIAAAKoAOJtxA2MycGEuY2xhaW0udjIAAAACD2Nib3KlY2FsZ2ZzaGEyNTZpc2lnbmF0dXJleE1zZWxmI2p1bWJmPS9jMnBhL3VybjpjMnBhOjg5MTIxNTA1LWQ0M2QtNDBhMy1hMzhlLTI0N2Y3NzY1ZWJmNy9jMnBhLnNpZ25hdHVyZWppbnN0YW5jZUlEeCx4bXA6aWlkOjA1MmI4ZTBmLTgyMTItNDRiNi04NzI5LTc3NjQ2OWZhYjBhNnJjcmVhdGVkX2Fzc2VydGlvbnODomN1cmx4LXNlbGYjanVtYmY9YzJwYS5hc3NlcnRpb25zL2MycGEuaW5ncmVkaWVudC52M2RoYXNoWCAaRFOa6c0+9cnulbdjBSW+s2tDzlutmmog2azOEXtrk6JjdXJseCpzZWxmI2p1bWJmPWMycGEuYXNzZXJ0aW9ucy9jMnBhLmFjdGlvbnMudjJkaGFzaFggZq7GOw9YmyFpwSvj+KHnOlQazRlbt7Z5AcRz7mTzoBSiY3VybHgpc2VsZiNqdW1iZj1jMnBhLmFzc2VydGlvbnMvYzJwYS5oYXNoLmRhdGFkaGFzaFggLQ6o0PZlQo4YZDQyp0dlxr7BeTpYP/y9Qr56JtHuEuh0Y2xhaW1fZ2VuZXJhdG9yX2luZm+jZG5hbWVvQW50aHJvcGljIEZpbGVzZ3ZlcnNpb25lMS4wLjBrc3BlY1ZlcnNpb25lMi40LjAAABA4anVtYgAAAChqdW1kYzJjcwARABCAAACqADibcQNjMnBhLnNpZ25hdHVyZQAAABAIY2JvctKEWQISogEmGCFZAgowggIGMIIBjaADAgECAhRA5aAK7sI50L64g/oGQgU9Z1UTADAKBggqhkjOPQQDAzBJMRcwFQYDVQQKEw5BbnRocm9waWMsIFBCQzEuMCwGA1UEAxMlQW50aHJvcGljIENvbnRlbnQgQ3JlZGVudGlhbHMgUm9vdCBDQTAeFw0yNjA4MDcxODQzNTZaFw0yODA4MDYxOTQzNTZaMEQxFzAVBgNVBAoTDkFudGhyb3BpYywgUEJDMSkwJwYDVQQDEyBBbnRocm9waWMgQ2xhdWRlIENvbnRlbnQgU2lnbmluZzBZMBMGByqGSM49AgEGCCqGSM49AwEHA0IABJh6CmvLUBgFFNU0vUKlOVtE6djd17L5SuwX0LemFisBM3dkd/3cyjxFA3Qo5S46fX0/ihY0VZ7mfb9KF703t5OjWDBWMA4GA1UdDwEB/wQEAwIHgDAVBgNVHSUEDjAMBgorBgEEAYPoXgIBMAwGA1UdEwEB/wQCMAAwHwYDVR0jBBgwFoAUzlHiBIFOZFsj+OPEz5o+nMHXXMIwCgYIKoZIzj0EAwMDZwAwZAIwMXMdFJ4BetLLVY7ORuE9noqbbAZOZn/aArXyTwFAZfKrPzxF2vPoJNf1+UCdg1XGAjBwX1zd9WGqYkqmL5SFqw1QySjr1zJfpJM9+1rdDwSPLMOPOjKuiXjoU/pUUeG9RwmhY3BhZFkNngAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAPZYQNxNHtzPhEVMGt9fJJtoRsc+i1mZkEC159b3qxgj8MBasCdzPpEU0SLd0T7d8VMBZVNfPRfK9LwmMGVhnBSyuj4=</c2pa:manifest></metadata></svg>

@@ -1,40 +1,78 @@
-# Cómo usar este libro
+# Introducción
 
-## Qué aprenderás
+## Estructura del libro
 
-Este libro enseña conceptos y prácticas para importar, organizar, analizar y comunicar datos. R será el lenguaje principal de los ejemplos; Python aparecerá en pestañas paralelas para comparar soluciones.
+El libro avanza desde la preparación del entorno hasta la publicación y el mantenimiento de los análisis. Los capítulos se agrupan en cinco partes que siguen el recorrido de un análisis: **Punto de partida** (capítulos 1 y 2), **Obtener los datos** (3 y 4), **Preparar y guardar los datos** (5 a 8), **Analizar y programar** (9 a 11) y **Automatizar, comunicar y mantener** (12 a 14). Los conceptos se explican de forma general; R será el lenguaje principal y Python aparecerá en pestañas para comparar implementaciones. SQL se usará para consultas y vistas, y PowerShell para automatizar tareas.
 
-## Cómo están organizados los ejemplos
+2. **Fundamentos y preparación del entorno**  
+   Uso de la terminal, archivos y carpetas; instalación y manejo de paquetes; entornos de trabajo, versiones y organización de proyectos.
 
-Las explicaciones presentan primero la idea general. Cuando el concepto se implementa de manera distinta, encontrarás ejemplos en pestañas para R y Python. SQL aparecerá en consultas y vistas; PowerShell, en tareas de automatización.
+3. **Importación de datos I: el contrato de lectura**  
+   Por qué la importación condiciona la memoria, la velocidad y la reproducibilidad del análisis; herramientas en R, Python y DuckDB; codificación, delimitadores, tipos de columna y selección temprana de columnas; lectura de múltiples archivos con patrones y control de la deriva de esquema.
 
-## Materiales y preguntas
+4. **Importación de datos II: formatos y fuentes**  
+   Lectura de Excel, Parquet y JSON; consumo de APIs; consultas a bases de datos delegando el trabajo al motor; criterios para elegir formato y un proyecto que integra cuatro fuentes en un archivo Parquet.
 
-Los archivos de práctica, datos de ejemplo y otros materiales complementarios estarán disponibles en el repositorio de GitHub del libro. Allí también podrás reportar errores o hacer preguntas creando un *issue*.
+5. **Tipos de datos y calidad**  
+   Manejo de fechas, texto y números; identificación de valores faltantes, duplicados y errores de formato; aplicación de validaciones.
 
-Al abrir un *issue*, describe qué estabas intentando hacer, qué resultado esperabas y qué ocurrió. Si el problema incluye código o un mensaje de error, añádelo para facilitar su revisión.
+6. **Transformación y limpieza**  
+   Filtrado y ordenamiento, agrupación y unión de tablas, cambio de formatos, conversión de datos anidados (como los de JSON y APIs) en tablas y creación de variables derivadas. Se aplicarán expresiones regulares cuando ayuden a limpiar o extraer información de texto.
 
-## Una forma de estudiar
+7. **Estructuras, formatos y almacenamiento**  
+   Uso de listas, diccionarios, data frames y tablas de bases de datos, incluyendo datos anidados. Se compararán CSV, Excel, JSON, Parquet y bases de datos para elegir dónde almacenar la información según el caso.
 
-Para cada tema:
+8. **Exportación de datos**  
+   Escritura de resultados en archivos (CSV, Excel, JSON, Parquet), bases de datos y servicios de almacenamiento en la nube, teniendo en cuenta el volumen, el formato y el destino.
 
-1. Lee la explicación y trata de anticipar el resultado del ejemplo.
-2. Ejecuta el código y compáralo con tu predicción.
-3. Modifica el ejemplo para responder una pregunta propia.
-4. Revisa alternativas y rendimiento después de comprender la solución básica.
-5. Completa los ejercicios antes de consultar sus soluciones.
+9. **Estadística descriptiva, exploración y gráficos**  
+   Exploración de distribuciones, medidas resumen y correlaciones; elección y diseño de gráficos; uso de escalas, colores y etiquetas; reconocimiento de errores comunes de interpretación.
 
-## Uso de inteligencia artificial
+10. **Funciones personalizadas**  
+    Creación de funciones reutilizables, documentación de sus entradas y salidas, y comparación de alternativas en R y Python.
 
-La IA puede ayudarte a aclarar conceptos, interpretar errores o comparar enfoques. Primero intenta resolver cada ejercicio por tu cuenta. Después, verifica las sugerencias ejecutando el código y explicando qué hace cada parte.
+11. **Flujos reproducibles y depuración**  
+    Organización de análisis que puedan repetirse; lectura de mensajes de error, registro de eventos y diseño de procesos que puedan recuperarse ante fallos.
 
-## Convenciones del libro
+12. **Automatización y programación de tareas**  
+    Automatización de análisis y tareas recurrentes, como la consulta periódica de APIs, con R, Python y PowerShell. Se considerará cuándo priorizar la claridad y cuándo el rendimiento.
 
-- Los ejemplos usarán datos pequeños para explicar los conceptos antes de pasar a casos de mayor tamaño.
-- Las rutas y los archivos se construirán de forma reproducible dentro del proyecto.
-- Los paquetes necesarios se indicarán junto con cada ejemplo.
-- Las soluciones priorizarán claridad; las alternativas más rápidas se discutirán cuando aporten una ventaja concreta.
+13. **Reportes reproducibles y comunicación**  
+    Generación de documentos y presentaciones desde código, mostrando con claridad los resultados, las fuentes y los supuestos del análisis.
 
-## Requisitos iniciales
+14. **Pruebas, seguridad, publicación y mantenimiento**  
+    Verificación de resultados y casos límite; protección de credenciales, claves de API y datos sensibles; uso responsable del web scraping; publicación de los análisis y mantenimiento de los procesos a lo largo del tiempo.
 
-Necesitarás Positron, Quarto y una instalación de R. Para ejecutar los ejemplos en Python, también necesitarás Python y los paquetes que se indiquen en cada capítulo.
+## Objetivos de aprendizaje
+
+Al avanzar por el libro, aprenderás a:
+
+- importar y exportar datos en formatos y volúmenes distintos, incluidos archivos, páginas web y APIs;
+- elegir estructuras adecuadas para representar y almacenar datos;
+- limpiar, transformar y explorar conjuntos de datos;
+- crear gráficos que comuniquen los resultados con claridad;
+- escribir funciones y organizar análisis reproducibles;
+- automatizar tareas y generar reportes;
+- comparar soluciones en R y Python, considerando claridad y rendimiento.
+
+## Ritmo de estudio
+
+El libro está pensado para avanzar en sesiones de aproximadamente dos horas. Puedes dedicar una parte de cada sesión a estudiar los conceptos y seguir los ejemplos, y otra parte a practicar modificando el código o resolviendo ejercicios.
+
+No es necesario completar un capítulo en una sola sesión. Es más útil avanzar a un ritmo que permita explicar con tus propias palabras qué hace cada paso y por qué.
+
+## Ruta de trabajo sugerida
+
+1. Lee la explicación antes de ejecutar el código.
+2. Predice qué resultado producirá el ejemplo.
+3. Ejecuta el código y contrasta el resultado con tu predicción.
+4. Modifica el ejemplo para responder otra pregunta.
+5. Resuelve los ejercicios sin consultar una solución de inmediato.
+6. Revisa alternativas y rendimiento cuando ya comprendas la solución básica.
+7. Anota dudas o errores que puedan ayudar a mejorar el libro; puedes compartirlos como *issues* en el [repositorio del libro en GitHub](https://github.com/romu545/codigo-datos-criterio/issues).
+
+## Uso de inteligencia artificial durante el aprendizaje
+
+La inteligencia artificial puede servir para aclarar conceptos, interpretar mensajes de error o comparar enfoques. Para fortalecer el aprendizaje, intenta primero resolver cada ejercicio por tu cuenta. Después, verifica las sugerencias ejecutando el código y explicando qué hace cada parte.
+
+No des por correcta una respuesta solo porque el código se ejecuta: comprueba que el resultado tenga sentido y responda la pregunta planteada.

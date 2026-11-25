@@ -1,0 +1,90 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 380" width="960" height="380" role="img" aria-labelledby="titulo desc">
+<title id="titulo">Anidar, calcular y desanidar</title>
+<desc id="desc">A la izquierda, una tabla larga con las ventas diarias de varias sucursales. nest la convierte en una tabla con una fila por sucursal y una columna data en la que cada celda guarda la tabla de esa sucursal. Con mutate y map se agrega una columna modelo, con un modelo por sucursal, y con map_dbl una columna pendiente, con un número por sucursal. unnest hace el camino inverso y devuelve las filas originales. Al pie: cuando el cálculo necesita el grupo completo y no cabe en un resumen, se anida, se calcula con map y, si hace falta, se desanida.</desc>
+<style>
+  text{font-family:"Source Sans 3","Source Sans Pro","Segoe UI",Helvetica,Arial,sans-serif;fill:#1a1a1a}
+  .h{font-size:17px;font-weight:700}
+  .b{font-size:15.5px}
+  .s{font-size:14px;fill:#3d3d3d}
+  .m{font-family:"Source Code Pro",Consolas,"DejaVu Sans Mono",monospace;font-size:12.5px}
+  .c{font-family:"Source Code Pro",Consolas,"DejaVu Sans Mono",monospace;font-size:12px}
+</style>
+<defs>
+  <marker id="fl" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#1a1a1a"/></marker>
+</defs>
+<rect x="0" y="0" width="960" height="380" fill="#ffffff"/>
+
+<text x="30" y="40" class="h">Tabla larga</text>
+<rect x="30" y="56" width="60" height="24" fill="#1a1a1a" stroke="#8a8a8a" stroke-width="1"/>
+<text x="60" y="73" class="c" text-anchor="middle" style="fill:#ffffff">suc.</text>
+<rect x="90" y="56" width="70" height="24" fill="#1a1a1a" stroke="#8a8a8a" stroke-width="1"/>
+<text x="125" y="73" class="c" text-anchor="middle" style="fill:#ffffff">fecha</text>
+<rect x="160" y="56" width="50" height="24" fill="#1a1a1a" stroke="#8a8a8a" stroke-width="1"/>
+<text x="185" y="73" class="c" text-anchor="middle" style="fill:#ffffff">valor</text>
+<g class="c">
+<rect x="30" y="80" width="60" height="24" fill="#ffffff" stroke="#8a8a8a"/><text x="60" y="97" class="c" text-anchor="middle">S01</text>
+<rect x="90" y="80" width="70" height="24" fill="#ffffff" stroke="#8a8a8a"/><text x="125" y="97" class="c" text-anchor="middle">01-02</text>
+<rect x="160" y="80" width="50" height="24" fill="#ffffff" stroke="#8a8a8a"/><text x="185" y="97" class="c" text-anchor="middle">2,1</text>
+<rect x="30" y="104" width="60" height="24" fill="#ffffff" stroke="#8a8a8a"/><text x="60" y="121" class="c" text-anchor="middle">S01</text>
+<rect x="90" y="104" width="70" height="24" fill="#ffffff" stroke="#8a8a8a"/><text x="125" y="121" class="c" text-anchor="middle">01-03</text>
+<rect x="160" y="104" width="50" height="24" fill="#ffffff" stroke="#8a8a8a"/><text x="185" y="121" class="c" text-anchor="middle">2,6</text>
+<rect x="30" y="128" width="60" height="24" fill="#ffffff" stroke="#8a8a8a"/><text x="60" y="145" class="c" text-anchor="middle">...</text>
+<rect x="90" y="128" width="70" height="24" fill="#ffffff" stroke="#8a8a8a"/><text x="125" y="145" class="c" text-anchor="middle">...</text>
+<rect x="160" y="128" width="50" height="24" fill="#ffffff" stroke="#8a8a8a"/><text x="185" y="145" class="c" text-anchor="middle">...</text>
+<rect x="30" y="152" width="60" height="24" fill="#d9d9d9" stroke="#8a8a8a"/><text x="60" y="169" class="c" text-anchor="middle">S02</text>
+<rect x="90" y="152" width="70" height="24" fill="#d9d9d9" stroke="#8a8a8a"/><text x="125" y="169" class="c" text-anchor="middle">01-02</text>
+<rect x="160" y="152" width="50" height="24" fill="#d9d9d9" stroke="#8a8a8a"/><text x="185" y="169" class="c" text-anchor="middle">1,9</text>
+<rect x="30" y="176" width="60" height="24" fill="#d9d9d9" stroke="#8a8a8a"/><text x="60" y="193" class="c" text-anchor="middle">S02</text>
+<rect x="90" y="176" width="70" height="24" fill="#d9d9d9" stroke="#8a8a8a"/><text x="125" y="193" class="c" text-anchor="middle">01-03</text>
+<rect x="160" y="176" width="50" height="24" fill="#d9d9d9" stroke="#8a8a8a"/><text x="185" y="193" class="c" text-anchor="middle">2,4</text>
+</g>
+<text x="30" y="226" class="s">una fila por sucursal y día</text>
+
+<line x1="218" y1="128" x2="292" y2="128" stroke="#1a1a1a" stroke-width="2" marker-end="url(#fl)"/>
+<text x="255" y="118" class="c" text-anchor="middle">nest()</text>
+
+<text x="300" y="40" class="h">Una fila por grupo</text>
+<rect x="300" y="56" width="60" height="24" fill="#1a1a1a" stroke="#8a8a8a" stroke-width="1"/>
+<text x="330" y="73" class="c" text-anchor="middle" style="fill:#ffffff">suc.</text>
+<rect x="360" y="56" width="130" height="24" fill="#1a1a1a" stroke="#8a8a8a" stroke-width="1"/>
+<text x="425" y="73" class="c" text-anchor="middle" style="fill:#ffffff">data</text>
+<rect x="300" y="80" width="60" height="24" fill="#ffffff" stroke="#8a8a8a"/><text x="330" y="97" class="c" text-anchor="middle">S01</text>
+<rect x="360" y="80" width="130" height="24" fill="#ffffff" stroke="#8a8a8a"/><text x="425" y="97" class="c" text-anchor="middle">tabla 89 × 2</text>
+<rect x="300" y="104" width="60" height="24" fill="#d9d9d9" stroke="#8a8a8a"/><text x="330" y="121" class="c" text-anchor="middle">S02</text>
+<rect x="360" y="104" width="130" height="24" fill="#d9d9d9" stroke="#8a8a8a"/><text x="425" y="121" class="c" text-anchor="middle">tabla 89 × 2</text>
+<rect x="300" y="128" width="60" height="24" fill="#ffffff" stroke="#8a8a8a"/><text x="330" y="145" class="c" text-anchor="middle">...</text>
+<rect x="360" y="128" width="130" height="24" fill="#ffffff" stroke="#8a8a8a"/><text x="425" y="145" class="c" text-anchor="middle">...</text>
+<text x="300" y="178" class="s">cada celda de data guarda</text>
+<text x="300" y="196" class="s">la tabla de su sucursal</text>
+
+<line x1="498" y1="104" x2="572" y2="104" stroke="#1a1a1a" stroke-width="2" marker-end="url(#fl)"/>
+<text x="535" y="94" class="c" text-anchor="middle">map()</text>
+
+<text x="580" y="40" class="h">Un cálculo por grupo</text>
+<rect x="580" y="56" width="60" height="24" fill="#1a1a1a" stroke="#8a8a8a" stroke-width="1"/>
+<text x="610" y="73" class="c" text-anchor="middle" style="fill:#ffffff">suc.</text>
+<rect x="640" y="56" width="70" height="24" fill="#1a1a1a" stroke="#8a8a8a" stroke-width="1"/>
+<text x="675" y="73" class="c" text-anchor="middle" style="fill:#ffffff">data</text>
+<rect x="710" y="56" width="90" height="24" fill="#1a1a1a" stroke="#8a8a8a" stroke-width="1"/>
+<text x="755" y="73" class="c" text-anchor="middle" style="fill:#ffffff">modelo</text>
+<rect x="800" y="56" width="110" height="24" fill="#1a1a1a" stroke="#8a8a8a" stroke-width="1"/>
+<text x="855" y="73" class="c" text-anchor="middle" style="fill:#ffffff">pendiente</text>
+<rect x="580" y="80" width="60" height="24" fill="#ffffff" stroke="#8a8a8a"/><text x="610" y="97" class="c" text-anchor="middle">S01</text>
+<rect x="640" y="80" width="70" height="24" fill="#ffffff" stroke="#8a8a8a"/><text x="675" y="97" class="c" text-anchor="middle">tabla</text>
+<rect x="710" y="80" width="90" height="24" fill="#ffffff" stroke="#8a8a8a"/><text x="755" y="97" class="c" text-anchor="middle">lm</text>
+<rect x="800" y="80" width="110" height="24" fill="#ffffff" stroke="#8a8a8a"/><text x="855" y="97" class="c" text-anchor="middle">-0,003</text>
+<rect x="580" y="104" width="60" height="24" fill="#d9d9d9" stroke="#8a8a8a"/><text x="610" y="121" class="c" text-anchor="middle">S02</text>
+<rect x="640" y="104" width="70" height="24" fill="#d9d9d9" stroke="#8a8a8a"/><text x="675" y="121" class="c" text-anchor="middle">tabla</text>
+<rect x="710" y="104" width="90" height="24" fill="#d9d9d9" stroke="#8a8a8a"/><text x="755" y="121" class="c" text-anchor="middle">lm</text>
+<rect x="800" y="104" width="110" height="24" fill="#d9d9d9" stroke="#8a8a8a"/><text x="855" y="121" class="c" text-anchor="middle">-0,002</text>
+<text x="580" y="160" class="m" style="fill:#3d3d3d">modelo = map(data, ajustar)</text>
+<text x="580" y="180" class="m" style="fill:#3d3d3d">pendiente = map_dbl(modelo, extraer)</text>
+<text x="580" y="204" class="s">map() guarda objetos; map_dbl() guarda</text>
+<text x="580" y="222" class="s">un número por grupo</text>
+
+<path d="M 395 206 L 395 262 L 120 262 L 120 238" fill="none" stroke="#1a1a1a" stroke-width="2" marker-end="url(#fl)"/>
+<text x="258" y="282" class="c" text-anchor="middle">unnest(): de vuelta a la tabla larga</text>
+
+<rect x="30" y="314" width="900" height="44" rx="8" fill="#1a1a1a"/>
+<text x="480" y="341" class="b" text-anchor="middle" style="fill:#ffffff;font-weight:700">Si el cálculo necesita el grupo completo y no cabe en un resumen: anidar, calcular con map y desanidar.</text>
+</svg>

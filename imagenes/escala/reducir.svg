@@ -1,0 +1,58 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 442" width="960" height="442" role="img" aria-labelledby="titulo desc">
+<title id="titulo">Reducir y acumular una lista de tablas</title>
+<desc id="desc">Arriba, reducir: la tabla de ventas es el valor inicial y se une, una tras otra, con devoluciones, recaudos y visitas, hasta dar el tablero. Abajo, acumular: se guarda cada resultado intermedio y se cuenta sus filas, 24, 25, 25 y 25. El salto de 24 a 25 en el primer paso señala la tabla con la clave repetida, devoluciones. Al pie: reducir encadena la misma operación sobre una lista; acumular deja ver en qué paso cambió algo.</desc>
+<style>
+  text{font-family:"Source Sans 3","Source Sans Pro","Segoe UI",Helvetica,Arial,sans-serif;fill:#1a1a1a}
+  .h{font-size:17px;font-weight:700}
+  .b{font-size:15.5px}
+  .s{font-size:14px;fill:#3d3d3d}
+  .m{font-family:"Source Code Pro",Consolas,"DejaVu Sans Mono",monospace;font-size:12.5px}
+  .c{font-family:"Source Code Pro",Consolas,"DejaVu Sans Mono",monospace;font-size:12px}
+</style>
+<defs>
+  <marker id="fl" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#1a1a1a"/></marker>
+</defs>
+<rect x="0" y="0" width="960" height="442" fill="#ffffff"/>
+
+<rect x="30" y="20" width="900" height="200" rx="10" fill="#ffffff" stroke="#1a1a1a" stroke-width="1.6"/>
+<text x="46" y="48" class="h">Reducir: la misma unión, encadenada</text>
+<text x="46" y="68" class="m" style="fill:#3d3d3d">reduce(otras, unir, .init = ventas_mes)</text>
+<text x="520" y="68" class="m" style="fill:#3d3d3d">functools.reduce(unir, otras, base)</text>
+
+<rect x="50" y="110" width="150" height="50" rx="6" fill="#1a1a1a"/>
+<text x="125" y="132" class="c" text-anchor="middle" style="fill:#ffffff">ventas_mes</text>
+<text x="125" y="150" class="s" text-anchor="middle" style="fill:#ffffff;font-size:12.5px">valor inicial</text>
+
+<rect x="300" y="110" width="150" height="50" rx="6" fill="#ffffff" stroke="#1a1a1a" stroke-width="1.4"/>
+<text x="375" y="140" class="b" text-anchor="middle">resultado 1</text>
+<rect x="550" y="110" width="150" height="50" rx="6" fill="#ffffff" stroke="#1a1a1a" stroke-width="1.4"/>
+<text x="625" y="140" class="b" text-anchor="middle">resultado 2</text>
+<rect x="800" y="110" width="110" height="50" rx="6" fill="#ffffff" stroke="#1a1a1a" stroke-width="1.4"/>
+<text x="855" y="140" class="b" text-anchor="middle">tablero</text>
+
+<line x1="204" y1="135" x2="294" y2="135" stroke="#1a1a1a" stroke-width="2" marker-end="url(#fl)"/>
+<text x="250" y="102" class="c" text-anchor="middle">unir con</text>
+<text x="250" y="186" class="c" text-anchor="middle">devoluciones</text>
+<line x1="454" y1="135" x2="544" y2="135" stroke="#1a1a1a" stroke-width="2" marker-end="url(#fl)"/>
+<text x="500" y="102" class="c" text-anchor="middle">unir con</text>
+<text x="500" y="186" class="c" text-anchor="middle">recaudos</text>
+<line x1="704" y1="135" x2="794" y2="135" stroke="#1a1a1a" stroke-width="2" marker-end="url(#fl)"/>
+<text x="750" y="102" class="c" text-anchor="middle">unir con</text>
+<text x="750" y="186" class="c" text-anchor="middle">visitas</text>
+
+<rect x="30" y="236" width="900" height="134" rx="10" fill="#ffffff" stroke="#1a1a1a" stroke-width="1.6"/>
+<text x="46" y="264" class="h">Acumular: guardar cada paso y contar sus filas</text>
+<text x="46" y="284" class="m" style="fill:#3d3d3d">accumulate(otras, unir, .init = ventas_mes) |&gt; map_int(nrow)</text>
+<rect x="75" y="298" width="100" height="32" rx="4" fill="#ffffff" stroke="#8a8a8a" stroke-width="1"/>
+<text x="125" y="319" class="c" text-anchor="middle">24 filas</text>
+<rect x="325" y="298" width="100" height="32" rx="4" fill="#1a1a1a"/>
+<text x="375" y="319" class="c" text-anchor="middle" style="fill:#ffffff">25 filas</text>
+<rect x="575" y="298" width="100" height="32" rx="4" fill="#ffffff" stroke="#8a8a8a" stroke-width="1"/>
+<text x="625" y="319" class="c" text-anchor="middle">25 filas</text>
+<rect x="805" y="298" width="100" height="32" rx="4" fill="#ffffff" stroke="#8a8a8a" stroke-width="1"/>
+<text x="855" y="319" class="c" text-anchor="middle">25 filas</text>
+<text x="325" y="356" class="s">el salto de 24 a 25 señala la clave repetida en devoluciones</text>
+
+<rect x="30" y="384" width="900" height="44" rx="8" fill="#1a1a1a"/>
+<text x="480" y="411" class="b" text-anchor="middle" style="fill:#ffffff;font-weight:700">Reducir encadena la misma operación sobre una lista; acumular deja ver en qué paso cambió algo.</text>
+</svg>

@@ -987,7 +987,7 @@ Con este capítulo termina la preparación de los datos. La cartera pasó por to
 
 Las técnicas del capítulo sirven para cualquier tabla: normalizar texto, usar expresiones regulares para detectar, extraer y reemplazar, estandarizar categorías con una clave normalizada y la frecuencia de cada variante, consolidar registros duplicados con una regla por columna, completar faltantes solo desde una referencia y tratar distinto un valor imposible de uno atípico. Y el principio que las une: cada corrección es una regla que se puede explicar y repetir.
 
-El siguiente capítulo se ocupa de qué hacer con la tabla limpia: cómo guardarla, en qué formato y con qué estructura, para que el trabajo de estos capítulos no se tenga que repetir.
+Hasta aquí, cada técnica se aplicó una vez: a una tabla, a una columna, a una unión. En el siguiente capítulo, Transformación y limpieza III, veremos qué hacer cuando la misma operación se repite sobre muchas columnas, muchas tablas o muchos grupos, cómo unir tablas por rangos de fechas o de valores y cuándo un bucle es la mejor herramienta.
 
 ```{r}
 #| label: cerrar-conexion-cap08

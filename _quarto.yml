@@ -40,8 +40,8 @@ book:
         - 06-tipos-de-datos-y-calidad.qmd
         - 07-transformacion-y-ordenado.qmd
         - 08-limpieza-de-datos.qmd
- #      - 09-estructuras-formatos-y-almacenamiento.qmd
- #      - 10-exportacion-de-datos.qmd
+        - 09-transformar-a-escala.qmd
+        - 10-guardar-y-compartir-datos.qmd
  #  - part: "Analizar y programar"
  #    chapters:
  #      - 11-estadistica-descriptiva-exploracion-y-graficos.qmd
@@ -52,7 +52,7 @@ book:
  #      - 14-automatizacion-y-programacion-de-tareas.qmd
  #      - 15-reportes-reproducibles-y-comunicacion.qmd
  #      - 16-pruebas-seguridad-publicacion-y-mantenimiento.qmd
- #  - references.qmd
+    - references.qmd
 
   page-footer:
     left: "© 2026 Rafael Mendoza. Texto bajo licencia [CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/deed.es)."

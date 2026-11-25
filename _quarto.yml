@@ -38,19 +38,20 @@ book:
     - part: "Preparar y guardar los datos"
       chapters:
         - 06-tipos-de-datos-y-calidad.qmd
- #      - 07-transformacion-y-limpieza.qmd
- #      - 08-estructuras-formatos-y-almacenamiento.qmd
- #      - 09-exportacion-de-datos.qmd
+        - 07-transformacion-y-ordenado.qmd
+        - 08-limpieza-de-datos.qmd
+ #      - 09-estructuras-formatos-y-almacenamiento.qmd
+ #      - 10-exportacion-de-datos.qmd
  #  - part: "Analizar y programar"
  #    chapters:
- #      - 10-estadistica-descriptiva-exploracion-y-graficos.qmd
- #      - 11-funciones-personalizadas.qmd
- #      - 12-flujos-reproducibles-y-depuracion.qmd
+ #      - 11-estadistica-descriptiva-exploracion-y-graficos.qmd
+ #      - 12-funciones-personalizadas.qmd
+ #      - 13-flujos-reproducibles-y-depuracion.qmd
  #  - part: "Automatizar, comunicar y mantener"
  #    chapters:
- #      - 13-automatizacion-y-programacion-de-tareas.qmd
- #      - 14-reportes-reproducibles-y-comunicacion.qmd
- #      - 15-pruebas-seguridad-publicacion-y-mantenimiento.qmd
+ #      - 14-automatizacion-y-programacion-de-tareas.qmd
+ #      - 15-reportes-reproducibles-y-comunicacion.qmd
+ #      - 16-pruebas-seguridad-publicacion-y-mantenimiento.qmd
  #  - references.qmd
 
   page-footer:

@@ -4,7 +4,7 @@ Con el @sec-limpieza-temprana terminamos la importación: la cartera de febrero 
 
 Lo haremos con dos preguntas. La primera es **qué clase de valor guarda cada columna**: el tipo de dato. Ya elegimos tipos al leer, pero ahora veremos qué consecuencias tiene esa elección: qué pasa cuando se mezclan tipos, por qué un número decimal no siempre es exacto, por qué un NIT no debe ser un número y cuándo conviene una categoría en lugar de un texto. La segunda pregunta es **si lo que dice cada columna es cierto**, o al menos posible: la calidad de los datos. Una fecha de pago anterior a la emisión es una fecha perfectamente válida como tipo y un error como dato.
 
-La regla del capítulo es **medir antes de corregir**. Aquí vamos a perfilar la tabla, escribir reglas de calidad, contar cuántas filas falla cada una y marcar cada fila con sus problemas. Corregir es el tema del siguiente capítulo, y se hace mejor cuando se sabe exactamente qué está mal, cuántas veces y con qué gravedad.
+La regla del capítulo es **medir antes de corregir**. Aquí vamos a perfilar la tabla, escribir reglas de calidad, contar cuántas filas falla cada una y marcar cada fila con sus problemas. Corregir es el tema del @sec-limpiar, después de reunir en el @sec-transformar las herramientas para hacerlo, y se hace mejor cuando se sabe exactamente qué está mal, cuántas veces y con qué gravedad.
 
 Seguimos con la misma red regional de distribución, ahora con la cartera completa del primer trimestre de 2026. Los archivos están en la carpeta `datos/cap06/` del repositorio de materiales. Como los anteriores, el capítulo está pensado para una sesión de unas dos horas.
 
@@ -339,7 +339,7 @@ fuera <- is.na(ciudad) & !is.na(cartera$ciudad)
 count(cartera[fuera, ], ciudad)
 ```
 
-`factor()` convierte en `NA`, sin aviso, todo valor que no esté entre los niveles. Por eso comparamos los faltantes antes y después: las 11 filas que eran texto y ahora son `NA` son las que no coinciden con el catálogo. Son variantes de Bogotá y una Cali con un espacio al inicio, el tipo de inconsistencia que se corrige en el siguiente capítulo.
+`factor()` convierte en `NA`, sin aviso, todo valor que no esté entre los niveles. Por eso comparamos los faltantes antes y después: las 11 filas que eran texto y ahora son `NA` son las que no coinciden con el catálogo. Son variantes de Bogotá y una Cali con un espacio al inicio, el tipo de inconsistencia que se corrige en el @sec-limpiar.
 
 ### Python
 
@@ -422,7 +422,7 @@ Falta una dimensión, la más importante y la más difícil: la **exactitud**. Q
 
 El trabajo sigue cuatro pasos (@fig-flujo-auditoria): perfilar la tabla, escribir las reglas, generar el reporte y decidir qué hacer con cada problema.
 
-![El flujo de una auditoría de calidad. Este capítulo cubre el perfil, las reglas y el reporte; la corrección es el tema del siguiente.](imagenes/calidad/flujo-auditoria.svg){#fig-flujo-auditoria fig-alt="Cuatro cajas en fila: la tabla bien leída del contrato del Capítulo 5, el perfil con un resumen por columna, las reglas que cada fila debe cumplir con su dimensión y severidad, y el reporte con las filas que fallan en cada regla y cada fila marcada con sus problemas. Del reporte sale el paso 4, decidir, hacia tres cajas: corregir con reglas explícitas y repetibles en el Capítulo 7, devolver a la fuente cuando solo quien generó el dato conoce el valor correcto, y aceptar y documentar cuando el valor es raro pero cierto. Con trazo discontinuo, Evitar: corregir sobre la marcha, sin medir cuántas filas cambian ni dejar registro de por qué. Al pie: este capítulo mide y marca; el siguiente corrige."}
+![El flujo de una auditoría de calidad. Este capítulo cubre el perfil, las reglas y el reporte; la corrección es el tema del siguiente.](imagenes/calidad/flujo-auditoria.svg){#fig-flujo-auditoria fig-alt="Cuatro cajas en fila: la tabla bien leída del contrato del Capítulo 5, el perfil con un resumen por columna, las reglas que cada fila debe cumplir con su dimensión y severidad, y el reporte con las filas que fallan en cada regla y cada fila marcada con sus problemas. Del reporte sale el paso 4, decidir, hacia tres cajas: corregir con reglas explícitas y repetibles en el Capítulo 8, devolver a la fuente cuando solo quien generó el dato conoce el valor correcto, y aceptar y documentar cuando el valor es raro pero cierto. Con trazo discontinuo, Evitar: corregir sobre la marcha, sin medir cuántas filas cambian ni dejar registro de por qué. Al pie: este capítulo mide y marca; el Capítulo 8 corrige."}
 
 ### Ejemplo guiado 6.4: el perfil de la tabla {#sec-perfil}
 
@@ -912,7 +912,7 @@ dbGetQuery(con, r"(
 )")
 ```
 
-La consulta interna calcula todas las reglas en una sola pasada y devuelve una fila con 14 columnas. `UNPIVOT` la gira: cada columna se convierte en una fila, con el nombre de la regla y su conteo. `count(*) OVER (PARTITION BY factura)` es una **función de ventana**: cuenta cuántas filas tiene cada factura sin agrupar la tabla, de modo que cada fila conserva su detalle y sabe cuántas veces aparece su factura. Las funciones de ventana se tratan con calma más adelante en el libro.
+La consulta interna calcula todas las reglas en una sola pasada y devuelve una fila con 14 columnas. `UNPIVOT` la gira: cada columna se convierte en una fila, con el nombre de la regla y su conteo. `count(*) OVER (PARTITION BY factura)` es una **función de ventana**: cuenta cuántas filas tiene cada factura sin agrupar la tabla, de modo que cada fila conserva su detalle y sabe cuántas veces aparece su factura. Las funciones de ventana se tratan con más detalle en el @sec-transformar.
 
 :::
 
@@ -1013,7 +1013,7 @@ En este capítulo separamos dos preguntas que suelen mezclarse. La de los **tipo
 
 Para la segunda construimos un método que se puede repetir: perfilar la tabla, escribir las reglas como datos, con su dimensión y su severidad, contar las fallas y marcar cada fila con sus problemas. El resultado, `cartera_2026_t1_auditada.parquet`, no tiene un solo dato corregido. Tiene algo más valioso para empezar a corregir: sabemos qué está mal, dónde y con qué gravedad.
 
-Corregir es el tema del siguiente capítulo, Transformación y limpieza. Allí partiremos de esta tabla marcada para quitar las filas repetidas, decidir entre las versiones de una factura, unificar las ciudades, recuperar el cero de los NIT y dejar registro de cada cambio, de modo que el reporte de calidad, ejecutado otra vez, muestre que los problemas que debían desaparecer desaparecieron.
+Corregir ocupa los dos capítulos siguientes. En el @sec-transformar reunimos las herramientas: elegir, filtrar, crear columnas, resumir, unir y ordenar tablas. En el @sec-limpiar volvemos a esta cartera para quitar las filas repetidas, apartar las versiones en conflicto, unificar las ciudades, recuperar el cero de los NIT y dejar registro de cada cambio, de modo que el reporte de calidad, ejecutado otra vez, muestre que los problemas que debían desaparecer desaparecieron.
 
 ```{r}
 #| label: cerrar-conexion-cap06

@@ -1,0 +1,75 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 420" width="960" height="420" role="img" aria-labelledby="titulo desc">
+<title id="titulo">Estandarizar una categoría con ayuda de los datos</title>
+<desc id="desc">Cuatro pasos. Primero, las variantes de la columna con su conteo: Cúcuta 22, Cucuta 5, CUCUTA 4, Bogotá D.C. 6, B/quilla 9 y Barranqilla 2. Segundo, una clave normalizada sin tildes, en mayúsculas, sin signos ni espacios de más: las tres variantes de Cúcuta comparten la clave CUCUTA. Tercero, dentro de cada clave la variante más frecuente es la canónica: Cúcuta, con 22 de 31 registros. Cuarto, lo que queda: para errores de digitación la distancia de edición sugiere Barranquilla; los sinónimos y abreviaturas, como B/quilla y Bogotá D.C., los decide una persona, y todo termina en una tabla de equivalencias. Con trazo discontinuo, Evitar: buscar y reemplazar a mano cada variante. Al pie: los datos proponen la forma canónica; una persona revisa la tabla de equivalencias.</desc>
+<style>
+  text{font-family:"Source Sans 3","Source Sans Pro","Segoe UI",Helvetica,Arial,sans-serif;fill:#1a1a1a}
+  .h{font-size:17px;font-weight:700}
+  .b{font-size:15.5px}
+  .s{font-size:14px;fill:#3d3d3d}
+  .m{font-family:"Source Code Pro",Consolas,"DejaVu Sans Mono",monospace;font-size:12.5px}
+  .c{font-family:"Source Code Pro",Consolas,"DejaVu Sans Mono",monospace;font-size:12px}
+</style>
+<defs>
+  <marker id="fl" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#1a1a1a"/></marker>
+</defs>
+<rect x="0" y="0" width="960" height="420" fill="#ffffff"/>
+<text x="30" y="40" class="h">1. Variantes y conteos</text>
+<text x="270" y="40" class="h">2. Clave normalizada</text>
+<text x="510" y="40" class="h">3. La más frecuente</text>
+<text x="730" y="40" class="h">4. Lo que queda</text>
+<rect x="30" y="58" width="200" height="24" rx="0" fill="#ffffff" stroke="#8a8a8a" stroke-width="1"/>
+<text x="40" y="75" class="m">Cúcuta</text>
+<text x="220" y="75" class="m" text-anchor="end">22</text>
+<rect x="270" y="58" width="200" height="24" rx="0" fill="#e6e6e6" stroke="#8a8a8a" stroke-width="1"/>
+<text x="280" y="75" class="m">CUCUTA</text>
+<rect x="30" y="88" width="200" height="24" rx="0" fill="#ffffff" stroke="#8a8a8a" stroke-width="1"/>
+<text x="40" y="105" class="m">Cucuta</text>
+<text x="220" y="105" class="m" text-anchor="end">5</text>
+<rect x="270" y="88" width="200" height="24" rx="0" fill="#e6e6e6" stroke="#8a8a8a" stroke-width="1"/>
+<text x="280" y="105" class="m">CUCUTA</text>
+<rect x="30" y="118" width="200" height="24" rx="0" fill="#ffffff" stroke="#8a8a8a" stroke-width="1"/>
+<text x="40" y="135" class="m">CUCUTA</text>
+<text x="220" y="135" class="m" text-anchor="end">4</text>
+<rect x="270" y="118" width="200" height="24" rx="0" fill="#e6e6e6" stroke="#8a8a8a" stroke-width="1"/>
+<text x="280" y="135" class="m">CUCUTA</text>
+<rect x="30" y="148" width="200" height="24" rx="0" fill="#ffffff" stroke="#8a8a8a" stroke-width="1"/>
+<text x="40" y="165" class="m">Bogotá D.C.</text>
+<text x="220" y="165" class="m" text-anchor="end">6</text>
+<rect x="270" y="148" width="200" height="24" rx="0" fill="#ffffff" stroke="#8a8a8a" stroke-width="1"/>
+<text x="280" y="165" class="m">BOGOTA DC</text>
+<rect x="30" y="178" width="200" height="24" rx="0" fill="#ffffff" stroke="#8a8a8a" stroke-width="1"/>
+<text x="40" y="195" class="m">B/quilla</text>
+<text x="220" y="195" class="m" text-anchor="end">9</text>
+<rect x="270" y="178" width="200" height="24" rx="0" fill="#ffffff" stroke="#8a8a8a" stroke-width="1"/>
+<text x="280" y="195" class="m">BQUILLA</text>
+<rect x="30" y="208" width="200" height="24" rx="0" fill="#ffffff" stroke="#8a8a8a" stroke-width="1"/>
+<text x="40" y="225" class="m">Barranqilla</text>
+<text x="220" y="225" class="m" text-anchor="end">2</text>
+<rect x="270" y="208" width="200" height="24" rx="0" fill="#ffffff" stroke="#8a8a8a" stroke-width="1"/>
+<text x="280" y="225" class="m">BARRANQILLA</text>
+<text x="270" y="252" class="s">sin tildes, mayúsculas, sin signos</text>
+<text x="270" y="272" class="s">ni espacios de más</text>
+<line x1="232" y1="100" x2="266" y2="100" stroke="#1a1a1a" stroke-width="2" marker-end="url(#fl)"/>
+<line x1="472" y1="100" x2="506" y2="100" stroke="#1a1a1a" stroke-width="2" marker-end="url(#fl)"/>
+<rect x="510" y="58" width="190" height="84" rx="8" fill="#1a1a1a"/>
+<text x="526" y="84" class="m" style="fill:#ffffff">CUCUTA</text>
+<text x="526" y="108" class="b" style="fill:#ffffff;font-weight:700">canónica: Cúcuta</text>
+<text x="526" y="128" class="s" style="fill:#ffffff">22 de 31 registros</text>
+<text x="510" y="172" class="s">La forma que más usan</text>
+<text x="510" y="192" class="s">las personas decide; nadie</text>
+<text x="510" y="212" class="s">la escribe a mano.</text>
+<rect x="730" y="58" width="200" height="196" rx="10" fill="#ffffff" stroke="#7a7a7a" stroke-width="1.5" stroke-dasharray="7 5"/>
+<text x="746" y="84" class="s" style="font-weight:700">Errores de digitación:</text>
+<text x="746" y="104" class="s">la distancia de edición</text>
+<text x="746" y="124" class="s">sugiere Barranquilla</text>
+<text x="746" y="156" class="s" style="font-weight:700">Sinónimos y abreviaturas:</text>
+<text x="746" y="176" class="s">B/quilla, Bogotá D.C.</text>
+<text x="746" y="196" class="s">los decide una persona</text>
+<text x="746" y="228" class="s" style="font-weight:700">Todo termina en una tabla</text>
+<text x="746" y="246" class="s" style="font-weight:700">de equivalencias.</text>
+<rect x="30" y="296" width="900" height="50" rx="10" fill="#ffffff" stroke="#7a7a7a" stroke-width="1.5" stroke-dasharray="7 5"/>
+<text x="48" y="326" class="b" style="font-weight:700;fill:#555555">Evitar</text>
+<text x="110" y="326" class="b" style="fill:#555555">buscar y reemplazar a mano cada variante: no se puede repetir el próximo mes.</text>
+<rect x="30" y="362" width="900" height="44" rx="8" fill="#1a1a1a"/>
+<text x="480" y="389" class="b" text-anchor="middle" style="fill:#ffffff;font-weight:700">Los datos proponen la forma canónica; una persona revisa la tabla de equivalencias.</text>
+</svg>

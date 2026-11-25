@@ -1,0 +1,51 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 392" width="960" height="392" role="img" aria-labelledby="titulo desc">
+<title id="titulo">El flujo de la limpieza</title>
+<desc id="desc">Los datos crudos, que no se modifican, pasan por reglas de corrección en orden: quitar copias idénticas, corregir lo que tiene una regla clara, completar faltantes desde una referencia y apartar lo que no se puede decidir; cada paso cuenta las filas que cambia. Salen tres productos: la tabla limpia, lista para analizar y que pasa las reglas que bloquean; la cuarentena, con las filas apartadas y su motivo, que vuelven a la fuente; y la bitácora, con qué se cambió, en cuántas filas y por qué. Una flecha vuelve al inicio: volver a auditar con las mismas reglas. Con trazo discontinuo, Evitar: corregir a mano en el archivo original o borrar filas sin dejar registro. Al pie: limpiar es un script que se puede volver a ejecutar, no una serie de arreglos a mano.</desc>
+<style>
+  text{font-family:"Source Sans 3","Source Sans Pro","Segoe UI",Helvetica,Arial,sans-serif;fill:#1a1a1a}
+  .h{font-size:17px;font-weight:700}
+  .b{font-size:15.5px}
+  .s{font-size:14px;fill:#3d3d3d}
+  .m{font-family:"Source Code Pro",Consolas,"DejaVu Sans Mono",monospace;font-size:12.5px}
+  .c{font-family:"Source Code Pro",Consolas,"DejaVu Sans Mono",monospace;font-size:12px}
+</style>
+<defs>
+  <marker id="fl" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#1a1a1a"/></marker>
+</defs>
+<rect x="0" y="0" width="960" height="392" fill="#ffffff"/>
+<rect x="30" y="30" width="170" height="170" rx="10" fill="#f2f2f2" stroke="#c4c4c4" stroke-width="1.5"/>
+<text x="46" y="58" class="h">Datos crudos</text>
+<text x="46" y="84" class="s">no se modifican:</text>
+<text x="46" y="104" class="s">cada limpieza parte</text>
+<text x="46" y="124" class="s">siempre de aquí</text>
+<text x="46" y="156" class="m">cartera_2026_t1</text>
+<text x="46" y="176" class="s">+ reporte del Cap. 6</text>
+<line x1="202" y1="115" x2="232" y2="115" stroke="#1a1a1a" stroke-width="2" marker-end="url(#fl)"/>
+<rect x="236" y="30" width="316" height="170" rx="10" fill="#ffffff" stroke="#1a1a1a" stroke-width="1.8"/>
+<text x="250" y="58" class="h">Reglas de corrección, en orden</text>
+<text x="250" y="86" class="s">1. quitar copias idénticas</text>
+<text x="250" y="108" class="s">2. corregir lo que tiene una regla clara</text>
+<text x="250" y="130" class="s">3. completar faltantes desde una referencia</text>
+<text x="250" y="152" class="s">4. apartar lo que no se puede decidir</text>
+<text x="250" y="174" class="s" style="font-weight:700">cada paso cuenta las filas que cambia</text>
+<line x1="554" y1="115" x2="584" y2="115" stroke="#1a1a1a" stroke-width="2" marker-end="url(#fl)"/>
+<rect x="588" y="30" width="342" height="170" rx="10" fill="#ffffff" stroke="#c4c4c4" stroke-width="1.5"/>
+<text x="604" y="58" class="h">Tres salidas</text>
+<text x="604" y="88" class="b" style="font-weight:700">Limpia</text>
+<text x="700" y="88" class="s">lista para analizar; pasa</text>
+<text x="700" y="106" class="s">las reglas que bloquean</text>
+<text x="604" y="124" class="b" style="font-weight:700">Cuarentena</text>
+<text x="700" y="124" class="s">filas apartadas con su</text>
+<text x="700" y="142" class="s">motivo; vuelven a la fuente</text>
+<text x="604" y="160" class="b" style="font-weight:700">Bitácora</text>
+<text x="700" y="160" class="s">qué se cambió, en cuántas</text>
+<text x="700" y="178" class="s">filas y por qué</text>
+<path d="M760,200 L760,236 L115,236 L115,206" fill="none" stroke="#1a1a1a" stroke-width="2" marker-end="url(#fl)"/>
+<rect x="330" y="222" width="300" height="28" rx="0" fill="#ffffff"/>
+<text x="480" y="241" class="s" text-anchor="middle" style="font-weight:700">volver a auditar con las mismas reglas</text>
+<rect x="30" y="268" width="900" height="50" rx="10" fill="#ffffff" stroke="#7a7a7a" stroke-width="1.5" stroke-dasharray="7 5"/>
+<text x="48" y="298" class="b" style="font-weight:700;fill:#555555">Evitar</text>
+<text x="110" y="298" class="b" style="fill:#555555">corregir a mano en el archivo original, o borrar filas sin dejar registro de cuáles ni por qué.</text>
+<rect x="30" y="334" width="900" height="44" rx="8" fill="#1a1a1a"/>
+<text x="480" y="361" class="b" text-anchor="middle" style="fill:#ffffff;font-weight:700">Limpiar es un script que se puede volver a ejecutar, no una serie de arreglos a mano.</text>
+</svg>

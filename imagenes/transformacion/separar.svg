@@ -1,0 +1,73 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 350" width="960" height="350" role="img" aria-labelledby="titulo desc">
+<title id="titulo">Separar valores en columnas y en filas</title>
+<desc id="desc">A la izquierda, separar en columnas: la columna ciudad_departamento con Cali - Valle del Cauca y Pasto - Nariño se convierte en dos columnas, ciudad y departamento, con separate_wider_delim, str.split con expand o split_part; con un patrón, separate_wider_regex o str.extract. A la derecha, separar en filas: un pedido con la celda P05; P10; P12 se convierte en tres filas, una por producto, con separate_longer_delim, explode o unnest. Al pie: si una celda guarda varios datos, sepáralos antes de filtrar, contar o unir.</desc>
+<style>
+  text{font-family:"Source Sans 3","Source Sans Pro","Segoe UI",Helvetica,Arial,sans-serif;fill:#1a1a1a}
+  .h{font-size:17px;font-weight:700}
+  .b{font-size:15.5px}
+  .s{font-size:14px;fill:#3d3d3d}
+  .m{font-family:"Source Code Pro",Consolas,"DejaVu Sans Mono",monospace;font-size:12.5px}
+  .c{font-family:"Source Code Pro",Consolas,"DejaVu Sans Mono",monospace;font-size:12px}
+</style>
+<defs>
+  <marker id="fl" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#1a1a1a"/></marker>
+</defs>
+<rect x="0" y="0" width="960" height="350" fill="#ffffff"/>
+<rect x="30" y="24" width="440" height="250" rx="10" fill="#ffffff" stroke="#1a1a1a" stroke-width="1.6"/>
+<text x="46" y="52" class="h">Separar en columnas</text>
+<text x="46" y="72" class="m" style="fill:#3d3d3d">separate_wider_delim(), str.split(expand=True), split_part()</text>
+<rect x="46" y="92" width="200" height="24" rx="0" fill="#1a1a1a" stroke="#8a8a8a" stroke-width="1"/>
+<text x="146.0" y="112" class="c" text-anchor="middle" style="fill:#ffffff">ciudad_departamento</text>
+<rect x="46" y="116" width="200" height="24" rx="0" fill="#ffffff" stroke="#8a8a8a" stroke-width="1"/>
+<text x="146.0" y="136" class="c" text-anchor="middle" style="fill:#1a1a1a">Cali - Valle del Cauca</text>
+<rect x="46" y="140" width="200" height="24" rx="0" fill="#ffffff" stroke="#8a8a8a" stroke-width="1"/>
+<text x="146.0" y="160" class="c" text-anchor="middle" style="fill:#1a1a1a">Pasto - Nariño</text>
+<line x1="250" y1="128" x2="290" y2="128" stroke="#1a1a1a" stroke-width="2" marker-end="url(#fl)"/>
+<rect x="296" y="92" width="80" height="24" rx="0" fill="#1a1a1a" stroke="#8a8a8a" stroke-width="1"/>
+<text x="336.0" y="112" class="c" text-anchor="middle" style="fill:#ffffff">ciudad</text>
+<rect x="376" y="92" width="80" height="24" rx="0" fill="#1a1a1a" stroke="#8a8a8a" stroke-width="1"/>
+<text x="416.0" y="112" class="c" text-anchor="middle" style="fill:#ffffff">depto.</text>
+<rect x="296" y="116" width="80" height="24" rx="0" fill="#ffffff" stroke="#8a8a8a" stroke-width="1"/>
+<text x="336.0" y="136" class="c" text-anchor="middle" style="fill:#1a1a1a">Cali</text>
+<rect x="376" y="116" width="80" height="24" rx="0" fill="#ffffff" stroke="#8a8a8a" stroke-width="1"/>
+<text x="416.0" y="136" class="c" text-anchor="middle" style="fill:#1a1a1a">Valle...</text>
+<rect x="296" y="140" width="80" height="24" rx="0" fill="#ffffff" stroke="#8a8a8a" stroke-width="1"/>
+<text x="336.0" y="160" class="c" text-anchor="middle" style="fill:#1a1a1a">Pasto</text>
+<rect x="376" y="140" width="80" height="24" rx="0" fill="#ffffff" stroke="#8a8a8a" stroke-width="1"/>
+<text x="416.0" y="160" class="c" text-anchor="middle" style="fill:#1a1a1a">Nariño</text>
+<text x="46" y="200" class="s">Un valor por celda que en realidad son varios</text>
+<text x="46" y="220" class="s">datos distintos: cada uno a su columna.</text>
+<text x="46" y="250" class="m" style="fill:#3d3d3d">Con un patrón: separate_wider_regex(), str.extract()</text>
+<rect x="490" y="24" width="440" height="250" rx="10" fill="#ffffff" stroke="#1a1a1a" stroke-width="1.6"/>
+<text x="506" y="52" class="h">Separar en filas</text>
+<text x="506" y="72" class="m" style="fill:#3d3d3d">separate_longer_delim(), explode(), unnest()</text>
+<rect x="506" y="92" width="56" height="24" rx="0" fill="#1a1a1a" stroke="#8a8a8a" stroke-width="1"/>
+<text x="534.0" y="112" class="c" text-anchor="middle" style="fill:#ffffff">pedido</text>
+<rect x="506" y="116" width="56" height="24" rx="0" fill="#ffffff" stroke="#8a8a8a" stroke-width="1"/>
+<text x="534.0" y="136" class="c" text-anchor="middle" style="fill:#1a1a1a">W-01</text>
+<rect x="562" y="92" width="110" height="24" rx="0" fill="#1a1a1a" stroke="#8a8a8a" stroke-width="1"/>
+<text x="617" y="108" class="c" text-anchor="middle" style="fill:#ffffff">items</text>
+<rect x="562" y="116" width="110" height="24" rx="0" fill="#ffffff" stroke="#8a8a8a" stroke-width="1"/>
+<text x="617" y="132" class="c" text-anchor="middle">P05; P10; P12</text>
+<line x1="680" y1="128" x2="716" y2="128" stroke="#1a1a1a" stroke-width="2" marker-end="url(#fl)"/>
+<rect x="722" y="92" width="64" height="24" rx="0" fill="#1a1a1a" stroke="#8a8a8a" stroke-width="1"/>
+<text x="754.0" y="112" class="c" text-anchor="middle" style="fill:#ffffff">pedido</text>
+<rect x="786" y="92" width="64" height="24" rx="0" fill="#1a1a1a" stroke="#8a8a8a" stroke-width="1"/>
+<text x="818.0" y="112" class="c" text-anchor="middle" style="fill:#ffffff">item</text>
+<rect x="722" y="116" width="64" height="24" rx="0" fill="#ffffff" stroke="#8a8a8a" stroke-width="1"/>
+<text x="754.0" y="136" class="c" text-anchor="middle" style="fill:#1a1a1a">W-01</text>
+<rect x="786" y="116" width="64" height="24" rx="0" fill="#ffffff" stroke="#8a8a8a" stroke-width="1"/>
+<text x="818.0" y="136" class="c" text-anchor="middle" style="fill:#1a1a1a">P05</text>
+<rect x="722" y="140" width="64" height="24" rx="0" fill="#ffffff" stroke="#8a8a8a" stroke-width="1"/>
+<text x="754.0" y="160" class="c" text-anchor="middle" style="fill:#1a1a1a">W-01</text>
+<rect x="786" y="140" width="64" height="24" rx="0" fill="#ffffff" stroke="#8a8a8a" stroke-width="1"/>
+<text x="818.0" y="160" class="c" text-anchor="middle" style="fill:#1a1a1a">P10</text>
+<rect x="722" y="164" width="64" height="24" rx="0" fill="#ffffff" stroke="#8a8a8a" stroke-width="1"/>
+<text x="754.0" y="184" class="c" text-anchor="middle" style="fill:#1a1a1a">W-01</text>
+<rect x="786" y="164" width="64" height="24" rx="0" fill="#ffffff" stroke="#8a8a8a" stroke-width="1"/>
+<text x="818.0" y="184" class="c" text-anchor="middle" style="fill:#1a1a1a">P12</text>
+<text x="506" y="200" class="s">Una celda con una lista de valores del mismo</text>
+<text x="506" y="220" class="s">tipo: cada valor a su propia fila.</text>
+<rect x="30" y="292" width="900" height="44" rx="8" fill="#1a1a1a"/>
+<text x="480" y="319" class="b" text-anchor="middle" style="fill:#ffffff;font-weight:700">Si una celda guarda varios datos, sepáralos antes de filtrar, contar o unir.</text>
+</svg>

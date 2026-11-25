@@ -1,0 +1,48 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 400" width="960" height="400" role="img" aria-labelledby="titulo desc">
+<title id="titulo">Herramientas según el volumen de datos</title>
+<desc id="desc">Una escala del tamaño de los datos frente a la memoria RAM, con tres cajas. Si los datos caben con holgura, menos de una quinta parte de la RAM, dplyr, R base y pandas: lo más legible gana. Si caben pero justo o el cálculo tarda demasiado, data.table, dtplyr, polars o DuckDB sobre el archivo: motores multihilo y sin copias. Si no caben o son muchos archivos, DuckDB, duckplyr, arrow open_dataset o polars en modo perezoso: se reduce en disco y llega a la memoria solo el resultado. Con trazo discontinuo, Evitar: cargar todo en memoria para usar al final unas pocas columnas o filas, o un resumen.</desc>
+<style>
+  text{font-family:"Source Sans 3","Source Sans Pro","Segoe UI",Helvetica,Arial,sans-serif;fill:#1a1a1a}
+  .h{font-size:17px;font-weight:700}
+  .b{font-size:15.5px}
+  .s{font-size:14px;fill:#3d3d3d}
+  .m{font-family:"Source Code Pro",Consolas,"DejaVu Sans Mono",monospace;font-size:12.5px}
+  .c{font-family:"Source Code Pro",Consolas,"DejaVu Sans Mono",monospace;font-size:12px}
+</style>
+<defs>
+  <marker id="fl" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#1a1a1a"/></marker>
+</defs>
+<rect x="0" y="0" width="960" height="400" fill="#ffffff"/>
+<text x="30" y="36" class="s" style="font-weight:700">Tamaño de los datos frente a la memoria RAM del equipo</text>
+<line x1="30" y1="62" x2="920" y2="62" stroke="#1a1a1a" stroke-width="2" marker-end="url(#fl)"/>
+<line x1="30" y1="56" x2="30" y2="68" stroke="#1a1a1a" stroke-width="2"/>
+<text x="36" y="86" class="s">pequeño</text>
+<line x1="330" y1="56" x2="330" y2="68" stroke="#1a1a1a" stroke-width="2"/>
+<text x="336" y="86" class="s">cerca de la RAM</text>
+<line x1="630" y1="56" x2="630" y2="68" stroke="#1a1a1a" stroke-width="2"/>
+<text x="636" y="86" class="s">mayor que la RAM</text>
+<rect x="30" y="104" width="290" height="210" rx="10" fill="#ffffff" stroke="#1a1a1a" stroke-width="1.6"/>
+<text x="46" y="132" class="h">Cabe con holgura</text>
+<text x="46" y="152" class="s">menos de una quinta parte de la RAM</text>
+<text x="46" y="184" class="m">dplyr, R base</text>
+<text x="46" y="206" class="m">pandas</text>
+<text x="46" y="278" class="s">Lo más legible gana.</text>
+<rect x="330" y="104" width="290" height="210" rx="10" fill="#e6e6e6" stroke="#1a1a1a" stroke-width="1.6"/>
+<text x="346" y="132" class="h">Cabe, pero justo</text>
+<text x="346" y="152" class="s">o el cálculo tarda demasiado</text>
+<text x="346" y="184" class="m">data.table, dtplyr</text>
+<text x="346" y="206" class="m">polars</text>
+<text x="346" y="228" class="m">DuckDB sobre el archivo</text>
+<text x="346" y="278" class="s">Motores multihilo y sin copias.</text>
+<rect x="630" y="104" width="290" height="210" rx="10" fill="#d6d6d6" stroke="#1a1a1a" stroke-width="1.6"/>
+<text x="646" y="132" class="h">No cabe</text>
+<text x="646" y="152" class="s">o son muchos archivos</text>
+<text x="646" y="184" class="m">DuckDB, duckplyr</text>
+<text x="646" y="206" class="m">arrow::open_dataset()</text>
+<text x="646" y="228" class="m">polars en modo perezoso</text>
+<text x="646" y="278" class="s">Se reduce en disco y</text>
+<text x="646" y="296" class="s">llega a la memoria solo el resultado.</text>
+<rect x="30" y="332" width="890" height="50" rx="10" fill="#ffffff" stroke="#7a7a7a" stroke-width="1.5" stroke-dasharray="7 5"/>
+<text x="48" y="362" class="b" style="font-weight:700;fill:#555555">Evitar</text>
+<text x="110" y="362" class="b" style="fill:#555555">cargar todo en memoria para usar al final unas pocas columnas o filas, o un resumen.</text>
+</svg>

@@ -27,26 +27,29 @@
 ## Estructura (la introducción es el capítulo 1)
 
 2. Fundamentos y preparación del entorno
-Partes (Quarto `part:`): I Punto de partida (1-2), II Obtener los datos (3-5), III Preparar y guardar los datos (6-9), IV Analizar y programar (10-12), V Automatizar, comunicar y mantener (13-15). El número de cada archivo coincide con su capítulo.
+Partes (Quarto `part:`): I Punto de partida (1-2), II Obtener los datos (3-5), III Preparar y guardar los datos (6-10), IV Analizar y programar (11-13), V Automatizar, comunicar y mantener (14-16). El número de cada archivo coincide con su capítulo.
 
 3. Importación de datos I: el contrato de lectura (`03-importacion-de-datos.qmd`)
 4. Importación de datos II: formatos y fuentes (`04-importacion-formatos-y-fuentes.qmd`)
 5. Importación de datos III: limpieza temprana (`05-importacion-limpieza-temprana.qmd`)
 6. Tipos de datos y calidad
-7. Transformación y limpieza
-8. Estructuras, formatos y almacenamiento
-9. Exportación de datos
-10. Estadística descriptiva, exploración y gráficos
-11. Funciones personalizadas
-12. Flujos reproducibles y depuración
-13. Automatización y programación de tareas
-14. Reportes reproducibles y comunicación
-15. Pruebas, seguridad, publicación y mantenimiento
+7. Transformación y limpieza I: transformar y ordenar (`07-transformacion-y-ordenado.qmd`)
+8. Transformación y limpieza II: limpiar (`08-limpieza-de-datos.qmd`)
+9. Estructuras, formatos y almacenamiento
+10. Exportación de datos
+11. Estadística descriptiva, exploración y gráficos
+12. Funciones personalizadas
+13. Flujos reproducibles y depuración
+14. Automatización y programación de tareas
+15. Reportes reproducibles y comunicación
+16. Pruebas, seguridad, publicación y mantenimiento
 
 ## Decisiones de alcance y avance: capítulos 3 y 4 (Importación de datos)
 
 ### Decisiones cerradas
 
+- **Transformación y limpieza dividida en dos capítulos (nov. 2026):** Cap. 7 *Transformar y ordenar*: las seis operaciones en sus escrituras (corchetes, `$`, `transform()`, `subset()`, `dplyr`; corchetes, `.loc`, punto, `assign()`, `query()`, `case_when()` en pandas; SQL con `SELECT * REPLACE`, `COLUMNS()`), trampa del `NA` en corchetes, `transform()` no ve columnas creadas en la misma llamada, asignación encadenada inútil en pandas 3 (Copy-on-Write), resumir frente a calcular dentro del grupo (`.by`, `transform`, `OVER`, `QUALIFY`), uniones con `relationship`/`validate` y una clave repetida sembrada (`P07`), largo y ancho (`pivot_longer/wider`, `melt/pivot`, `UNPIVOT/PIVOT`), `separate_wider_*`/`separate_longer_*`, y volumen con 10 millones de filas (dplyr, data.table, arrow, DuckDB, pandas, polars). Cap. 8 *Limpiar*: principios (crudo intacto, reglas, cuarentena, bitácora, medir antes y después), texto, expresiones regulares (DuckDB/RE2 sin *lookahead*), estandarizar por frecuencia con clave normalizada + distancia de edición + tabla de equivalencias manual, consolidar duplicados por columna, completar faltantes solo desde una referencia, imposibles frente a atípicos (IQR), y limpieza completa de la cartera del Cap. 6 (379 limpias, 23 en cuarentena, 4 copias) con nueva auditoría reutilizando `scripts/auditoria_cartera.R` y `.py`. Datos en `datos/cap07/` y `datos/cap08/` (generadores `scripts/generar_datos_cap07.R` y `cap08.R`). Diagramas en `imagenes/transformacion/` (verbos, uniones, largo-ancho, separar, volumen) e `imagenes/limpieza/` (flujo-limpieza, estandarizar). El resto del libro se corrió un número (16 capítulos).
+- **DuckDB 2.0:** las funciones anónimas se escriben `lambda x: ...`; la flecha `x -> ...` da error.
 - **Capítulo 6, Tipos de datos y calidad (nov. 2026):** primera parte sobre tipos (equivalencias entre herramientas, coerción con conteo de faltantes nuevos, coma flotante y `DECIMAL`, límite de enteros de 32 bits, identificadores como texto, categorías como regla de calidad con `factor`/`isin()`/`ENUM`); segunda parte sobre calidad con el método perfil, reglas, reporte y decisión. Regla del capítulo: **medir antes de corregir**; el Cap. 6 mide y marca, el Cap. 7 corrige. Dimensiones: completitud, unicidad, validez, consistencia, integridad referencial y plausibilidad (la exactitud solo se comprueba contra una fuente externa). Las reglas se escriben como datos (`tribble` con funciones en R, lista de tuplas con `lambda` en Python, `count_if` + `UNPIVOT` en DuckDB), con severidad `bloquea`/`advierte`; las reglas de validez dejan pasar los faltantes de forma explícita. Ejemplos 6.1 a 6.7 y Ejercicio 6.1 con `datos/cap06/` (`cartera_2026_t1.parquet`, `clientes.parquet`, `recaudos_2026_t1.parquet`), generados con `scripts/generar_datos_cap06.R`. Salida para el Cap. 7: `cartera_2026_t1_auditada.parquet` con la columna `problemas`. Diagramas en `imagenes/calidad/`: `coercion`, `elegir-tipo`, `dimensiones-calidad`, `flujo-auditoria`.
 - **SQL en texto crudo (nov. 2026):** desde el Cap. 6, el SQL enviado desde R va en `r"(...)"`. El Cap. 6 tiene la píldora de curiosidades sobre texto crudo en R, Python (`r"..."`, `"""..."""`) y DuckDB (`$$...$$`). Los Cap. 3 a 5 todavía usan comillas normales con `\"`.
 - **Idioma de Quarto (nov. 2026):** `lang: es` va en el nivel superior de `_quarto.yml` (el `language: es` dentro de `book:` no tenía efecto y las referencias salían como «Chapter» y «Figure»). Como las secciones se muestran como «Sección 5.4», el artículo antes de `@sec-` de una sección es femenino (`en la @sec-fechas`); antes de un capítulo, masculino (`en el @sec-importacion`).
@@ -108,17 +111,24 @@ Partes (Quarto `part:`): I Punto de partida (1-2), II Obtener los datos (3-5), I
 - [x] Salidas de Python del Cap. 5 verificadas con pandas 3.1.1 en el entorno de Positron (se instalaron `openpyxl`, `pyarrow`, `duckdb`, `polars` y `requests`).
 - [x] Id `sec-tipos-calidad` definido en `06-tipos-de-datos-y-calidad.qmd`.
 - [x] Menciones en texto a «Capítulo 6» en los Cap. 3, 4 y 5 cambiadas por `@sec-tipos-calidad` (el Cap. 6 ya está en `_quarto.yml`).
-- [ ] Migrar a texto crudo `r"(...)"` las consultas de DuckDB de los Cap. 3, 4 y 5 (hoy usan comillas con `\"`).
 
 **Contenido — Capítulo 6**
 
 - [x] Capítulo redactado, renderizado y con las salidas de Python verificadas con pandas 3.1.1 (Parquet en pandas: `date32` llega como `object` y un entero con faltantes como `float64`; se convierten de forma explícita).
 - [x] `datos/cap06/` y `scripts/generar_datos_cap06.R` copiados al repositorio de materiales (copia local, sin commit).
-- [ ] Cap. 7: partir de `cartera_2026_t1_auditada.parquet` (quitar filas repetidas, decidir entre versiones de FV-20224 y FV-20227, unificar ciudades, recuperar el cero de los NIT, registrar cada cambio y volver a ejecutar el reporte de calidad).
+- [x] Limpieza de la cartera hecha en el Cap. 8 (parte de la cartera cruda y reutiliza las reglas del Cap. 6).
+- [x] SQL de los Cap. 3 a 5 migrado a texto crudo; la píldora de curiosidades está en el Cap. 3.
+
+**Contenido — Capítulos 7 y 8**
+
+- [x] Capítulos redactados y renderizados; salidas de Python verificadas con pandas 3.1.1 y polars 2.2.
+- [x] `datos/cap07/`, `datos/cap08/` y los scripts copiados al repositorio de materiales (copia local, sin commit).
+- [ ] Para el capítulo de funciones o el de flujos (cuando aparezcan los bucles): copia al modificar en R y el bucle que modifica celda por celda. Medido en R 4.6 con 10.000 asignaciones: `df[i, "x"] <- i` 1,49 s y 763 MB; `df$x[i] <- i` 0,55 s y 382 MB; sobre una lista (`as.list(df)`) 6,4 ms y 91 KB; sobre un vector 2,8 ms. Crear una columna (`df$c <- df$a + df$b`) no copia las columnas existentes (copia superficial); la lista solo ahorra microsegundos. Verificar con `tracemem()`; contrastar con `data.table` (`:=`) y pandas (Copy-on-Write). Se decidió no incluirlo en el Cap. 7 por ser funcionamiento interno de R sin paralelo en Python ni DuckDB.
+- [ ] Los tiempos del Ejemplo 7.7 son los de la máquina del autor; revisar el texto si se renderiza en otra máquina y cambia el orden de las herramientas.
 
 **Contenido — Resto del libro**
 
-- [ ] Crear los capítulos 7 a 15 (hoy comentados en `_quarto.yml`).
+- [ ] Crear los capítulos 9 a 16 (hoy comentados en `_quarto.yml`).
 - [ ] Crear `references.bib` (o comentar la línea `bibliography` si no se usa todavía).
 - [x] README del repositorio de materiales: qué es, cómo descargarlo, cómo generar los datos, licencias y dónde reportar errores (copia local, sin commit).
 

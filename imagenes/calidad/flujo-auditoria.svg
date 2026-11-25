@@ -1,6 +1,6 @@
 <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 490" width="960" height="490" role="img" aria-labelledby="titulo desc">
 <title id="titulo">El flujo de una auditoría de calidad</title>
-<desc id="desc">Cuatro pasos en fila: la tabla bien leída del capítulo 5, el perfil de cada columna, las reglas que cada fila debe cumplir y el reporte con las fallas por regla y las filas marcadas. Del reporte salen tres decisiones: corregir con reglas explícitas en el capítulo 7, devolver a la fuente o aceptar y documentar. Con trazo discontinuo, la práctica que se debe evitar: corregir sobre la marcha, sin medir ni dejar registro.</desc>
+<desc id="desc">Cuatro pasos en fila: la tabla bien leída del capítulo 5, el perfil de cada columna, las reglas que cada fila debe cumplir y el reporte con las fallas por regla y las filas marcadas. Del reporte salen tres decisiones: corregir con reglas explícitas en el capítulo 8, devolver a la fuente o aceptar y documentar. Con trazo discontinuo, la práctica que se debe evitar: corregir sobre la marcha, sin medir ni dejar registro.</desc>
 <style>
   text{font-family:"Source Sans 3","Source Sans Pro","Segoe UI",Helvetica,Arial,sans-serif;fill:#1a1a1a}
   .h{font-size:17px;font-weight:700}
@@ -61,7 +61,7 @@
 <rect x="30" y="246" width="280" height="86" rx="10" fill="#ffffff" stroke="#1a1a1a" stroke-width="1.5"/>
 <text x="48" y="274" class="h">Corregir</text>
 <text x="48" y="298" class="s">con reglas explícitas y</text>
-<text x="48" y="318" class="s">repetibles (Capítulo 7)</text>
+<text x="48" y="318" class="s">repetibles (Capítulo 8)</text>
 
 <rect x="340" y="246" width="280" height="86" rx="10" fill="#ffffff" stroke="#1a1a1a" stroke-width="1.5"/>
 <text x="358" y="274" class="h">Devolver a la fuente</text>
@@ -79,5 +79,5 @@
 <text x="110" y="388" class="b" style="fill:#555555">corregir sobre la marcha, sin medir cuántas filas cambian ni dejar registro de por qué.</text>
 
 <rect x="30" y="430" width="900" height="44" rx="8" fill="#1a1a1a"/>
-<text x="480" y="457" class="b" text-anchor="middle" style="fill:#ffffff;font-weight:700">Este capítulo mide y marca; el siguiente corrige.</text>
+<text x="480" y="457" class="b" text-anchor="middle" style="fill:#ffffff;font-weight:700">Este capítulo mide y marca; el Capítulo 8 corrige.</text>
 </svg>

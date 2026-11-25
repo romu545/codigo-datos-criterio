@@ -6,7 +6,7 @@ Hay un grupo de problemas que casi siempre se dejan para "la limpieza" y que en 
 
 La idea es sencilla: si el problema está en **cómo se escribió** el dato, se resuelve al leer, una sola vez, dentro del contrato. Si el problema está en **lo que dice** el dato (un cliente duplicado, una ciudad escrita de tres maneras, un pago anterior a la emisión de la factura), exige revisar y decidir, y eso es la limpieza propiamente dicha, que veremos en los capítulos siguientes (@fig-frontera-limpieza).
 
-![La limpieza temprana resuelve en la lectura cómo están escritos los datos; la limpieza resuelve después lo que dicen.](imagenes/importacion/limpieza-temprana-frontera.svg){#fig-frontera-limpieza fig-alt="Tres cajas en fila. El archivo crudo muestra valores como Sí, SI y no; 23/02/2026 y N/A; SIN DATO; 999; 5.208.379,70; un guion y dos columnas vacías. La caja de lectura, capítulos 3 a 5, pregunta cómo están escritos los datos y lista nombres de columnas, marcas de faltante, sí y no, formato de fecha y zona horaria, separadores numéricos y columnas vacías, con la nota: se declara una vez, en el contrato. La caja de limpieza, capítulos 6 y 7, pregunta qué dicen los datos y lista filas duplicadas, categorías inconsistentes, valores imposibles y reglas de negocio. Debajo, con trazo discontinuo, Evitar: leer todo como viene y repetir los mismos arreglos en cada análisis."}
+![La limpieza temprana resuelve en la lectura cómo están escritos los datos; la limpieza resuelve después lo que dicen.](imagenes/importacion/limpieza-temprana-frontera.svg){#fig-frontera-limpieza fig-alt="Tres cajas en fila. El archivo crudo muestra valores como Sí, SI y no; 23/02/2026 y N/A; SIN DATO; 999; 5.208.379,70; un guion y dos columnas vacías. La caja de lectura, capítulos 3 a 5, pregunta cómo están escritos los datos y lista nombres de columnas, marcas de faltante, sí y no, formato de fecha y zona horaria, separadores numéricos y columnas vacías, con la nota: se declara una vez, en el contrato. La caja de limpieza, capítulos 6 a 8, pregunta qué dicen los datos y lista filas duplicadas, categorías inconsistentes, valores imposibles y reglas de negocio. Debajo, con trazo discontinuo, Evitar: leer todo como viene y repetir los mismos arreglos en cada análisis."}
 
 ¿Por qué no dejarlo todo para después? Por tres razones. La primera es que cada análisis que parte del archivo tendría que repetir los mismos arreglos, y basta con que una persona olvide uno para que dos resultados dejen de coincidir. La segunda es que algunos errores de lectura no se pueden deshacer: una fecha leída con el orden equivocado ya es otra fecha, y nada en la tabla avisa del error. La tercera es la memoria: una columna de `TRUE` y `FALSE` ocupa menos que una de textos, y una columna vacía que no se lee no ocupa nada.
 
@@ -149,7 +149,7 @@ limpiar_nombres <- function(nombres) {
 limpiar_nombres(names(ingenua))
 ```
 
-`gsub()` usa una expresión regular: `[^a-z0-9]+` significa "uno o más caracteres que no sean letras ni números". Las expresiones regulares se tratan con calma más adelante en el libro; por ahora basta con saber qué hace esta.
+`gsub()` usa una expresión regular: `[^a-z0-9]+` significa "uno o más caracteres que no sean letras ni números". Las expresiones regulares se tratan con calma en la @sec-regex; por ahora basta con saber qué hace esta.
 
 La versión explícita aprovecha que `col_select` de `readr` permite **seleccionar y renombrar en el mismo paso**, con la forma `nombre_nuevo = nombre_original`:
 
@@ -672,7 +672,7 @@ La estrategia tiene tres pasos (@fig-columnas-vacias): leer una **muestra** de f
 
 ![Porcentaje de celdas con datos en cada columna del archivo de cartera. Las cuatro columnas sin datos no se leen.](imagenes/importacion/columnas-vacias.svg){#fig-columnas-vacias fig-alt="Barras horizontales con el porcentaje de celdas con datos de las dieciséis columnas, después de declarar las marcas de faltante. Doce columnas tienen datos: la mayoría al cien por ciento, Fecha Pago al 57, Calificación Riesgo al 88 y Ciudad al 92. Observaciones, Columna1, Columna2 y la columna sin nombre ...16 están al cero por ciento, con trazo discontinuo y la nota: no se leen, cuatro columnas sin un solo dato. A la derecha, los tres pasos: muestra, contar y excluir, y la nota de que con DuckDB se puede revisar el archivo completo con SUMMARIZE."}
 
-La muestra tiene un límite: una columna vacía en las primeras miles de filas puede tener datos más abajo. Si el archivo es grande y la decisión importa, revisa el archivo completo con DuckDB, que lo recorre en disco sin cargarlo en memoria. Y si un mes después la columna empieza a traer datos, el contrato debe volver a revisarse: lo veremos en el capítulo de validación.
+La muestra tiene un límite: una columna vacía en las primeras miles de filas puede tener datos más abajo. Si el archivo es grande y la decisión importa, revisa el archivo completo con DuckDB, que lo recorre en disco sin cargarlo en memoria. Y si un mes después la columna empieza a traer datos, el contrato debe volver a revisarse: las reglas de calidad del @sec-tipos-calidad sirven para detectarlo.
 
 ### Ejemplo guiado 5.5: detectar y omitir las columnas vacías
 

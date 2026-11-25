@@ -1,0 +1,92 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 520" width="960" height="520" role="img" aria-labelledby="titulo desc">
+<title id="titulo">Qué puede significar un valor faltante</title>
+<desc id="desc">Siete valores del archivo con su significado y la decisión al importar. Celda vacía en Observaciones: no se registró nada, se importa como NA. N/A en Fecha Pago: no aplica porque la factura no se ha pagado, se importa como NA y se documenta. SIN DATO en Ciudad: desconocido, NA. 999 en Calificación: código del sistema para sin calificar, NA solo en esa columna. Guion en Saldo: cero en formato contable, se importa como 0. Cero en Saldo: un valor real, se conserva. NA como sigla de un país: un texto legítimo, se conserva como texto. Abajo, con trazo discontinuo, lo que se debe evitar: una sola lista de faltantes para todas las columnas.</desc>
+<style>
+  text{font-family:"Source Sans 3","Source Sans Pro","Segoe UI",Helvetica,Arial,sans-serif;fill:#1a1a1a}
+  .h{font-size:17px;font-weight:700}
+  .b{font-size:15.5px}
+  .s{font-size:14px;fill:#3d3d3d}
+  .m{font-family:"Source Code Pro",Consolas,"DejaVu Sans Mono",monospace;font-size:14px}
+</style>
+<defs>
+  <marker id="fl" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#555555"/></marker>
+</defs>
+
+<rect x="0" y="0" width="960" height="520" fill="#ffffff"/>
+
+<text x="46" y="44" class="s" style="font-weight:700">EN EL ARCHIVO</text>
+<text x="330" y="44" class="s" style="font-weight:700">QUÉ SIGNIFICA</text>
+<text x="742" y="44" class="s" style="font-weight:700">AL IMPORTAR</text>
+
+<!-- fila 1 -->
+<rect x="30" y="58" width="250" height="44" rx="6" fill="#f2f2f2"/>
+<text x="46" y="85" class="m">""</text><text x="264" y="85" class="s" text-anchor="end">Observaciones</text>
+<line x1="284" y1="80" x2="318" y2="80" stroke="#555555" stroke-width="1.5" marker-end="url(#fl)"/>
+<text x="330" y="85" class="b">no se registró nada</text>
+<line x1="690" y1="80" x2="724" y2="80" stroke="#555555" stroke-width="1.5" marker-end="url(#fl)"/>
+<rect x="730" y="62" width="200" height="36" rx="6" fill="#1a1a1a"/>
+<text x="830" y="85" class="m" text-anchor="middle" style="fill:#ffffff;font-weight:700">NA</text>
+
+<!-- fila 2 -->
+<rect x="30" y="112" width="250" height="44" rx="6" fill="#f2f2f2"/>
+<text x="46" y="139" class="m">N/A</text><text x="264" y="139" class="s" text-anchor="end">Fecha Pago</text>
+<line x1="284" y1="134" x2="318" y2="134" stroke="#555555" stroke-width="1.5" marker-end="url(#fl)"/>
+<text x="330" y="139" class="b">no aplica: la factura no se ha pagado</text>
+<line x1="690" y1="134" x2="724" y2="134" stroke="#555555" stroke-width="1.5" marker-end="url(#fl)"/>
+<rect x="730" y="116" width="200" height="36" rx="6" fill="#1a1a1a"/>
+<text x="830" y="139" class="m" text-anchor="middle" style="fill:#ffffff;font-weight:700">NA + documentar</text>
+
+<!-- fila 3 -->
+<rect x="30" y="166" width="250" height="44" rx="6" fill="#f2f2f2"/>
+<text x="46" y="193" class="m">SIN DATO</text><text x="264" y="193" class="s" text-anchor="end">Ciudad</text>
+<line x1="284" y1="188" x2="318" y2="188" stroke="#555555" stroke-width="1.5" marker-end="url(#fl)"/>
+<text x="330" y="193" class="b">existe, pero no se conoce</text>
+<line x1="690" y1="188" x2="724" y2="188" stroke="#555555" stroke-width="1.5" marker-end="url(#fl)"/>
+<rect x="730" y="170" width="200" height="36" rx="6" fill="#1a1a1a"/>
+<text x="830" y="193" class="m" text-anchor="middle" style="fill:#ffffff;font-weight:700">NA</text>
+
+<!-- fila 4 -->
+<rect x="30" y="220" width="250" height="44" rx="6" fill="#f2f2f2"/>
+<text x="46" y="247" class="m">999</text><text x="264" y="247" class="s" text-anchor="end">Calificación</text>
+<line x1="284" y1="242" x2="318" y2="242" stroke="#555555" stroke-width="1.5" marker-end="url(#fl)"/>
+<text x="330" y="247" class="b">código del sistema: sin calificar</text>
+<line x1="690" y1="242" x2="724" y2="242" stroke="#555555" stroke-width="1.5" marker-end="url(#fl)"/>
+<rect x="730" y="224" width="200" height="36" rx="6" fill="#1a1a1a"/>
+<text x="830" y="247" class="m" text-anchor="middle" style="fill:#ffffff;font-weight:700">NA, solo aquí</text>
+
+<!-- separador -->
+<line x1="30" y1="280" x2="930" y2="280" stroke="#c4c4c4" stroke-width="1.2" stroke-dasharray="3 3"/>
+<text x="930" y="300" class="s" text-anchor="end" style="font-style:italic">No todo lo que parece vacío es un faltante</text>
+
+<!-- fila 5 -->
+<rect x="30" y="312" width="250" height="44" rx="6" fill="#f2f2f2"/>
+<text x="46" y="339" class="m">-</text><text x="264" y="339" class="s" text-anchor="end">Saldo</text>
+<line x1="284" y1="334" x2="318" y2="334" stroke="#555555" stroke-width="1.5" marker-end="url(#fl)"/>
+<text x="330" y="339" class="b">cero, en formato contable</text>
+<line x1="690" y1="334" x2="724" y2="334" stroke="#555555" stroke-width="1.5" marker-end="url(#fl)"/>
+<rect x="730" y="316" width="200" height="36" rx="6" fill="#ffffff" stroke="#1a1a1a" stroke-width="2"/>
+<text x="830" y="339" class="m" text-anchor="middle" style="font-weight:700">0</text>
+
+<!-- fila 6 -->
+<rect x="30" y="366" width="250" height="44" rx="6" fill="#f2f2f2"/>
+<text x="46" y="393" class="m">0</text><text x="264" y="393" class="s" text-anchor="end">Saldo</text>
+<line x1="284" y1="388" x2="318" y2="388" stroke="#555555" stroke-width="1.5" marker-end="url(#fl)"/>
+<text x="330" y="393" class="b">un valor real: no se debe nada</text>
+<line x1="690" y1="388" x2="724" y2="388" stroke="#555555" stroke-width="1.5" marker-end="url(#fl)"/>
+<rect x="730" y="370" width="200" height="36" rx="6" fill="#ffffff" stroke="#1a1a1a" stroke-width="2"/>
+<text x="830" y="393" class="m" text-anchor="middle" style="font-weight:700">0</text>
+
+<!-- fila 7 -->
+<rect x="30" y="420" width="250" height="44" rx="6" fill="#f2f2f2"/>
+<text x="46" y="447" class="m">NA</text><text x="264" y="447" class="s" text-anchor="end">País</text>
+<line x1="284" y1="442" x2="318" y2="442" stroke="#555555" stroke-width="1.5" marker-end="url(#fl)"/>
+<text x="330" y="447" class="b">un texto legítimo: la sigla de Namibia</text>
+<line x1="690" y1="442" x2="724" y2="442" stroke="#555555" stroke-width="1.5" marker-end="url(#fl)"/>
+<rect x="730" y="424" width="200" height="36" rx="6" fill="#ffffff" stroke="#1a1a1a" stroke-width="2"/>
+<text x="830" y="447" class="m" text-anchor="middle" style="font-weight:700">"NA" (texto)</text>
+
+<!-- Evitar -->
+<rect x="30" y="476" width="900" height="36" rx="8" fill="#ffffff" stroke="#7a7a7a" stroke-width="1.5" stroke-dasharray="7 5"/>
+<text x="46" y="499" class="b" style="font-weight:700;fill:#555555">Evitar</text>
+<text x="108" y="499" class="b" style="fill:#555555">una sola lista de faltantes para todas las columnas: 999 o NA pueden ser datos válidos en otra.</text>
+</svg>

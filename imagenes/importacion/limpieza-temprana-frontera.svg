@@ -1,0 +1,82 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 500" width="960" height="500" role="img" aria-labelledby="titulo desc">
+<title id="titulo">La frontera entre la limpieza temprana y la limpieza</title>
+<desc id="desc">Un archivo crudo pasa por la lectura, donde se resuelve cómo están escritos los datos: nombres de columnas, marcas de faltante, sí y no, formato de fecha y zona horaria, separadores numéricos y columnas vacías. La tabla resultante pasa a la limpieza, donde se resuelve lo que dicen los datos: duplicados, categorías inconsistentes, valores imposibles y reglas de negocio. Con trazo discontinuo, la práctica que se debe evitar: leer todo como viene y repetir los mismos arreglos en cada análisis.</desc>
+<style>
+  text{font-family:"Source Sans 3","Source Sans Pro","Segoe UI",Helvetica,Arial,sans-serif;fill:#1a1a1a}
+  .h{font-size:17px;font-weight:700}
+  .b{font-size:15.5px}
+  .s{font-size:14px;fill:#3d3d3d}
+  .m{font-family:"Source Code Pro",Consolas,"DejaVu Sans Mono",monospace;font-size:13px}
+</style>
+<defs>
+  <marker id="fl" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#1a1a1a"/></marker>
+</defs>
+
+<rect x="0" y="0" width="960" height="500" fill="#ffffff"/>
+
+<!-- Archivo crudo -->
+<rect x="30" y="30" width="220" height="300" rx="10" fill="#f2f2f2" stroke="#c4c4c4" stroke-width="1.5"/>
+<text x="46" y="58" class="h">Archivo crudo</text>
+<text x="46" y="78" class="s">así lo escribió quien lo exportó</text>
+<text x="46" y="112" class="m">¿Pagó?</text>
+<text x="236" y="112" text-anchor="end" class="m">Sí, SI, no</text>
+<text x="46" y="136" class="m">Fecha Pago</text>
+<text x="236" y="136" text-anchor="end" class="m">23/02/2026</text>
+<text x="236" y="156" text-anchor="end" class="m">N/A</text>
+<text x="46" y="180" class="m">Ciudad</text>
+<text x="236" y="180" text-anchor="end" class="m">SIN DATO</text>
+<text x="46" y="204" class="m">Calificación</text>
+<text x="236" y="204" text-anchor="end" class="m">999</text>
+<text x="46" y="228" class="m">Valor ($)</text>
+<text x="236" y="228" text-anchor="end" class="m">5.208.379,70</text>
+<text x="46" y="252" class="m">Saldo</text>
+<text x="236" y="252" text-anchor="end" class="m">-</text>
+<text x="46" y="276" class="m">Columna1</text>
+<text x="236" y="276" text-anchor="end" class="m" style="fill:#7a7a7a">(vacía)</text>
+<text x="46" y="300" class="m">...16</text>
+<text x="236" y="300" text-anchor="end" class="m" style="fill:#7a7a7a">(vacía)</text>
+
+<line x1="254" y1="180" x2="282" y2="180" stroke="#1a1a1a" stroke-width="2.2" marker-end="url(#fl)"/>
+
+<!-- Lectura -->
+<rect x="288" y="30" width="310" height="300" rx="10" fill="#ffffff" stroke="#1a1a1a" stroke-width="2"/>
+<rect x="288" y="30" width="310" height="58" rx="10" fill="#1a1a1a"/>
+<rect x="288" y="70" width="310" height="18" fill="#1a1a1a"/>
+<text x="304" y="54" class="s" style="fill:#ffffff;font-weight:700">LECTURA (CAPÍTULOS 3 A 5)</text>
+<text x="304" y="77" class="h" style="fill:#ffffff">¿Cómo están escritos los datos?</text>
+<text x="306" y="116" class="b">Nombres de columnas</text>
+<text x="306" y="144" class="b">Marcas de faltante: N/A, SIN DATO</text>
+<text x="306" y="172" class="b">Sí y no como verdadero y falso</text>
+<text x="306" y="200" class="b">Formato de fecha y zona horaria</text>
+<text x="306" y="228" class="b">Separadores de miles y decimales</text>
+<text x="306" y="256" class="b">Columnas vacías que no se leen</text>
+<rect x="304" y="274" width="278" height="40" rx="6" fill="#e6e6e6"/>
+<text x="316" y="299" class="s" style="font-weight:700">Se declara una vez, en el contrato.</text>
+
+<line x1="602" y1="180" x2="630" y2="180" stroke="#1a1a1a" stroke-width="2.2" marker-end="url(#fl)"/>
+
+<!-- Limpieza -->
+<rect x="636" y="30" width="294" height="300" rx="10" fill="#ffffff" stroke="#1a1a1a" stroke-width="2"/>
+<rect x="636" y="30" width="294" height="58" rx="10" fill="#d6d6d6"/>
+<rect x="636" y="70" width="294" height="18" fill="#d6d6d6"/>
+<text x="652" y="54" class="s" style="font-weight:700;fill:#1a1a1a">LIMPIEZA (CAPÍTULOS 6 Y 7)</text>
+<text x="652" y="77" class="h">¿Qué dicen los datos?</text>
+<text x="654" y="116" class="b">Filas duplicadas</text>
+<text x="654" y="144" class="b">Categorías inconsistentes:</text>
+<text x="654" y="164" class="m">Bogotá, Bogota D.C.</text>
+<text x="654" y="192" class="b">Valores imposibles:</text>
+<text x="654" y="212" class="s">pago anterior a la emisión</text>
+<text x="654" y="240" class="b">Reglas de negocio</text>
+<text x="654" y="260" class="s">y valores atípicos</text>
+<rect x="652" y="274" width="262" height="40" rx="6" fill="#e6e6e6"/>
+<text x="664" y="299" class="s" style="font-weight:700">Exige revisar y decidir caso a caso.</text>
+
+<!-- Evitar -->
+<rect x="30" y="352" width="900" height="62" rx="10" fill="#ffffff" stroke="#7a7a7a" stroke-width="1.5" stroke-dasharray="7 5"/>
+<text x="48" y="378" class="b" style="font-weight:700;fill:#555555">Evitar</text>
+<text x="110" y="378" class="b" style="fill:#555555">leer todo como viene y repetir los mismos arreglos de formato en cada análisis,</text>
+<text x="110" y="400" class="b" style="fill:#555555">en cada script y en cada persona que vuelve a abrir el archivo.</text>
+
+<rect x="30" y="432" width="900" height="44" rx="8" fill="#1a1a1a"/>
+<text x="480" y="459" class="b" text-anchor="middle" style="fill:#ffffff;font-weight:700">Si el problema está en cómo se escribió el dato, se resuelve al leer; si está en lo que dice, al limpiar.</text>
+</svg>

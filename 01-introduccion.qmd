@@ -13,34 +13,37 @@ El libro avanza desde la preparación del entorno hasta la publicación y el man
 4. **Importación de datos II: formatos y fuentes**  
    Lectura de Excel, Parquet y JSON; consumo de APIs; consultas a bases de datos delegando el trabajo al motor; criterios para elegir formato y un proyecto que integra cuatro fuentes en un archivo Parquet.
 
-5. **Tipos de datos y calidad**  
-   Manejo de fechas, texto y números; identificación de valores faltantes, duplicados y errores de formato; aplicación de validaciones.
+5. **Importación de datos III: limpieza temprana**  
+   Cómo resolver desde la lectura lo que depende de cómo se escribió el dato: nombres de columnas, marcas de faltante por columna, sí y no como booleanos, fechas en cada lenguaje y zonas horarias, separadores numéricos y columnas vacías.
 
-6. **Transformación y limpieza**  
+6. **Tipos de datos y calidad**  
+   Qué consecuencias tiene el tipo de cada columna (coerción, decimales, identificadores y categorías) y cómo medir la calidad de una tabla: perfil, dimensiones de calidad, reglas de validación escritas como datos y un reporte que marca cada fila con sus problemas.
+
+7. **Transformación y limpieza**  
    Filtrado y ordenamiento, agrupación y unión de tablas, cambio de formatos, conversión de datos anidados (como los de JSON y APIs) en tablas y creación de variables derivadas. Se aplicarán expresiones regulares cuando ayuden a limpiar o extraer información de texto.
 
-7. **Estructuras, formatos y almacenamiento**  
+8. **Estructuras, formatos y almacenamiento**  
    Uso de listas, diccionarios, data frames y tablas de bases de datos, incluyendo datos anidados. Se compararán CSV, Excel, JSON, Parquet y bases de datos para elegir dónde almacenar la información según el caso.
 
-8. **Exportación de datos**  
+9. **Exportación de datos**  
    Escritura de resultados en archivos (CSV, Excel, JSON, Parquet), bases de datos y servicios de almacenamiento en la nube, teniendo en cuenta el volumen, el formato y el destino.
 
-9. **Estadística descriptiva, exploración y gráficos**  
+10. **Estadística descriptiva, exploración y gráficos**  
    Exploración de distribuciones, medidas resumen y correlaciones; elección y diseño de gráficos; uso de escalas, colores y etiquetas; reconocimiento de errores comunes de interpretación.
 
-10. **Funciones personalizadas**  
+11. **Funciones personalizadas**  
     Creación de funciones reutilizables, documentación de sus entradas y salidas, y comparación de alternativas en R y Python.
 
-11. **Flujos reproducibles y depuración**  
+12. **Flujos reproducibles y depuración**  
     Organización de análisis que puedan repetirse; lectura de mensajes de error, registro de eventos y diseño de procesos que puedan recuperarse ante fallos.
 
-12. **Automatización y programación de tareas**  
+13. **Automatización y programación de tareas**  
     Automatización de análisis y tareas recurrentes, como la consulta periódica de APIs, con R, Python y PowerShell. Se considerará cuándo priorizar la claridad y cuándo el rendimiento.
 
-13. **Reportes reproducibles y comunicación**  
+14. **Reportes reproducibles y comunicación**  
     Generación de documentos y presentaciones desde código, mostrando con claridad los resultados, las fuentes y los supuestos del análisis.
 
-14. **Pruebas, seguridad, publicación y mantenimiento**  
+15. **Pruebas, seguridad, publicación y mantenimiento**  
     Verificación de resultados y casos límite; protección de credenciales, claves de API y datos sensibles; uso responsable del web scraping; publicación de los análisis y mantenimiento de los procesos a lo largo del tiempo.
 
 ## Objetivos de aprendizaje

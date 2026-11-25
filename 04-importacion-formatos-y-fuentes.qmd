@@ -111,18 +111,19 @@ print(sucursales)
 dbExecute(con, "INSTALL excel")
 dbExecute(con, "LOAD excel")
 
-dbGetQuery(con, "
+dbGetQuery(con, r"(
   SELECT *
   FROM read_xlsx(
     'datos/cap04/catalogo_sucursales.xlsx',
     sheet = 'Sucursales',
-    range = 'A4:E12',
+    range = 'A4:E',
+    stop_at_empty = true,
     all_varchar = true
   )
-")
+)")
 ```
 
-DuckDB lee Excel mediante su extensión `excel`, que se descarga la primera vez que se usa (requiere conexión a internet). En lugar de `skip`, indicamos el `range` de celdas que queremos leer: aquí, desde la celda `A4`. DuckDB solo lee archivos `.xlsx`, no `.xls`. Consulta la [documentación de la extensión](https://duckdb.org/docs/stable/core_extensions/excel) para ver todas las opciones.
+DuckDB lee Excel mediante su extensión `excel`, que se descarga la primera vez que se usa (requiere conexión a internet). En lugar de `skip`, indicamos el `range` de celdas que queremos leer: aquí, las columnas `A` a `E` desde la fila 4. Un rango abierto como `A4:E` tiene una trampa: DuckDB lo lee hasta la última fila posible de Excel y devuelve más de un millón de filas vacías. `stop_at_empty = true` le indica que se detenga en la primera fila vacía. DuckDB solo lee archivos `.xlsx`, no `.xls`. Consulta la [documentación de la extensión](https://duckdb.org/docs/stable/core_extensions/excel) para ver todas las opciones.
 
 :::
 
@@ -145,8 +146,13 @@ hojas_ventas <- hojas[grepl("^Ventas_", hojas)]
 names(hojas_ventas) <- hojas_ventas
 
 ventas_2025 <- hojas_ventas |>
-  map(\(hoja) read_excel(ruta_mensual, sheet = hoja,
-                         col_types = c("date", "text", "text", "numeric"))) |>
+  map(\(hoja) {
+    read_excel(
+      ruta_mensual,
+      sheet = hoja,
+      col_types = c("date", "text", "text", "numeric")
+    )
+  }) |>
   list_rbind(names_to = "hoja")
 
 dim(ventas_2025)
@@ -188,7 +194,7 @@ Name: count, dtype: int64
 Cuando `sheet_name` recibe una lista, `pandas` devuelve un diccionario con una tabla por hoja. `pd.concat()` las apila y usa las llaves del diccionario como columna `hoja`.
 
 ### DuckDB
-<!-- siento que esto se puede replantar--> 
+
 ```{r}
 #| label: duckdb-varias-hojas
 consultas <- sprintf(
@@ -201,11 +207,11 @@ dbExecute(con, paste(
   paste(consultas, collapse = "\nUNION ALL BY NAME\n")
 ))
 
-dbGetQuery(con, "SELECT hoja, count(*) AS filas FROM ventas_2025
-                 GROUP BY hoja ORDER BY hoja LIMIT 3")
+dbGetQuery(con, r"(SELECT hoja, count(*) AS filas FROM ventas_2025
+                 GROUP BY hoja ORDER BY hoja LIMIT 3)")
 ```
 
-`read_xlsx()` lee una hoja a la vez, así que armamos desde R una consulta por hoja y las unimos con `UNION ALL BY NAME`, que alinea las columnas por nombre. El resultado queda como una tabla de DuckDB, `ventas_2025`, que usaremos más adelante.
+`read_xlsx()` lee una sola hoja por llamada y DuckDB no tiene una función para listar las hojas de un libro. Por eso repartimos el trabajo: R descubre las hojas (el `hojas_ventas` de la pestaña de R) y arma una consulta por hoja, y DuckDB las lee y las une con `UNION ALL BY NAME`, que alinea las columnas por nombre. Es el patrón híbrido del capítulo anterior: cada herramienta hace lo que mejor sabe hacer. El resultado queda como una tabla de DuckDB, `ventas_2025`, que usaremos más adelante.
 
 :::
 
@@ -218,30 +224,38 @@ En lugar de crear una variable suelta por hoja, conviene guardarlas juntas en un
 ::: {.panel-tabset}
 
 ### R
-<!-- se vuelve engorroso llamar las misma funcion por cada hoja. al igual que el casos anterior se puede usar map o lapply para generar una lista y nombrar cada elemento con setnames. esto implica que el tipo de datos lo determina la función o se establece como character. si no estoy mal con pandas cuando se pasan las pestañas los datos se guardan como diccioneros de df. por su parte, la solucccionde duckdb no me convence. pienso que los df se puede guardar en una colunmmna de tipo varient, si no se puede mejor decir que esta herramienta no sería eficiente para este caso. -->
+
 ```{r}
 #| label: excel-lista-hojas
-catalogo <- list(
-  sucursales = read_excel(ruta_excel, sheet = "Sucursales", skip = 3,
-                          col_types = "text"),
-  metas      = read_excel(ruta_excel, sheet = "Metas_2026",
-                          col_types = c("text", "numeric"))
+contrato_catalogo <- list(
+  sucursales = list(sheet = "Sucursales", skip = 3, col_types = "text"),
+  metas      = list(sheet = "Metas_2026", col_types = c("text", "numeric"))
 )
+
+catalogo <- contrato_catalogo |>
+  map(\(opciones) do.call(read_excel, c(list(ruta_excel), opciones)))
 
 names(catalogo)
 catalogo$metas
 ```
+
+Escribir un `read_excel()` por hoja se vuelve engorroso cuando las hojas son muchas. En su lugar, describimos el contrato de cada hoja en una lista con nombres y la recorremos con `map()`, como en el Ejemplo 4.2. `do.call()` llama a `read_excel()` con la ruta y las opciones de cada hoja, y `map()` conserva los nombres de la lista, así que `catalogo` queda con un elemento por hoja.
+
+Si todas las hojas compartieran el mismo contrato, bastaría con un vector de nombres, como en el ejemplo anterior. El costo es que el tipo de cada columna lo decide un solo `col_types` para todas: o lo infiere `read_excel()`, o leemos todo como texto y convertimos después. Cuando las hojas son distintas, un contrato por hoja evita ese compromiso.
 
 ### Python
 
 ```python
 ruta_excel = "datos/cap04/catalogo_sucursales.xlsx"
 
+contrato_catalogo = {
+    "sucursales": {"sheet_name": "Sucursales", "skiprows": 3, "dtype": str},
+    "metas": {"sheet_name": "Metas_2026", "dtype": {"codigo_sucursal": str}},
+}
+
 catalogo = {
-    "sucursales": pd.read_excel(ruta_excel, sheet_name="Sucursales",
-                                skiprows=3, dtype=str),
-    "metas": pd.read_excel(ruta_excel, sheet_name="Metas_2026",
-                           dtype={"codigo_sucursal": str}),
+    nombre: pd.read_excel(ruta_excel, **opciones)
+    for nombre, opciones in contrato_catalogo.items()
 }
 
 print({nombre: tabla.shape for nombre, tabla in catalogo.items()})
@@ -256,28 +270,55 @@ print(catalogo["metas"].head(3))
 2             S03    876000000
 ```
 
-Si todas las hojas se leyeran con los mismos parámetros, bastaría con `pd.read_excel(ruta, sheet_name=None)`, que devuelve directamente un diccionario con todas las hojas.
+Es la misma idea de la pestaña de R: un diccionario con el contrato de cada hoja y una comprensión de diccionario que lo recorre. `**opciones` pasa el contenido de cada diccionario interno como argumentos de `read_excel()`.
+
+`pandas` ofrece un atajo: si `sheet_name` recibe una lista, como `["Sucursales", "Metas_2026"]`, devuelve directamente un diccionario con una tabla por hoja (`sheet_name=None` lee todas las hojas). Pero los demás argumentos se aplican a todas las hojas por igual: sin `skiprows=3`, las filas decorativas de `Sucursales` quedan como encabezado, y con `skiprows=3` la hoja `Metas_2026` perdería su encabezado y sus primeras filas. El atajo sirve cuando todas las hojas comparten el mismo contrato.
 
 ### DuckDB
 
 ```{r}
 #| label: duckdb-hojas-distintas
-dbExecute(con, "
+dbExecute(con, r"(
   CREATE OR REPLACE TABLE sucursales AS
   SELECT * FROM read_xlsx('datos/cap04/catalogo_sucursales.xlsx',
                           sheet = 'Sucursales', range = 'A4:E',
-                          all_varchar = true)
-")
-dbExecute(con, "
+                          stop_at_empty = true, all_varchar = true)
+)")
+dbExecute(con, r"(
   CREATE OR REPLACE TABLE metas AS
   SELECT * FROM read_xlsx('datos/cap04/catalogo_sucursales.xlsx',
                           sheet = 'Metas_2026')
-")
+)")
 
 dbListTables(con)
 ```
 
 En DuckDB el contenedor natural es la propia base de datos: una tabla por hoja, con su nombre, lista para unirse con SQL.
+
+¿Se podría imitar la lista de R, con todas las hojas en una sola tabla? Las versiones recientes de DuckDB (la 2.0 lo incluye) tienen el tipo `VARIANT`, que admite en una misma columna valores de estructuras distintas, así que cada hoja podría guardarse en una fila como una lista de registros:
+
+```{r}
+#| label: duckdb-variant
+dbExecute(con, r"(
+  CREATE OR REPLACE TABLE libro AS
+  SELECT 'sucursales' AS hoja, list(t)::VARIANT AS filas
+  FROM read_xlsx('datos/cap04/catalogo_sucursales.xlsx', sheet = 'Sucursales',
+                 range = 'A4:E', stop_at_empty = true, all_varchar = true) AS t
+  UNION ALL
+  SELECT 'metas', list(t)::VARIANT
+  FROM read_xlsx('datos/cap04/catalogo_sucursales.xlsx', sheet = 'Metas_2026') AS t
+)")
+
+dbGetQuery(con, r"(
+  SELECT unnest(filas::STRUCT(codigo_sucursal VARCHAR, meta_ventas DOUBLE)[],
+                recursive := true)
+  FROM libro
+  WHERE hoja = 'metas'
+  LIMIT 3
+)")
+```
+
+Funciona, pero va contra la herramienta: para consultar una hoja hay que declarar otra vez su estructura y desanidarla con `unnest()`, y se pierden los tipos y las estadísticas que DuckDB usa para consultar rápido. Para guardar juntas tablas con estructuras distintas, DuckDB no es el contenedor más eficiente; su ventaja aparece cuando cada hoja es una tabla y se van a combinar con SQL.
 
 :::
 
@@ -395,18 +436,18 @@ print(len(diciembre))
 
 ```{r}
 #| label: duckdb-particiones
-dbExecute(con, "
+dbExecute(con, r"(
   COPY (SELECT *, month(fecha) AS mes FROM ventas_2025)
   TO 'datos/cap04/ventas_2025_particionado_duckdb'
   (FORMAT parquet, PARTITION_BY (mes), OVERWRITE_OR_IGNORE)
-")
+)")
 
-dbGetQuery(con, "
+dbGetQuery(con, r"(
   SELECT count(*) AS filas_diciembre
   FROM read_parquet('datos/cap04/ventas_2025_particionado_duckdb/*/*.parquet',
                     hive_partitioning = true)
   WHERE mes = 12
-")
+)")
 ```
 
 `PARTITION_BY` escribe una carpeta por mes y `hive_partitioning = true` recupera la columna `mes` a partir del nombre de cada carpeta. El filtro `WHERE mes = 12` hace que DuckDB lea solo la carpeta de diciembre.
@@ -422,7 +463,7 @@ Las afirmaciones sobre rendimiento se comprueban. Mide con tus propios datos y t
 ```{r}
 #| label: generar-historico
 #| eval: false
-dbExecute(con, "
+dbExecute(con, r"(
   COPY (
     SELECT
       i + 1 AS id_venta,
@@ -442,7 +483,7 @@ dbExecute(con, "
     ) AS s ON s.k = hash(i, 'sucursal') % 8
     ORDER BY id_venta
   ) TO 'datos/cap04/ventas_historico_grande.csv' (HEADER, DELIMITER ',')
-")
+)")
 ```
 
 DuckDB construye los 2,5 millones de filas con `range()` y las escribe directamente al disco, sin pasar por la memoria de R; en un equipo corriente tarda unos segundos. Los valores salen de `hash()` en lugar de números aleatorios, así que con la misma versión de DuckDB el archivo es idéntico cada vez que se genera, y tus resultados se pueden comparar con los de otras personas. La misma consulta funciona en Python dentro de `duckdb.sql()`.
@@ -638,7 +679,7 @@ ok {'pagina': 1, 'por_pagina': 50, 'total': 50}
 
 ```{r}
 #| label: duckdb-json
-operaciones_duck <- dbGetQuery(con, "
+operaciones_duck <- dbGetQuery(con, r"(
   SELECT
     r.id_operacion,
     r.fecha,
@@ -649,7 +690,7 @@ operaciones_duck <- dbGetQuery(con, "
     SELECT unnest(resultados) AS r
     FROM read_json('datos/cap04/respuesta_api_trm.json')
   )
-")
+)")
 
 head(operaciones_duck)
 ```
@@ -698,10 +739,10 @@ Path("datos/cap04/copia_api.json").write_text(r.text, encoding="utf-8")
 ```{r}
 #| label: api-duckdb
 #| eval: false
-dbExecute(con, "
+dbExecute(con, r"(
   COPY (SELECT * FROM read_json('https://www.datos.gov.co/resource/xdk5-pm3f.json?$limit=5'))
   TO 'datos/cap04/copia_api.parquet' (FORMAT parquet)
-")
+)")
 ```
 
 :::
@@ -733,7 +774,7 @@ con_ops <- dbConnect(
 
 dbListTables(con_ops)
 
-resumen <- dbGetQuery(con_ops, "
+resumen <- dbGetQuery(con_ops, r"(
   SELECT c.ciudad,
          count(*)                       AS n_facturas,
          round(sum(f.valor_factura), 2) AS total_facturado
@@ -742,7 +783,7 @@ resumen <- dbGetQuery(con_ops, "
   WHERE f.fecha BETWEEN ? AND ?
   GROUP BY c.ciudad
   ORDER BY total_facturado DESC
-", params = list(as.Date("2026-01-01"), as.Date("2026-01-31")))
+)", params = list(as.Date("2026-01-01"), as.Date("2026-01-31")))
 
 dbDisconnect(con_ops)
 resumen
@@ -808,14 +849,14 @@ Cierra el capítulo con un caso que integra todo lo aprendido. Debes combinar **
 | `respuesta_api_trm.json` | JSON anidado | Operaciones con `cliente.nit` y `cliente.ciudad` |
 | `operaciones.duckdb` | Base de datos | Tablas `facturas` y `clientes` |
 
-![Proyecto integrador: cuatro fuentes, dos llaves y un archivo Parquet consolidado.](imagenes/importacion/proyecto-integrador.svg){#fig-proyecto-integrador fig-alt="Cuatro fuentes a la izquierda: ventas_2026_01.csv y catalogo_sucursales.xlsx se unen por codigo_dane; respuesta_api_trm.json y operaciones.duckdb se unen por nit. Ambas ramas llegan a un paso de consolidar y verificar filas y ceros iniciales, que produce consolidado_cap04.parquet para la auditoría del capítulo 5."}
+![Proyecto integrador: cuatro fuentes, dos llaves y un archivo Parquet consolidado.](imagenes/importacion/proyecto-integrador.svg){#fig-proyecto-integrador fig-alt="Cuatro fuentes a la izquierda: ventas_2026_01.csv y catalogo_sucursales.xlsx se unen por codigo_dane; respuesta_api_trm.json y operaciones.duckdb se unen por nit. Ambas ramas llegan a un paso de consolidar y verificar filas y ceros iniciales, que produce consolidado_cap04.parquet para la auditoría del capítulo 6."}
 
 Antes de escribir código, completa el **contrato de lectura** de cada fuente: qué columnas necesitas, cuál es el tipo de cada una (en especial los identificadores `codigo_dane` y `nit`) y qué riesgo tiene la fuente. Luego:
 
 1. Aplica la heurística del capítulo: selecciona solo las columnas necesarias y fija los tipos desde la lectura.
 2. Combina las fuentes usando las llaves comunes: `codigo_dane` para ventas y sucursales, y `nit` para la API y los clientes.
 3. Comprueba que no se perdieron ceros iniciales y que el número de filas es el esperado.
-4. Exporta una **tabla consolidada en formato Parquet**, `datos/cap04/consolidado_cap04.parquet`, lista para ser auditada en el Capítulo 5 (Tipos de datos y calidad).
+4. Exporta una **tabla consolidada en formato Parquet**, `datos/cap04/consolidado_cap04.parquet`, lista para ser auditada en el @sec-tipos-calidad.
 
 ::: {.panel-tabset}
 
@@ -874,7 +915,7 @@ consolidado.to_parquet("datos/cap04/consolidado_cap04.parquet", index=False)
 
 :::
 
-Con el archivo Parquet consolidado ya tienes los datos importados, con tipos controlados y trazables hasta su fuente. En el Capítulo 5 aprenderemos a auditarlos: qué significa que un dato tenga el tipo correcto y cómo medir su calidad.
+Con el archivo Parquet consolidado ya tienes los datos importados, con tipos controlados y trazables hasta su fuente. Falta un último paso de la importación: en el siguiente capítulo (@sec-limpieza-temprana) completaremos el contrato con la limpieza temprana (nombres de columnas, valores faltantes, booleanos, fechas y columnas vacías), y en el @sec-tipos-calidad aprenderemos a auditar los datos: qué significa que un dato tenga el tipo correcto y cómo medir su calidad.
 
 ```{r}
 #| label: cerrar-conexion-cap04

@@ -63,7 +63,7 @@ Los problemas más frecuentes del texto son también los más simples: espacios 
 
 Leemos el CRM todo como texto. Con `trim_ws = FALSE` le pedimos a `readr` que no quite los espacios al leer, para ver el problema; en un flujo real, quitarlos en la lectura es limpieza temprana y está bien hacerlo. `N/A` en el teléfono se declara como faltante, como en el @sec-limpieza-temprana.
 
-::: {.panel-tabset}
+::: {.panel-tabset group="lenguaje"}
 
 ### R
 
@@ -206,7 +206,7 @@ Tres columnas del CRM, tres usos de las expresiones regulares:
 - **Teléfono**: el mismo número aparece como `6025486494`, `(602) 548 6494`, `602-548-6494` o `+57 6025486494`. La regla: quedarse con los dígitos, quitar el indicativo del país (`57`) si sobra, y aceptar solo números de diez dígitos que empiecen por `60` (fijos) o por `3` (celulares).
 - **Correo**: validar que tenga la forma `usuario@dominio.extension`.
 
-::: {.panel-tabset}
+::: {.panel-tabset group="lenguaje"}
 
 ### R
 
@@ -326,7 +326,7 @@ El resultado es una **tabla de equivalencias** (variante y forma canónica) que 
 
 ### Ejemplo guiado 8.3: la tabla de equivalencias de las ciudades
 
-::: {.panel-tabset}
+::: {.panel-tabset group="lenguaje"}
 
 ### R
 
@@ -508,7 +508,7 @@ Con frecuencia se combinan, columna por columna: para cada campo, el valor más 
 
 Con los NIT ya limpios, los 255 registros del CRM deberían reducirse a un registro por cliente.
 
-::: {.panel-tabset}
+::: {.panel-tabset group="lenguaje"}
 
 ### R
 
@@ -612,7 +612,7 @@ data.frame(sucursal = c("S01", NA, NA, "S02", NA), mes = c(1, 2, 3, 1, 2)) |>
 
 ### Ejemplo guiado 8.5: la ciudad faltante de la cartera
 
-::: {.panel-tabset}
+::: {.panel-tabset group="lenguaje"}
 
 ### R
 
@@ -674,7 +674,7 @@ Ante un atípico, la regla es **no borrarlo ni recortarlo** para que los promedi
 
 ### Ejemplo guiado 8.6: el año mal digitado y la factura grande
 
-::: {.panel-tabset}
+::: {.panel-tabset group="lenguaje"}
 
 ### R
 
@@ -756,7 +756,7 @@ Ahora reunimos todo en un solo proceso, en el orden de la @fig-flujo-limpieza. C
 4. Marcar para revisión la factura atípica.
 5. Volver a auditar con las reglas del @sec-tipos-calidad.
 
-::: {.panel-tabset}
+::: {.panel-tabset group="lenguaje"}
 
 ### R
 

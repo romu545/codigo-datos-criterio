@@ -9,7 +9,7 @@ Error in `list_rbind()`:
 
 Nadie cambió el código. Algo cambió en los datos, y el mensaje no dice qué. Mientras tanto, gerencia espera los indicadores del mes.
 
-Este capítulo es sobre ese momento, y sobre cómo prepararse para él antes de que llegue. Tiene dos partes que se necesitan una a la otra. La primera es organizar el trabajo como un **flujo** (en inglés, *pipeline*: tubería): una serie de pasos con nombre, cada uno una función con una entrada y una salida claras, que se ejecuta completo, desde cero, con un solo comando. La segunda es **depurar**: encontrar con método por qué un flujo falla, en lugar de cambiar cosas al azar hasta que el error desaparezca. Un flujo bien organizado es más fácil de depurar, porque cada paso se puede revisar por separado, y depurar con método termina mejorando el flujo, porque cada error encontrado se convierte en una regla que lo detecta la próxima vez.
+Este capítulo es sobre ese momento, y sobre cómo prepararse para él antes de que llegue. Tiene dos partes que se necesitan una a la otra. La primera es organizar el trabajo como un **flujo** (en inglés, *pipeline*: tubería): una serie de pasos con nombre, cada uno una función con una entrada y una salida claras, que se ejecuta completo, desde cero, con un solo comando. La segunda es **depurar**: encontrar con método por qué un flujo falla, en lugar de cambiar cosas al azar hasta que el error desaparezca. Al final, cuando el flujo ya es confiable, lo dejamos programado para que se ejecute solo cada mes. Un flujo bien organizado es más fácil de depurar, porque cada paso se puede revisar por separado, y depurar con método termina mejorando el flujo, porque cada error encontrado se convierte en una regla que lo detecta la próxima vez.
 
 Las piezas ya están en el libro: el contrato de lectura del @sec-importacion, las reglas de calidad del @sec-tipos-calidad, la bitácora del @sec-limpiar, las cargas repetibles del @sec-guardar-compartir y las funciones del @sec-funciones. Este capítulo las une.
 
@@ -72,7 +72,7 @@ El flujo tiene cinco pasos, y cada uno es una función de `scripts/flujo_entrega
 4. **Resumir** (`resumir()`): calcula los indicadores mensuales por sucursal.
 5. **Guardar** (`guardar()`): escribe los indicadores en un archivo.
 
-::: {.panel-tabset}
+::: {.panel-tabset group="lenguaje"}
 
 ### R
 
@@ -176,7 +176,7 @@ La prueba de que un flujo es reproducible es ejecutarlo en una **sesión limpia*
 
 ### Ejemplo guiado 13.2: el script que solo funcionaba en tu sesión
 
-::: {.panel-tabset}
+::: {.panel-tabset group="lenguaje"}
 
 ### R
 
@@ -232,7 +232,7 @@ print("código de salida:", resultado.returncode)
 código de salida: 0
 ```
 
-`subprocess.run()` ejecuta un programa en un proceso nuevo; `sys.executable` es la ruta del Python que estás usando, y `-m scripts.flujo_entregas` ejecuta el archivo como módulo desde la carpeta del proyecto, lo que activa su bloque `if __name__ == "__main__":`. El **código de salida** es 0 cuando el programa terminó bien y otro número cuando falló; es lo que revisan las herramientas que automatizan tareas, como veremos en el siguiente capítulo.
+`subprocess.run()` ejecuta un programa en un proceso nuevo; `sys.executable` es la ruta del Python que estás usando, y `-m scripts.flujo_entregas` ejecuta el archivo como módulo desde la carpeta del proyecto, lo que activa su bloque `if __name__ == "__main__":`. El **código de salida** es 0 cuando el programa terminó bien y otro número cuando falló; es lo que revisan las herramientas que automatizan tareas, como veremos en la @sec-programar.
 
 En Python, `uv` registra las versiones en `uv.lock` y `uv sync` las reinstala; `uv run python ...` ejecuta un script con exactamente ese entorno. Es el equivalente de `renv`.
 
@@ -250,7 +250,7 @@ Con tres archivos de 800 filas, el flujo tarda unos segundos y se puede ejecutar
 
 ### Ejemplo guiado 13.3: un paso que se salta si no hace falta
 
-::: {.panel-tabset}
+::: {.panel-tabset group="lenguaje"}
 
 ### R
 
@@ -351,7 +351,7 @@ Volvamos al 3 de abril. **Depurar** es encontrar la causa de un error y corregir
 
 ### Ejemplo guiado 13.4: llega el archivo de abril
 
-::: {.panel-tabset}
+::: {.panel-tabset group="lenguaje"}
 
 ### R
 
@@ -514,6 +514,57 @@ dbGetQuery(con, r"(
 Y una herramienta que no es de ningún lenguaje: el **ejemplo mínimo reproducible**. Reducir el problema a unas pocas líneas de código y unas pocas filas de datos que muestren el error es, muchas veces, la forma de encontrarlo. Y si no, es lo que hay que preparar para pedir ayuda a un colega, en un foro o a una herramienta de inteligencia artificial: en R, el paquete `reprex` ayuda a prepararlo.
 :::
 
+## Que se ejecute solo {#sec-programar}
+
+El flujo ya se ejecuta con un solo comando desde la terminal. El último paso es que nadie tenga que escribir ese comando: que el sistema operativo lo ejecute solo, el día 3 de cada mes a las siete de la mañana, y que deje constancia de cómo le fue. Para eso no hace falta nada nuevo en R ni en Python. Hace falta un **programador de tareas**, que todos los sistemas operativos traen (@fig-programar):
+
+- En **Windows**, el **Programador de tareas**, que se maneja con una ventana o desde la terminal con `schtasks`.
+- En **macOS y Linux**, `cron`, que lee una lista de tareas con su horario, una por línea.
+
+![Programar el flujo: el sistema operativo lo lanza a la hora indicada, el código de salida dice cómo terminó y la bitácora guarda el detalle.](imagenes/flujos/programar.svg){#fig-programar fig-alt="Una línea de tiempo. El día 3 de cada mes a las 7:00, el programador de tareas del sistema operativo lanza un comando que primero entra a la carpeta del proyecto y después ejecuta Rscript con el flujo. El flujo corre sus cinco pasos y termina con un código de salida. Si es 0, la bitácora termina con fin del flujo y los indicadores quedan en su archivo. Si es 1, la bitácora registra en qué paso falló y por qué, y el programador puede marcar la tarea como fallida o avisar. Con trazo discontinuo, Evitar: programar el script sin fijar la carpeta de trabajo, porque las rutas relativas dejan de funcionar; escribir contraseñas dentro del script; y depender de un equipo que puede estar apagado a esa hora. Al pie: el flujo no cambia; solo cambia quién escribe el comando."}
+
+### Ejemplo guiado 13.5: los indicadores, el día 3 de cada mes
+
+**El código de salida.** Un programador de tareas no lee mensajes: solo sabe si el programa terminó bien o mal, por su **código de salida**. `Rscript` devuelve 0 cuando el script termina y 1 cuando se detiene con un error. Nuestro flujo se detiene con `stop()` cuando algo falla, así que el código de salida ya dice la verdad:
+
+```{r}
+#| label: programar-salida
+sin_archivos <- suppressWarnings(system2(rscript, c("scripts/flujo_entregas.R", "datos/cap13/no-existe"),
+                                         stdout = TRUE, stderr = TRUE))
+tail(sin_archivos, 2)
+attr(sin_archivos, "status")
+```
+
+Con una carpeta sin archivos, el paso de leer falla, la bitácora lo registra y `Rscript` termina con código 1. Un script que atrapa todos sus errores y termina "bien" aunque algo haya fallado engaña al programador de tareas, que reportará la tarea como exitosa.
+
+**La carpeta de trabajo.** El flujo usa rutas relativas, como `datos/cap13/entregas`, que funcionan porque Positron abre la carpeta del proyecto. Un programador de tareas no sabe cuál es la carpeta del proyecto: en Windows, la tarea arranca por defecto en `C:\Windows\System32`, y ahí `datos/cap13/entregas` no existe. Por eso el comando programado tiene siempre dos partes: **entrar a la carpeta del proyecto** y **ejecutar el script**.
+
+::: {.panel-tabset group="sistema"}
+
+### Windows
+
+```{.powershell}
+schtasks /Create /TN "indicadores-entregas" /SC MONTHLY /D 3 /ST 07:00 `
+  /TR "cmd /c cd /d D:\proyectos\materiales && ""C:\Program Files\R\R-4.6.2\bin\Rscript.exe"" scripts\flujo_entregas.R datos\cap13\entregas >> datos\cap13\salida\programada.log 2>&1"
+```
+
+`/SC MONTHLY /D 3 /ST 07:00` programa la tarea para el día 3 de cada mes a las 7:00. `/TR` es el comando: `cd /d` entra a la carpeta del proyecto (la `/d` permite cambiar también de unidad de disco) y `&&` ejecuta `Rscript` solo si el cambio de carpeta funcionó. `>> ... 2>&1` agrega todo lo que el flujo escriba, mensajes y errores, a un archivo de registro. Las comillas dobles repetidas (`""`) son la forma de escribir una ruta con espacios dentro de otra cadena entre comillas. `schtasks /Run /TN "indicadores-entregas"` ejecuta la tarea en el momento, para probarla, y `schtasks /Query /TN "indicadores-entregas" /V` muestra cuándo corrió por última vez y con qué código de salida.
+
+### macOS y Linux
+
+```{.bash}
+# crontab -e abre la lista de tareas; esta línea va en ella
+0 7 3 * * cd /Users/ana/materiales && /usr/local/bin/Rscript scripts/flujo_entregas.R datos/cap13/entregas >> datos/cap13/salida/programada.log 2>&1
+```
+
+Los cinco primeros campos son el horario: minuto (`0`), hora (`7`), día del mes (`3`), mes (`*`, todos) y día de la semana (`*`, cualquiera). El resto es el comando, con las mismas dos partes que en Windows. `cron` no carga la configuración de tu terminal, así que conviene escribir la ruta completa de `Rscript` (la da `which Rscript`). En macOS, la herramienta recomendada por el sistema es `launchd`, pero `cron` sigue funcionando y es más fácil de leer.
+
+:::
+
+Para Python, el comando programado es el mismo con `uv run --project /ruta/materiales python -m scripts.flujo_entregas datos/cap13/entregas`: `--project` le dice a `uv` qué entorno usar, aunque la tarea arranque en otra carpeta. En R, los paquetes `taskscheduleR` (Windows) y `cronR` (macOS y Linux) crean estas tareas desde la consola de R, sin escribir el comando a mano.
+
+**Saber que falló.** Una tarea programada que falla en silencio es peor que no tenerla: todos creen que los indicadores están al día. Hay tres niveles de aviso, de menor a mayor esfuerzo. El primero ya lo tenemos: la bitácora y el archivo de registro, que alguien revisa cada mes. El segundo es que el programador de tareas muestre la tarea como fallida, lo que funciona solo si el código de salida dice la verdad. El tercero es que el propio flujo envíe un correo o un mensaje cuando falla; para eso necesita credenciales, y las credenciales no se escriben dentro de un script. Cómo guardarlas, y cómo llevar estos flujos a un servidor que no dependa de que tu equipo esté encendido, son temas del último capítulo del libro.
+
 ## Ejercicio 13.1: tu propio flujo {#sec-ejercicio-flujo}
 
 Con el flujo de las entregas:
@@ -523,7 +574,7 @@ Con el flujo de las entregas:
 3. Ejecuta el flujo completo desde la terminal, con `Rscript scripts/flujo_entregas.R datos/cap13/entregas` o `uv run python -m scripts.flujo_entregas datos/cap13/entregas`, y revisa la bitácora.
 4. En los indicadores de abril, `S07` tiene un solo pedido a domicilio, y su porcentaje de entregas tardías es 0 %. ¿Qué tan confiable es ese número? ¿Qué agregarías a `resumir()` para que una sucursal con muy pocos pedidos no pase desapercibida en los indicadores?
 
-::: {.panel-tabset}
+::: {.panel-tabset group="lenguaje"}
 
 ### R
 
@@ -561,7 +612,9 @@ Un análisis reproducible no depende de recordar qué se hizo: depende de que to
 
 Cuando algo falla, depurar con método es más rápido que probar al azar: leer el mensaje, reproducir con lo mínimo, aislar la causa, corregirla donde corresponde y blindar el flujo con una regla nueva. El archivo de abril tenía dos cambios y el mensaje de error solo avisaba de uno; el método encontró los dos.
 
-Con este capítulo termina la cuarta parte del libro. Tenemos un flujo que se ejecuta con un comando desde la terminal y que se detiene con un mensaje claro cuando algo anda mal. El siguiente paso es natural: que se ejecute solo, cada mes, sin que nadie tenga que acordarse. De eso trata el siguiente capítulo.
+Y un flujo confiable se puede dejar en manos del sistema operativo: un programador de tareas que lo lanza cada mes desde la carpeta del proyecto, un código de salida que dice la verdad y una bitácora que guarda el detalle.
+
+Con este capítulo termina la cuarta parte del libro. Tenemos datos preparados, explorados y convertidos en indicadores por un flujo que corre solo. Falta lo que le da sentido a todo el trabajo: comunicar los resultados a quien tiene que tomar decisiones con ellos. De eso trata la última parte, que empieza por el gráfico, la forma más directa de comunicar un hallazgo.
 
 ```{r}
 #| label: cerrar-conexion-cap13

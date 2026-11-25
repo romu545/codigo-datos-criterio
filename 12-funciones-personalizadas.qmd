@@ -65,7 +65,7 @@ Al llamar la función, los valores concretos que se le pasan se llaman **argumen
 
 Calculamos muchas tasas en el libro: proporción de faltantes, de devoluciones, de pedidos tardíos. Todas son "parte sobre total, por cien", y todas tienen el mismo riesgo: un grupo sin datos, donde el total es cero.
 
-::: {.panel-tabset}
+::: {.panel-tabset group="lenguaje"}
 
 ### R
 
@@ -217,7 +217,7 @@ A veces una función debe aceptar argumentos que no conoce de antemano, para pas
 
 El caso típico es una función que envuelve a otra y quiere dejarle a quien llama la configuración de la función de adentro:
 
-::: {.panel-tabset}
+::: {.panel-tabset group="lenguaje"}
 
 ### R
 
@@ -295,7 +295,7 @@ Las macros de DuckDB aceptan parámetros por posición y, los que tienen valor p
 
 En el @sec-escala, el ejercicio pedía probar varios puntos de reorden con `map_dbl()`. Ahora queremos comparar políticas que cambian en varios parámetros a la vez. Guardamos cada política como una fila de una tabla y llamamos a la función con los argumentos de cada fila.
 
-::: {.panel-tabset}
+::: {.panel-tabset group="lenguaje"}
 
 ### R
 
@@ -432,7 +432,7 @@ R base tiene su propia familia, menos conocida que `map()`: `Map()` aplica una f
 
 Las reglas de la cartera se escribieron una por una. Muchas tienen la misma forma: "la columna X debe estar entre A y B", o "la columna X debe tomar uno de estos valores". En lugar de escribir cada regla, escribimos una **función que fabrica reglas**:
 
-::: {.panel-tabset}
+::: {.panel-tabset group="lenguaje"}
 
 ### R
 
@@ -610,7 +610,7 @@ La validación va al principio de la función, antes de hacer cualquier trabajo,
 
 `simular_inventario()` acepta cualquier cosa: un lote negativo, una espera de cero días, un texto en lugar de un número. Algunas de esas entradas dan un error confuso dentro del bucle; otras dan un resultado sin sentido. La solución es una función que **construya** la política y la valide una sola vez.
 
-::: {.panel-tabset}
+::: {.panel-tabset group="lenguaje"}
 
 ### R
 
@@ -762,7 +762,7 @@ Con las entregas del @sec-explorar:
 4. Guarda `comparar_grupos()` y `regla_en_catalogo()` en un archivo `scripts/exploracion.R` (o `.py`), con su documentación, y cárgalas desde un script nuevo.
 5. ¿Por qué `comparar_grupos()` no debería leer el archivo de entregas dentro de la función?
 
-::: {.panel-tabset}
+::: {.panel-tabset group="lenguaje"}
 
 ### R
 

@@ -1,0 +1,1 @@
+# Comunicar II: reportes con Quarto {#sec-reportes}

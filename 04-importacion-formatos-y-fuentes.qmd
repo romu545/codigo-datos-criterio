@@ -48,7 +48,7 @@ El libro `catalogo_sucursales.xlsx` tiene tres hojas: `Portada`, `Sucursales` y 
 
 ![La hoja Sucursales: tres filas decorativas y la tabla real desde la fila 4.](imagenes/importacion/excel-rango.svg){#fig-excel-rango fig-alt="Cuadrícula de Excel con columnas A a E. Las filas 1 a 3 contienen título, fuente y fecha de actualización y están marcadas como filas decorativas que se saltan. Desde la fila 4 están los encabezados codigo_sucursal, nombre_sucursal, ciudad, codigo_dane y region, enmarcados como tabla real. Al lado, las opciones skip igual a 3 en R, skiprows igual a 3 en pandas y range A4:E en DuckDB."}
 
-::: {.panel-tabset}
+::: {.panel-tabset group="lenguaje"}
 
 ### R
 
@@ -133,7 +133,7 @@ Un caso muy frecuente: el área comercial entrega las ventas de 2025 en un solo 
 
 La estrategia es la misma de los archivos múltiples del capítulo anterior (@sec-multiples-archivos), cambiando archivos por hojas: descubrir las hojas con un patrón en lugar de escribirlas a mano, leer cada una con el mismo contrato, apilarlas y conservar de qué hoja vino cada fila.
 
-::: {.panel-tabset}
+::: {.panel-tabset group="lenguaje"}
 
 ### R
 
@@ -221,7 +221,7 @@ Otras veces las hojas no se pueden apilar porque contienen cosas distintas. El c
 
 En lugar de crear una variable suelta por hoja, conviene guardarlas juntas en un **contenedor con nombres**: una lista en R o un diccionario en Python. Así el libro completo viaja como un solo objeto y cada tabla se alcanza por su nombre.
 
-::: {.panel-tabset}
+::: {.panel-tabset group="lenguaje"}
 
 ### R
 
@@ -387,7 +387,7 @@ La regla práctica es particionar por una columna que se use con frecuencia para
 
 Guardamos las ventas consolidadas del Ejemplo 4.2 en un conjunto particionado por mes y después leemos solo diciembre.
 
-::: {.panel-tabset}
+::: {.panel-tabset group="lenguaje"}
 
 ### R
 
@@ -498,7 +498,7 @@ Este archivo usa coma como delimitador y punto decimal, en `UTF-8`, para que la 
 
 **¿Con qué medir en R?** `system.time()` mide una sola ejecución, así que habría que repetirla a mano. `microbenchmark` repite automáticamente, pero está pensado para expresiones muy cortas: por defecto ejecuta cada una cien veces y mide en nanosegundos. Con `times = 5` y `unit = "ms"` funciona, pero para lecturas que tardan segundos preferimos `bench::mark()`. Repite cada expresión las veces que indiquemos, elige sola la unidad de tiempo, reporta el mínimo y la mediana, y además informa `mem_alloc`, la memoria que asignó R durante la lectura, que es justo el recurso que nos preocupa en este capítulo. Una precisión: `mem_alloc` solo cuenta la memoria que administra R. `arrow` y DuckDB trabajan buena parte del tiempo con memoria propia, fuera de R, así que para ellos esa cifra se queda corta.
 
-::: {.panel-tabset}
+::: {.panel-tabset group="lenguaje"}
 
 ### R
 ```{r}
@@ -625,7 +625,7 @@ El archivo `respuesta_api_trm.json` imita la respuesta típica de una API REST. 
 
 ![Aplanar la respuesta de la API: cada elemento de resultados es una fila y el objeto cliente se convierte en dos columnas.](imagenes/importacion/aplanar-json.svg){#fig-aplanar-json fig-alt="A la izquierda, el JSON con status, paginacion y el arreglo resultados; dentro de cada resultado, id_operacion, fecha, monto_usd y el objeto cliente con nit y ciudad. A la derecha, la tabla aplanada con columnas id, fecha, monto_usd, nit y ciudad, y una fila por operación."}
 
-::: {.panel-tabset}
+::: {.panel-tabset group="lenguaje"}
 
 ### R
 
@@ -704,7 +704,7 @@ DuckDB lee el JSON directamente y `unnest()` convierte el arreglo `resultados` e
 
 El flujo es el mismo cuando los datos vienen de una URL: se hace la solicitud, se obtiene el JSON, se aplana y **se guarda una copia local** antes de analizar. Esa copia hace el análisis reproducible aunque la API cambie o deje de estar disponible. El siguiente ejemplo, que no se ejecuta, usa un conjunto público de [datos.gov.co](https://www.datos.gov.co) solo para ilustrar la mecánica.
 
-::: {.panel-tabset}
+::: {.panel-tabset group="lenguaje"}
 
 ### R
 
@@ -760,7 +760,7 @@ Cuando los datos viven en una base de datos, el cambio de mentalidad es este: **
 
 La base `operaciones.duckdb` tiene dos tablas: `facturas` y `clientes`. Queremos el total facturado por ciudad durante enero de 2026. En lugar de leer ambas tablas completas, enviamos una consulta SQL que une las tablas, filtra por fecha y agrega, y traemos solo el resultado.
 
-::: {.panel-tabset}
+::: {.panel-tabset group="lenguaje"}
 
 ### R
 
@@ -858,7 +858,7 @@ Antes de escribir código, completa el **contrato de lectura** de cada fuente: q
 3. Comprueba que no se perdieron ceros iniciales y que el número de filas es el esperado.
 4. Exporta una **tabla consolidada en formato Parquet**, `datos/cap04/consolidado_cap04.parquet`, lista para ser auditada en el @sec-tipos-calidad.
 
-::: {.panel-tabset}
+::: {.panel-tabset group="lenguaje"}
 
 ### R
 

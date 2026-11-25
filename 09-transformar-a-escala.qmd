@@ -93,7 +93,7 @@ Las columnas se eligen con las mismas funciones de selección de `select()`:
 
 Queremos, por sucursal, el total y el promedio por venta de las unidades, el valor bruto y el valor neto, con los valores en millones.
 
-::: {.panel-tabset}
+::: {.panel-tabset group="lenguaje"}
 
 ### R
 
@@ -222,7 +222,7 @@ Volvamos al código del inicio. Las tres uniones repiten un patrón: tomar el re
 
 Los cuatro indicadores están en `datos/cap09/indicadores/`, un archivo por indicador. Queremos una tabla con una fila por sucursal y mes y una columna por indicador, que funcione igual si mañana llegan seis archivos en lugar de cuatro.
 
-::: {.panel-tabset}
+::: {.panel-tabset group="lenguaje"}
 
 ### R
 
@@ -386,7 +386,7 @@ Ocho productos tienen dos precios, así que cada una de sus ventas se une con am
 
 Dos preguntas. La primera: ¿se facturaron las ventas al precio vigente en su fecha? La segunda: ¿qué comisión le corresponde a cada sucursal cada mes según sus ventas?
 
-::: {.panel-tabset}
+::: {.panel-tabset group="lenguaje"}
 
 ### R
 
@@ -529,7 +529,7 @@ Completar la estructura es agregar las filas que faltan, con un valor explícito
 
 Queremos las unidades vendidas por día de `P05` (aceite de 3 litros) en cada sucursal. Esta tabla será la entrada de la simulación de inventario del Ejemplo 9.7. El universo son los días en que la red vendió algo, que tomamos de todas las ventas, no solo de las de `P05`.
 
-::: {.panel-tabset}
+::: {.panel-tabset group="lenguaje"}
 
 ### R
 
@@ -640,7 +640,7 @@ Para eso, en R, existen las **columnas-lista**: columnas en las que cada celda g
 
 Queremos saber si las ventas diarias de cada sucursal crecieron o bajaron durante el trimestre. Para cada sucursal ajustamos una recta a sus ventas por día; la pendiente dice cuánto cambian las ventas, en promedio, de un día al siguiente.
 
-::: {.panel-tabset}
+::: {.panel-tabset group="lenguaje"}
 
 ### R
 
@@ -759,7 +759,7 @@ Eso no convierte al bucle en un error. Hay problemas para los que es la herramie
 
 Retomamos la clasificación del Ejemplo 7.2 (grande desde 30 unidades, mediano desde 10, pequeño por debajo) y la aplicamos a un millón de valores de cuatro formas.
 
-::: {.panel-tabset}
+::: {.panel-tabset group="lenguaje"}
 
 ### R
 
@@ -890,7 +890,7 @@ Ahora un problema donde el bucle es la mejor herramienta. Cada sucursal empieza 
 
 El inventario de hoy depende del de ayer, y de si ayer se hizo un pedido, que a su vez dependía del inventario de anteayer. No hay una operación vectorizada que lo resuelva. `cumsum()`, la suma acumulada, se acerca, pero no sabe que el inventario no puede ser negativo ni que un pedido depende del nivel del día en que se hizo.
 
-::: {.panel-tabset}
+::: {.panel-tabset group="lenguaje"}
 
 ### R
 
@@ -1021,7 +1021,7 @@ Cuando se itera sobre archivos, sucursales o meses, lo normal es que alguna vuel
 
 Los conteos de inventario del 31 de marzo llegan en un archivo por sucursal. Cada archivo debe tener la columna `unidades_contadas` y todos sus valores deben ser números enteros.
 
-::: {.panel-tabset}
+::: {.panel-tabset group="lenguaje"}
 
 ### R
 
@@ -1142,7 +1142,7 @@ Con la función `simular_inventario()` y la demanda de `P05` del capítulo:
 4. Repite el punto anterior, ahora con lotes de 150 unidades. ¿Cómo cambia la respuesta?
 5. Explica por qué en el punto 3 usaste `map_dbl()` por fuera y no hizo falta cambiar el bucle de adentro.
 
-::: {.panel-tabset}
+::: {.panel-tabset group="lenguaje"}
 
 ### R
 

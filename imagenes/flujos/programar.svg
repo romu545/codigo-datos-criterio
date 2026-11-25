@@ -1,0 +1,72 @@
+<svg xmlns="http://www.w3.org/2000/svg" xml:space="preserve" viewBox="0 0 960 560" width="960" height="560" role="img" aria-labelledby="titulo desc">
+<title id="titulo">Programar el flujo para que se ejecute solo</title>
+<desc id="desc">El día 3 de cada mes a las 7:00, el programador de tareas lanza un comando que entra a la carpeta del proyecto y ejecuta Rscript con el flujo. El flujo termina con un código de salida: con 0, la bitácora termina con fin del flujo; con 1, registra en qué paso falló, y la tarea queda marcada como fallida. Con trazo discontinuo, Evitar: no fijar la carpeta de trabajo, escribir contraseñas en el script y depender de un equipo apagado. Al pie: el flujo no cambia; solo cambia quién escribe el comando.</desc>
+<style>
+  text{font-family:"Source Sans 3","Source Sans Pro","Segoe UI",Helvetica,Arial,sans-serif;fill:#1a1a1a}
+  .h{font-size:16px;font-weight:700}
+  .b{font-size:15.5px}
+  .s{font-size:13.5px;fill:#3d3d3d}
+  .m{font-family:"Source Code Pro",Consolas,"DejaVu Sans Mono",monospace;font-size:12.5px}
+  .n{font-size:14px;font-weight:700;fill:#ffffff}
+</style>
+<defs>
+  <marker id="fl" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#1a1a1a"/></marker>
+</defs>
+<rect x="0" y="0" width="960" height="560" fill="#ffffff"/>
+
+<!-- 1 disparador -->
+<circle cx="44" cy="40" r="14" fill="#1a1a1a"/><text x="44" y="45" class="n" text-anchor="middle">1</text>
+<text x="68" y="45" class="h">Día 3, 7:00: el programador de tareas lanza el comando</text>
+<rect x="68" y="58" width="862" height="64" rx="6" fill="#f2f2f2"/>
+<text x="82" y="82" class="m"><tspan font-weight="700">cd /d D:\proyectos\materiales</tspan>  &amp;&amp;  Rscript scripts\flujo_entregas.R datos\cap13\entregas</text>
+<text x="82" y="108" class="s">primero la carpeta del proyecto, para que las rutas relativas funcionen; después el flujo de siempre</text>
+
+<!-- 2 flujo -->
+<line x1="480" y1="124" x2="480" y2="146" stroke="#1a1a1a" stroke-width="2" marker-end="url(#fl)"/>
+<circle cx="44" cy="166" r="14" fill="#1a1a1a"/><text x="44" y="171" class="n" text-anchor="middle">2</text>
+<text x="68" y="171" class="h">El flujo corre sus cinco pasos, igual que desde la terminal</text>
+<rect x="68" y="182" width="862" height="40" rx="6" fill="#ffffff" stroke="#1a1a1a" stroke-width="1.4"/>
+<rect x="120" y="189" width="120" height="26" rx="4" fill="#f2f2f2" stroke="#8a8a8a"/>
+<text x="180.0" y="207" class="m" text-anchor="middle">leer</text>
+<line x1="244" y1="202" x2="279" y2="202" stroke="#1a1a1a" stroke-width="1.6" marker-end="url(#fl)"/>
+<rect x="285" y="189" width="120" height="26" rx="4" fill="#f2f2f2" stroke="#8a8a8a"/>
+<text x="345.0" y="207" class="m" text-anchor="middle">armonizar</text>
+<line x1="409" y1="202" x2="444" y2="202" stroke="#1a1a1a" stroke-width="1.6" marker-end="url(#fl)"/>
+<rect x="450" y="189" width="120" height="26" rx="4" fill="#f2f2f2" stroke="#8a8a8a"/>
+<text x="510.0" y="207" class="m" text-anchor="middle">validar</text>
+<line x1="574" y1="202" x2="609" y2="202" stroke="#1a1a1a" stroke-width="1.6" marker-end="url(#fl)"/>
+<rect x="615" y="189" width="120" height="26" rx="4" fill="#f2f2f2" stroke="#8a8a8a"/>
+<text x="675.0" y="207" class="m" text-anchor="middle">resumir</text>
+<line x1="739" y1="202" x2="774" y2="202" stroke="#1a1a1a" stroke-width="1.6" marker-end="url(#fl)"/>
+<rect x="780" y="189" width="120" height="26" rx="4" fill="#f2f2f2" stroke="#8a8a8a"/>
+<text x="840.0" y="207" class="m" text-anchor="middle">guardar</text>
+
+<!-- 3 código de salida -->
+<circle cx="44" cy="262" r="14" fill="#1a1a1a"/><text x="44" y="267" class="n" text-anchor="middle">3</text>
+<text x="68" y="267" class="h">El código de salida dice cómo terminó; la bitácora, el detalle</text>
+<path d="M 300 224 L 260 286" fill="none" stroke="#1a1a1a" stroke-width="2" marker-end="url(#fl)"/>
+<path d="M 700 224 L 740 286" fill="none" stroke="#1a1a1a" stroke-width="2" marker-end="url(#fl)"/>
+
+<rect x="68" y="290" width="420" height="120" rx="8" fill="#ffffff" stroke="#1a1a1a" stroke-width="1.6"/>
+<text x="84" y="314" class="h">código de salida 0</text>
+<text x="84" y="338" class="m">07:00:04  resumir     32 filas   0.08 s</text>
+<text x="84" y="356" class="m">07:00:04  guardar     32 filas   0.02 s</text>
+<text x="84" y="374" class="m">07:00:04  fin del flujo</text>
+<text x="84" y="398" class="s">la tarea figura como exitosa; indicadores.csv está al día</text>
+
+<rect x="510" y="290" width="420" height="120" rx="8" fill="#1a1a1a"/>
+<text x="526" y="314" class="h" style="fill:#ffffff">código de salida 1</text>
+<text x="526" y="338" class="m" style="fill:#ffffff">07:00:03  FALLÓ el paso 'validar'</text>
+<text x="526" y="356" class="m" style="fill:#ffffff">el paso 'validar' falló: 820 fechas</text>
+<text x="526" y="374" class="m" style="fill:#ffffff">sin leer en entregas_2026_04.csv</text>
+<text x="526" y="398" class="s" style="fill:#ffffff">la tarea figura como fallida: alguien tiene que mirar</text>
+
+<rect x="68" y="428" width="862" height="70" rx="8" fill="#ffffff" stroke="#7a7a7a" stroke-width="1.5" stroke-dasharray="7 5"/>
+<text x="84" y="452" class="h" style="fill:#555555">Evitar</text>
+<text x="150" y="452" class="s">programar el script sin fijar la carpeta: la tarea arranca en C:\Windows\System32 y no encuentra datos\.</text>
+<text x="150" y="472" class="s">Atrapar todos los errores y terminar con 0: la tarea "funciona" aunque falle. Escribir contraseñas en el script.</text>
+<text x="150" y="490" class="s">Depender de un equipo que puede estar apagado a las 7:00 del día 3.</text>
+
+<rect x="30" y="512" width="900" height="38" rx="8" fill="#1a1a1a"/>
+<text x="480" y="537" class="b" text-anchor="middle" style="fill:#ffffff;font-weight:700">El flujo no cambia; solo cambia quién escribe el comando.</text>
+</svg>

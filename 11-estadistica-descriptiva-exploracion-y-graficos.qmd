@@ -29,7 +29,7 @@ use("dplyr", c("select", "filter", "arrange", "desc", "mutate", "summarise", "co
                "row_number", "glimpse", "tibble", "pull"))
 use("tidyr", "pivot_longer")
 use("ggplot2", c("ggplot", "aes", "geom_histogram", "geom_violin", "geom_jitter",
-                 "geom_boxplot", "geom_point", "geom_tile", "geom_col", "geom_text",
+                 "geom_boxplot", "geom_point", "position_jitter", "geom_tile", "geom_col", "geom_text",
                  "geom_segment", "stat_ecdf", "stat_summary", "facet_wrap",
                  "coord_polar", "scale_x_log10", "scale_fill_manual",
                  "scale_color_manual", "labs", "theme_minimal", "theme_void",
@@ -87,7 +87,7 @@ La guía no es un trámite que se recorre una vez. Cada respuesta puede devolver
 
 La primera pregunta es la más fácil de saltar y la que más errores evita: ¿qué es una fila? Si cada fila es un pedido, contar filas es contar pedidos; si un pedido pudiera aparecer en varias filas (una por producto, por ejemplo), cualquier suma por pedido saldría inflada.
 
-::: {.panel-tabset}
+::: {.panel-tabset group="lenguaje"}
 
 ### R
 
@@ -188,7 +188,7 @@ En el @sec-limpieza-temprana vimos que un faltante puede escribirse de muchas fo
 
 ### Ejemplo guiado 11.2: los faltantes tienen patrones
 
-::: {.panel-tabset}
+::: {.panel-tabset group="lenguaje"}
 
 ### R
 
@@ -325,7 +325,7 @@ Cuando la media y la mediana coinciden, la distribución es más o menos simétr
 
 ### Ejemplo guiado 11.3: el valor del pedido
 
-::: {.panel-tabset}
+::: {.panel-tabset group="lenguaje"}
 
 ### R
 
@@ -421,7 +421,7 @@ La **función de distribución acumulada empírica** (ECDF, por sus siglas en in
 
 ### Ejemplo guiado 11.4: la forma del valor y del tiempo de entrega
 
-::: {.panel-tabset}
+::: {.panel-tabset group="lenguaje"}
 
 ### R
 
@@ -586,7 +586,7 @@ Hoy dibujar todos los datos no cuesta nada, y las alternativas muestran lo que e
 
 ### Ejemplo guiado 11.5: el tiempo de entrega por sucursal
 
-::: {.panel-tabset}
+::: {.panel-tabset group="lenguaje"}
 
 ### R
 
@@ -617,7 +617,8 @@ pedidos_por_sucursal <- entregas |>
 
 ggplot(entregas, aes(x = sucursal, y = tiempo_entrega_h)) +
   geom_violin(fill = "grey90", color = NA) +
-  geom_jitter(width = 0.15, height = 0, alpha = 0.25, size = 0.8) +
+  geom_point(position = position_jitter(width = 0.15, height = 0, seed = 2026),
+             alpha = 0.25, size = 0.8) +
   stat_summary(fun = median, geom = "point", shape = 95, size = 10) +
   geom_text(data = pedidos_por_sucursal, aes(y = 42, label = paste0("n=", n)), size = 3) +
   labs(x = NULL, y = "horas")
@@ -627,7 +628,7 @@ ggplot(entregas, aes(x = sucursal, y = tiempo_entrega_h)) +
 
 `S07`, por su parte, tiene apenas 9 entregas con tiempo registrado. Su mediana es la más alta, pero con 9 datos un solo pedido lento la mueve, y el boxplot la dibujaba con la misma firmeza que la de `S02`, con 343. Ninguna conclusión sobre `S07` es firme todavía. El violín también engaña con pocos datos, porque dibuja una forma suave a partir de muy poca información; por eso los puntos van siempre.
 
-En el código, `geom_jitter(width = 0.15, height = 0)` separa los puntos solo de lado, para no alterar el valor que se lee en el eje vertical. `alpha = 0.25` los hace semitransparentes, de modo que las zonas con muchos datos se ven más oscuras. `stat_summary()` marca la mediana con una línea horizontal, y `geom_text()` escribe el número de pedidos de cada sucursal encima de su violín.
+En el código, `position_jitter(width = 0.15, height = 0)` separa los puntos solo de lado, para no alterar el valor que se lee en el eje vertical; es lo mismo que `geom_jitter()`, pero permite fijar la semilla del azar (`seed`), para que los puntos queden en el mismo lugar cada vez que se dibuja el gráfico. `alpha = 0.25` los hace semitransparentes, de modo que las zonas con muchos datos se ven más oscuras. `stat_summary()` marca la mediana con una línea horizontal, y `geom_text()` escribe el número de pedidos de cada sucursal encima de su violín.
 
 Hay más variantes de la misma idea, en paquetes que vale la pena conocer. El **gráfico de nube y lluvia** (*raincloud plot*) combina medio violín, una caja delgada y los puntos debajo, y se arma con `ggdist`. El **enjambre** (*beeswarm*) acomoda los puntos sin superponerlos, de modo que el ancho del grupo de puntos dibuja la forma por sí solo (`ggbeeswarm`). Las **crestas** (*ridgeline plots*) apilan las densidades de muchos grupos una sobre otra (`ggridges`), y funcionan bien con decenas de grupos. Todas comparten el principio: **mostrar los datos, no solo su resumen**.
 
@@ -686,7 +687,7 @@ Para variables categóricas, la pregunta es cuántas veces aparece cada categor�
 
 ### Ejemplo guiado 11.6: los pedidos por sucursal
 
-::: {.panel-tabset}
+::: {.panel-tabset group="lenguaje"}
 
 ### R
 
@@ -789,7 +790,7 @@ Cuando las dos coinciden, la relación es aproximadamente lineal. Cuando difiere
 
 ### Ejemplo guiado 11.7: distancia y tiempo de entrega
 
-::: {.panel-tabset}
+::: {.panel-tabset group="lenguaje"}
 
 ### R
 
@@ -883,7 +884,7 @@ DuckDB es un motor para calcular, no para dibujar. Los histogramas de texto con 
 
 En el Ejemplo 11.4, el histograma de toda la red dejaba una pista débil: una cola larga y plana. Con una faceta por sucursal, la pista se vuelve evidente.
 
-::: {.panel-tabset}
+::: {.panel-tabset group="lenguaje"}
 
 ### R
 
@@ -943,7 +944,7 @@ En `seaborn`, las facetas son parte de las funciones de "figura": `displot()` pa
 
 ### Ejemplo guiado 11.9: todas las relaciones de una vez
 
-::: {.panel-tabset}
+::: {.panel-tabset group="lenguaje"}
 
 ### R
 
@@ -1025,7 +1026,7 @@ Name: tiempo_entrega_h, dtype: float64
 
 Los mapas de calor no sirven solo para correlaciones. Una tabla de dos entradas con fechas se convierte en un **calendario**: una fila por día de la semana, una columna por semana, y el tono de cada celda según el número de pedidos. Es una forma compacta de ver patrones semanales, días atípicos y huecos.
 
-::: {.panel-tabset}
+::: {.panel-tabset group="lenguaje"}
 
 ### R
 
@@ -1082,7 +1083,7 @@ Con la cartera analítica del @sec-guardar-compartir (`datos/cap10/cartera_anali
 5. Compara los días de pago por región con violín y puntos, con el número de facturas de cada región. ¿Alguna región tiene pocos datos?
 6. Dibuja las facturas por ciudad en un gráfico de puntos ordenado. No uses una torta.
 
-::: {.panel-tabset}
+::: {.panel-tabset group="lenguaje"}
 
 ### R
 

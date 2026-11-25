@@ -29,7 +29,6 @@
 <text x="46" y="272" class="b" style="font-weight:700">4.</text>
 <text x="68" y="272" class="b" style="font-weight:700">Múltiples archivos</text>
 <text x="68" y="290" class="s">patrones y deriva de esquema</text>
-<text x="314" y="318" class="s" text-anchor="end" style="fill:#1a1a1a;font-weight:700">una sesión de unas 2 horas</text>
 <line x1="332" y1="180" x2="348" y2="180" stroke="#1a1a1a" stroke-width="2.2" marker-end="url(#fl)"/>
 <rect x="352" y="30" width="300" height="300" rx="10" fill="#fff" stroke="#1a1a1a" stroke-width="2"/>
 <rect x="352" y="30" width="300" height="56" rx="10" fill="#1a1a1a"/>
@@ -48,7 +47,6 @@
 <text x="368" y="272" class="b" style="font-weight:700">4.</text>
 <text x="390" y="272" class="b" style="font-weight:700">Elegir formato e integrador</text>
 <text x="390" y="290" class="s">cuatro fuentes, un Parquet</text>
-<text x="636" y="318" class="s" text-anchor="end" style="fill:#1a1a1a;font-weight:700">una sesión de unas 2 horas</text>
 <line x1="654" y1="180" x2="670" y2="180" stroke="#1a1a1a" stroke-width="2.2" marker-end="url(#fl)"/>
 <rect x="674" y="30" width="300" height="300" rx="10" fill="#fff" stroke="#1a1a1a" stroke-width="2"/>
 <rect x="674" y="30" width="300" height="56" rx="10" fill="#1a1a1a"/>
@@ -67,7 +65,6 @@
 <text x="690" y="272" class="b" style="font-weight:700">4.</text>
 <text x="712" y="272" class="b" style="font-weight:700">Columnas vacías y contrato</text>
 <text x="712" y="290" class="s">leer solo lo que tiene datos</text>
-<text x="958" y="318" class="s" text-anchor="end" style="fill:#1a1a1a;font-weight:700">una sesión de unas 2 horas</text>
 <line x1="976" y1="180" x2="994" y2="180" stroke="#1a1a1a" stroke-width="2.2" marker-end="url(#fl)"/>
 <rect x="998" y="136" width="52" height="88" rx="10" fill="#d6d6d6" stroke="#1a1a1a" stroke-width="1.5"/>
 <text x="1024" y="172" class="h" text-anchor="middle"><tspan x="1024" dy="0">Cap.</tspan><tspan x="1024" dy="20">6</tspan></text>

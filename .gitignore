@@ -46,3 +46,6 @@ env/
 /output/
 /outputs/
 /scratch/
+
+# Salidas del flujo del capítulo 13: se regeneran en cada render (bitácoras con hora)
+/datos/cap13/salida/

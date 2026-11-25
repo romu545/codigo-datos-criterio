@@ -1,0 +1,85 @@
+<svg xmlns="http://www.w3.org/2000/svg" xml:space="preserve" viewBox="0 0 960 500" width="960" height="500" role="img" aria-labelledby="titulo desc">
+<title id="titulo">Rehacer solo lo que cambió</title>
+<desc id="desc">Tres columnas para tres ejecuciones del mismo flujo de tres pasos, leer, armonizar y resumir, cada uno con la hora de su salida. En la primera no hay salidas y todo se hace. En la segunda nada cambió y todo se salta. En la tercera llegó un archivo nuevo y los tres pasos se rehacen en cadena. Al pie: un paso se rehace si alguna de sus entradas es más reciente que su salida.</desc>
+<style>
+  text{font-family:"Source Sans 3","Source Sans Pro","Segoe UI",Helvetica,Arial,sans-serif;fill:#1a1a1a}
+  .h{font-size:16px;font-weight:700}
+  .b{font-size:15.5px}
+  .s{font-size:13px;fill:#3d3d3d}
+  .m{font-family:"Source Code Pro",Consolas,"DejaVu Sans Mono",monospace;font-size:12.5px}
+</style>
+<defs>
+  <marker id="fl" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#1a1a1a"/></marker>
+</defs>
+<rect x="0" y="0" width="960" height="500" fill="#ffffff"/>
+
+<!-- Columna 1 -->
+<text x="30" y="30" class="h">1. Primera ejecución, 9:00</text>
+<text x="30" y="48" class="s">no hay salidas guardadas</text>
+<rect x="30" y="60" width="280" height="40" rx="6" fill="#f2f2f2" stroke="#8a8a8a"/>
+<text x="42" y="85" class="m">archivos CSV   8:55</text>
+<line x1="170" y1="100" x2="170" y2="118" stroke="#1a1a1a" stroke-width="1.6" marker-end="url(#fl)"/>
+<rect x="30" y="120" width="280" height="44" rx="6" fill="#1a1a1a"/>
+<text x="42" y="138" class="m" style="fill:#ffffff">leer        se hace</text>
+<text x="42" y="155" class="m" style="fill:#ffffff">crudo       9:00</text>
+<line x1="170" y1="164" x2="170" y2="182" stroke="#1a1a1a" stroke-width="1.6" marker-end="url(#fl)"/>
+<rect x="30" y="184" width="280" height="44" rx="6" fill="#1a1a1a"/>
+<text x="42" y="202" class="m" style="fill:#ffffff">armonizar   se hace</text>
+<text x="42" y="219" class="m" style="fill:#ffffff">pedidos     9:00</text>
+<line x1="170" y1="228" x2="170" y2="246" stroke="#1a1a1a" stroke-width="1.6" marker-end="url(#fl)"/>
+<rect x="30" y="248" width="280" height="44" rx="6" fill="#1a1a1a"/>
+<text x="42" y="266" class="m" style="fill:#ffffff">resumir     se hace</text>
+<text x="42" y="283" class="m" style="fill:#ffffff">indicadores 9:00</text>
+<text x="30" y="318" class="s">Todo se calcula y cada salida</text>
+<text x="30" y="334" class="s">queda guardada con su hora.</text>
+
+<!-- Columna 2 -->
+<text x="340" y="30" class="h">2. Otra vez, 9:30</text>
+<text x="340" y="48" class="s">ninguna entrada cambió</text>
+<rect x="340" y="60" width="280" height="40" rx="6" fill="#f2f2f2" stroke="#8a8a8a"/>
+<text x="352" y="85" class="m">archivos CSV   8:55</text>
+<line x1="480" y1="100" x2="480" y2="118" stroke="#1a1a1a" stroke-width="1.6" marker-end="url(#fl)"/>
+<rect x="340" y="120" width="280" height="44" rx="6" fill="#ffffff" stroke="#1a1a1a" stroke-dasharray="5 4"/>
+<text x="352" y="138" class="m">leer        se salta</text>
+<text x="352" y="155" class="m">crudo       9:00</text>
+<line x1="480" y1="164" x2="480" y2="182" stroke="#1a1a1a" stroke-width="1.6" marker-end="url(#fl)"/>
+<rect x="340" y="184" width="280" height="44" rx="6" fill="#ffffff" stroke="#1a1a1a" stroke-dasharray="5 4"/>
+<text x="352" y="202" class="m">armonizar   se salta</text>
+<text x="352" y="219" class="m">pedidos     9:00</text>
+<line x1="480" y1="228" x2="480" y2="246" stroke="#1a1a1a" stroke-width="1.6" marker-end="url(#fl)"/>
+<rect x="340" y="248" width="280" height="44" rx="6" fill="#ffffff" stroke="#1a1a1a" stroke-dasharray="5 4"/>
+<text x="352" y="266" class="m">resumir     se salta</text>
+<text x="352" y="283" class="m">indicadores 9:00</text>
+<text x="340" y="318" class="s">8:55 es anterior a 9:00: cada</text>
+<text x="340" y="334" class="s">salida es más nueva que su</text>
+<text x="340" y="350" class="s">entrada, y se lee lo guardado.</text>
+
+<!-- Columna 3 -->
+<text x="650" y="30" class="h">3. Llega una corrección, 10:15</text>
+<text x="650" y="48" class="s">marzo.csv se reemplazó a las 10:10</text>
+<rect x="650" y="60" width="280" height="40" rx="6" fill="#d6d6d6" stroke="#1a1a1a" stroke-width="1.6"/>
+<text x="662" y="85" class="m" font-weight="700">archivos CSV   10:10</text>
+<line x1="790" y1="100" x2="790" y2="118" stroke="#1a1a1a" stroke-width="1.6" marker-end="url(#fl)"/>
+<rect x="650" y="120" width="280" height="44" rx="6" fill="#1a1a1a"/>
+<text x="662" y="138" class="m" style="fill:#ffffff">leer        se rehace</text>
+<text x="662" y="155" class="m" style="fill:#ffffff">crudo       10:15</text>
+<line x1="790" y1="164" x2="790" y2="182" stroke="#1a1a1a" stroke-width="1.6" marker-end="url(#fl)"/>
+<rect x="650" y="184" width="280" height="44" rx="6" fill="#1a1a1a"/>
+<text x="662" y="202" class="m" style="fill:#ffffff">armonizar   se rehace</text>
+<text x="662" y="219" class="m" style="fill:#ffffff">pedidos     10:15</text>
+<line x1="790" y1="228" x2="790" y2="246" stroke="#1a1a1a" stroke-width="1.6" marker-end="url(#fl)"/>
+<rect x="650" y="248" width="280" height="44" rx="6" fill="#1a1a1a"/>
+<text x="662" y="266" class="m" style="fill:#ffffff">resumir     se rehace</text>
+<text x="662" y="283" class="m" style="fill:#ffffff">indicadores 10:15</text>
+<text x="650" y="318" class="s">10:10 es posterior a 9:00: leer está</text>
+<text x="650" y="334" class="s">desactualizado. Al rehacerlo cambia</text>
+<text x="650" y="350" class="s">su salida, y eso desactualiza al</text>
+<text x="650" y="366" class="s">siguiente: el cambio baja en cadena.</text>
+
+<!-- Regla -->
+<rect x="30" y="386" width="900" height="46" rx="8" fill="#f2f2f2"/>
+<text x="46" y="414" class="m">al_dia &lt;- file.exists(salida) &amp;&amp; all(file.mtime(entradas) &lt;= file.mtime(salida))</text>
+
+<rect x="30" y="444" width="900" height="42" rx="8" fill="#1a1a1a"/>
+<text x="480" y="470" class="b" text-anchor="middle" style="fill:#ffffff;font-weight:700">Un paso se rehace si alguna de sus entradas es más reciente que su salida.</text>
+</svg>

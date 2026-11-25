@@ -1,0 +1,85 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 640" width="960" height="640" role="img" aria-labelledby="titulo desc">
+<title id="titulo">Las partes de una función y lo que pasa al llamarla</title>
+<desc id="desc">Arriba, la definición de la función tasa en R, con etiquetas que señalan el nombre, los parámetros, el valor por defecto, el cuerpo y el valor devuelto. En el medio, la llamada tasa(3, 7, digitos = 2): flechas llevan 3 a parte y 7 a total por posición, y 2 a digitos por nombre. Abajo, el cuerpo se evalúa con esos valores y devuelve 42.86. A la derecha, la misma función en Python, con def, sangría y return, y con trazo discontinuo, Evitar: sin return, Python devuelve None.</desc>
+<style>
+  text{font-family:"Source Sans 3","Source Sans Pro","Segoe UI",Helvetica,Arial,sans-serif;fill:#1a1a1a}
+  .h{font-size:17px;font-weight:700}
+  .b{font-size:15.5px}
+  .s{font-size:13.5px;fill:#3d3d3d}
+  .e{font-size:13.5px;font-weight:700}
+  .m{font-family:"Source Code Pro",Consolas,"DejaVu Sans Mono",monospace;font-size:15px}
+  .c{font-family:"Source Code Pro",Consolas,"DejaVu Sans Mono",monospace;font-size:13px}
+</style>
+<defs>
+  <marker id="fl" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#1a1a1a"/></marker>
+</defs>
+<rect x="0" y="0" width="960" height="640" fill="#ffffff"/>
+
+<!-- 1. Definición -->
+<text x="30" y="34" class="h">1. La definición (R)</text>
+<text x="44" y="70" class="e">nombre</text>
+<line x1="70" y1="76" x2="70" y2="92" stroke="#1a1a1a"/>
+<text x="232" y="70" class="e">parámetros</text>
+<line x1="270" y1="76" x2="270" y2="92" stroke="#1a1a1a"/>
+<text x="402" y="70" class="e">valor por defecto</text>
+<line x1="450" y1="76" x2="450" y2="92" stroke="#1a1a1a"/>
+<rect x="30" y="96" width="620" height="100" rx="6" fill="#f2f2f2"/>
+<text x="44" y="120" class="m" xml:space="preserve"><tspan font-weight="700">tasa</tspan> &lt;- function(<tspan font-weight="700">parte, total</tspan>, <tspan font-weight="700">digitos = 1</tspan>) {</text>
+<rect x="60" y="132" width="580" height="30" fill="#dcdcdc"/>
+<text x="70" y="152" class="m" xml:space="preserve">round(100 * parte / ifelse(total == 0, NA, total), digitos)</text>
+<text x="44" y="184" class="m">}</text>
+<path d="M 652 134 L 662 134 L 662 160 L 652 160" fill="none" stroke="#1a1a1a"/>
+<text x="670" y="144" class="e">cuerpo:</text>
+<text x="670" y="162" class="s">se ejecuta en cada llamada;</text>
+<text x="670" y="180" class="s">su última expresión es el</text>
+<text x="670" y="198" class="s">valor devuelto</text>
+
+<!-- 2. Llamada -->
+<text x="30" y="240" class="h">2. La llamada: cada argumento llega a un parámetro</text>
+<rect x="30" y="256" width="300" height="40" rx="6" fill="#1a1a1a"/>
+<text x="46" y="282" class="m" xml:space="preserve" style="fill:#ffffff">tasa(3, 7, digitos = 2)</text>
+
+<rect x="400" y="252" width="150" height="30" rx="4" fill="#ffffff" stroke="#1a1a1a"/>
+<text x="475" y="272" class="c" text-anchor="middle">parte = 3</text>
+<rect x="400" y="290" width="150" height="30" rx="4" fill="#ffffff" stroke="#1a1a1a"/>
+<text x="475" y="310" class="c" text-anchor="middle">total = 7</text>
+<rect x="400" y="328" width="150" height="30" rx="4" fill="#ffffff" stroke="#1a1a1a"/>
+<text x="475" y="348" class="c" text-anchor="middle">digitos = 2</text>
+
+<path d="M 98 298 C 120 330, 300 268, 396 267" fill="none" stroke="#1a1a1a" stroke-width="1.5" marker-end="url(#fl)"/>
+<path d="M 128 298 C 150 330, 300 305, 396 305" fill="none" stroke="#1a1a1a" stroke-width="1.5" marker-end="url(#fl)"/>
+<path d="M 230 298 C 250 340, 330 343, 396 343" fill="none" stroke="#1a1a1a" stroke-width="1.5" stroke-dasharray="2 3" marker-end="url(#fl)"/>
+
+<text x="570" y="272" class="s">por posición: el primero al primero</text>
+<text x="570" y="310" class="s">por posición: el segundo al segundo</text>
+<text x="570" y="348" class="s">por nombre: el orden no importa</text>
+<text x="30" y="330" class="s">Sin digitos en la llamada,</text>
+<text x="30" y="348" class="s">se usa el valor por defecto, 1.</text>
+
+<!-- 3. Resultado -->
+<text x="30" y="396" class="h">3. El cuerpo se evalúa con esos valores y devuelve el resultado</text>
+<rect x="30" y="410" width="460" height="40" rx="6" fill="#f2f2f2"/>
+<text x="44" y="436" class="m" xml:space="preserve">round(100 * 3 / 7, 2)</text>
+<line x1="494" y1="430" x2="540" y2="430" stroke="#1a1a1a" stroke-width="2" marker-end="url(#fl)"/>
+<rect x="546" y="410" width="110" height="40" rx="6" fill="#1a1a1a"/>
+<text x="601" y="436" class="m" text-anchor="middle" style="fill:#ffffff">42.86</text>
+<text x="670" y="426" class="s">parte, total y digitos existen</text>
+<text x="670" y="444" class="s">solo mientras dura la llamada</text>
+
+<!-- Python -->
+<rect x="30" y="470" width="600" height="108" rx="10" fill="#ffffff" stroke="#1a1a1a" stroke-width="1.6"/>
+<text x="46" y="494" class="h">La misma función en Python</text>
+<text x="46" y="522" class="m" xml:space="preserve">def tasa(parte, total, digitos=1):</text>
+<text x="46" y="544" class="m" xml:space="preserve">    <tspan font-weight="700">return</tspan> round(100 * parte / total, digitos)</text>
+<text x="46" y="568" class="s">def en lugar de function; la sangría marca el cuerpo; return es obligatorio.</text>
+
+<rect x="650" y="470" width="280" height="108" rx="10" fill="#ffffff" stroke="#7a7a7a" stroke-width="1.5" stroke-dasharray="7 5"/>
+<text x="666" y="494" class="h" style="fill:#555555">Evitar</text>
+<text x="666" y="518" class="s">en Python, olvidar return:</text>
+<text x="666" y="536" class="s">la función devuelve None sin</text>
+<text x="666" y="554" class="s">ningún aviso, y el error aparece</text>
+<text x="666" y="572" class="s">mucho después.</text>
+
+<rect x="30" y="590" width="900" height="40" rx="8" fill="#1a1a1a"/>
+<text x="480" y="615" class="b" text-anchor="middle" style="fill:#ffffff;font-weight:700">Parámetros en la definición, argumentos en la llamada: datos por posición, configuración por nombre.</text>
+</svg>

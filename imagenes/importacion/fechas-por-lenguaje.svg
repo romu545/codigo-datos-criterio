@@ -1,0 +1,69 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 560" width="960" height="560" role="img" aria-labelledby="titulo desc">
+<title id="titulo">Una fecha es un número con una regla</title>
+<desc id="desc">Arriba, el texto 03/02/2026 admite dos lecturas: 3 de febrero de 2026 si el orden es día, mes, año, y 2 de marzo de 2026 si es mes, día, año. Abajo, la fecha 3 de febrero de 2026 guardada en cada herramienta: en R, el tipo Date guarda 20487 días desde el 1 de enero de 1970 y POSIXct guarda 1770076800 segundos desde esa fecha en UTC; en pandas, datetime64 guarda 1770076800000000 microsegundos; en DuckDB, DATE guarda 20487 días; en Excel, el número de serie es 46056 días desde el 30 de diciembre de 1899.</desc>
+<style>
+  text{font-family:"Source Sans 3","Source Sans Pro","Segoe UI",Helvetica,Arial,sans-serif;fill:#1a1a1a}
+  .h{font-size:17px;font-weight:700}
+  .b{font-size:15.5px}
+  .s{font-size:14px;fill:#3d3d3d}
+  .m{font-family:"Source Code Pro",Consolas,"DejaVu Sans Mono",monospace;font-size:14px}
+  .g{font-family:"Source Code Pro",Consolas,"DejaVu Sans Mono",monospace;font-size:24px;font-weight:700}
+</style>
+<defs>
+  <marker id="fl" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#1a1a1a"/></marker>
+  <marker id="flr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#7a7a7a"/></marker>
+</defs>
+
+<rect x="0" y="0" width="960" height="560" fill="#ffffff"/>
+
+<!-- Ambigüedad -->
+<rect x="30" y="30" width="900" height="150" rx="10" fill="#f2f2f2" stroke="#c4c4c4" stroke-width="1.5"/>
+<text x="48" y="58" class="h">El texto no basta: el orden lo declara quien lee</text>
+<rect x="60" y="86" width="200" height="60" rx="8" fill="#ffffff" stroke="#1a1a1a" stroke-width="2"/>
+<text x="160" y="125" class="g" text-anchor="middle">03/02/2026</text>
+<line x1="264" y1="104" x2="398" y2="96" stroke="#1a1a1a" stroke-width="2" marker-end="url(#fl)"/>
+<line x1="264" y1="130" x2="398" y2="140" stroke="#7a7a7a" stroke-width="1.6" stroke-dasharray="6 4" marker-end="url(#flr)"/>
+<rect x="404" y="76" width="500" height="38" rx="6" fill="#1a1a1a"/>
+<text x="420" y="101" class="b" style="fill:#ffffff;font-weight:700">día/mes/año: 3 de febrero de 2026</text>
+<text x="888" y="101" class="m" text-anchor="end" style="fill:#ffffff">%d/%m/%Y</text>
+<rect x="404" y="122" width="500" height="38" rx="6" fill="#ffffff" stroke="#7a7a7a" stroke-width="1.5" stroke-dasharray="6 4"/>
+<text x="420" y="147" class="b" style="fill:#555555">mes/día/año: 2 de marzo de 2026</text>
+<text x="888" y="147" class="m" text-anchor="end" style="fill:#555555">%m/%d/%Y</text>
+
+<!-- Tabla de almacenamiento -->
+<text x="30" y="222" class="h">La misma fecha, 2026-02-03, guardada en cada herramienta</text>
+
+<rect x="30" y="238" width="900" height="34" fill="#1a1a1a"/>
+<text x="46" y="261" class="s" style="fill:#ffffff;font-weight:700">HERRAMIENTA Y TIPO</text>
+<text x="330" y="261" class="s" style="fill:#ffffff;font-weight:700">NÚMERO GUARDADO</text>
+<text x="590" y="261" class="s" style="fill:#ffffff;font-weight:700">UNIDAD Y ORIGEN</text>
+
+<rect x="30" y="272" width="900" height="40" fill="#ffffff"/>
+<text x="46" y="297" class="b" style="font-weight:700">R</text><text x="120" y="297" class="m">Date</text>
+<text x="330" y="297" class="m">20487</text>
+<text x="590" y="297" class="b">días desde 1970-01-01</text>
+
+<rect x="30" y="312" width="900" height="40" fill="#f2f2f2"/>
+<text x="46" y="337" class="b" style="font-weight:700">R</text><text x="120" y="337" class="m">POSIXct</text>
+<text x="330" y="337" class="m">1770076800</text>
+<text x="590" y="337" class="b">segundos desde 1970-01-01 00:00 UTC</text>
+
+<rect x="30" y="352" width="900" height="40" fill="#ffffff"/>
+<text x="46" y="377" class="b" style="font-weight:700">pandas</text><text x="120" y="377" class="m">datetime64[us]</text>
+<text x="330" y="377" class="m">1770076800000000</text>
+<text x="590" y="377" class="b">microsegundos desde 1970-01-01</text>
+
+<rect x="30" y="392" width="900" height="40" fill="#f2f2f2"/>
+<text x="46" y="417" class="b" style="font-weight:700">DuckDB</text><text x="120" y="417" class="m">DATE</text>
+<text x="330" y="417" class="m">20487</text>
+<text x="590" y="417" class="b">días desde 1970-01-01</text>
+
+<rect x="30" y="432" width="900" height="40" fill="#ffffff"/>
+<text x="46" y="457" class="b" style="font-weight:700">Excel</text><text x="120" y="457" class="m">número de serie</text>
+<text x="330" y="457" class="m">46056</text>
+<text x="590" y="457" class="b">días desde 1899-12-30</text>
+<line x1="30" y1="472" x2="930" y2="472" stroke="#c4c4c4" stroke-width="1.2"/>
+
+<rect x="30" y="494" width="900" height="44" rx="8" fill="#1a1a1a"/>
+<text x="480" y="521" class="b" text-anchor="middle" style="fill:#ffffff;font-weight:700">Una fecha es un número con una regla: una unidad y un origen. Leer bien es declarar el formato del texto.</text>
+</svg>

@@ -1,0 +1,98 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 636" width="960" height="636" role="img" aria-labelledby="titulo desc">
+<title id="titulo">Columnas vacías: detectarlas en una muestra y no leerlas</title>
+<desc id="desc">Barras horizontales con el porcentaje de celdas con datos en cada una de las dieciséis columnas del archivo de cartera, después de declarar las marcas de faltante. Doce columnas tienen datos: la mayoría al cien por ciento, Fecha Pago al 57, Calificación Riesgo al 88 y Ciudad al 92. Cuatro columnas, Observaciones, Columna1, Columna2 y una columna sin nombre que aparece como ...16, están al cero por ciento, con trazo discontinuo, y se agrupan bajo la nota: no se leen. A la derecha, los tres pasos: leer una muestra como texto, contar celdas con datos por columna y excluir las vacías en la lectura definitiva.</desc>
+<style>
+  text{font-family:"Source Sans 3","Source Sans Pro","Segoe UI",Helvetica,Arial,sans-serif;fill:#1a1a1a}
+  .h{font-size:17px;font-weight:700}
+  .b{font-size:15.5px}
+  .s{font-size:14px;fill:#3d3d3d}
+  .m{font-family:"Source Code Pro",Consolas,"DejaVu Sans Mono",monospace;font-size:14px}
+</style>
+<rect x="0" y="0" width="960" height="636" fill="#ffffff"/>
+<text x="30" y="40" class="s" style="font-weight:700">COLUMNA</text>
+<text x="250" y="40" class="s" style="font-weight:700">CELDAS CON DATOS</text>
+<text x="236" y="87" class="m" text-anchor="end">N° Factura</text>
+<rect x="250" y="73" width="420" height="18" fill="#f2f2f2"/>
+<rect x="250" y="73" width="420" height="18" fill="#1a1a1a"/>
+<text x="680" y="87" class="s">100 %</text>
+<text x="236" y="115" class="m" text-anchor="end">NIT Cliente</text>
+<rect x="250" y="101" width="420" height="18" fill="#f2f2f2"/>
+<rect x="250" y="101" width="420" height="18" fill="#1a1a1a"/>
+<text x="680" y="115" class="s">100 %</text>
+<text x="236" y="143" class="m" text-anchor="end">Fecha Emisión</text>
+<rect x="250" y="129" width="420" height="18" fill="#f2f2f2"/>
+<rect x="250" y="129" width="420" height="18" fill="#1a1a1a"/>
+<text x="680" y="143" class="s">100 %</text>
+<text x="236" y="171" class="m" text-anchor="end">Fecha Vencimiento</text>
+<rect x="250" y="157" width="420" height="18" fill="#f2f2f2"/>
+<rect x="250" y="157" width="420" height="18" fill="#1a1a1a"/>
+<text x="680" y="171" class="s">100 %</text>
+<text x="236" y="199" class="m" text-anchor="end">Fecha Pago</text>
+<rect x="250" y="185" width="420" height="18" fill="#f2f2f2"/>
+<rect x="250" y="185" width="239" height="18" fill="#7a7a7a"/>
+<text x="680" y="199" class="s">57 %</text>
+<text x="236" y="227" class="m" text-anchor="end">Valor Factura ($)</text>
+<rect x="250" y="213" width="420" height="18" fill="#f2f2f2"/>
+<rect x="250" y="213" width="420" height="18" fill="#1a1a1a"/>
+<text x="680" y="227" class="s">100 %</text>
+<text x="236" y="255" class="m" text-anchor="end">¿Pagó?</text>
+<rect x="250" y="241" width="420" height="18" fill="#f2f2f2"/>
+<rect x="250" y="241" width="420" height="18" fill="#1a1a1a"/>
+<text x="680" y="255" class="s">100 %</text>
+<text x="236" y="283" class="m" text-anchor="end">Cliente Activo</text>
+<rect x="250" y="269" width="420" height="18" fill="#f2f2f2"/>
+<rect x="250" y="269" width="420" height="18" fill="#1a1a1a"/>
+<text x="680" y="283" class="s">100 %</text>
+<text x="236" y="311" class="m" text-anchor="end">Calificación Riesgo</text>
+<rect x="250" y="297" width="420" height="18" fill="#f2f2f2"/>
+<rect x="250" y="297" width="370" height="18" fill="#7a7a7a"/>
+<text x="680" y="311" class="s">88 %</text>
+<text x="236" y="339" class="m" text-anchor="end">Ciudad</text>
+<rect x="250" y="325" width="420" height="18" fill="#f2f2f2"/>
+<rect x="250" y="325" width="386" height="18" fill="#7a7a7a"/>
+<text x="680" y="339" class="s">92 %</text>
+<text x="236" y="367" class="m" text-anchor="end">Saldo Pendiente</text>
+<rect x="250" y="353" width="420" height="18" fill="#f2f2f2"/>
+<rect x="250" y="353" width="420" height="18" fill="#1a1a1a"/>
+<text x="680" y="367" class="s">100 %</text>
+<text x="236" y="395" class="m" text-anchor="end">Registrado En</text>
+<rect x="250" y="381" width="420" height="18" fill="#f2f2f2"/>
+<rect x="250" y="381" width="420" height="18" fill="#1a1a1a"/>
+<text x="680" y="395" class="s">100 %</text>
+<text x="236" y="423" class="m" text-anchor="end" style="fill:#7a7a7a">Observaciones</text>
+<rect x="250" y="409" width="420" height="18" fill="#f2f2f2"/>
+<rect x="250" y="409" width="420" height="18" fill="#ffffff" stroke="#7a7a7a" stroke-width="1.3" stroke-dasharray="5 4"/>
+<text x="680" y="423" class="s" style="font-weight:700">0 %</text>
+<text x="236" y="451" class="m" text-anchor="end" style="fill:#7a7a7a">Columna1</text>
+<rect x="250" y="437" width="420" height="18" fill="#f2f2f2"/>
+<rect x="250" y="437" width="420" height="18" fill="#ffffff" stroke="#7a7a7a" stroke-width="1.3" stroke-dasharray="5 4"/>
+<text x="680" y="451" class="s" style="font-weight:700">0 %</text>
+<text x="236" y="479" class="m" text-anchor="end" style="fill:#7a7a7a">Columna2</text>
+<rect x="250" y="465" width="420" height="18" fill="#f2f2f2"/>
+<rect x="250" y="465" width="420" height="18" fill="#ffffff" stroke="#7a7a7a" stroke-width="1.3" stroke-dasharray="5 4"/>
+<text x="680" y="479" class="s" style="font-weight:700">0 %</text>
+<text x="236" y="507" class="m" text-anchor="end" style="fill:#7a7a7a">...16</text>
+<rect x="250" y="493" width="420" height="18" fill="#f2f2f2"/>
+<rect x="250" y="493" width="420" height="18" fill="#ffffff" stroke="#7a7a7a" stroke-width="1.3" stroke-dasharray="5 4"/>
+<text x="680" y="507" class="s" style="font-weight:700">0 %</text>
+<rect x="20" y="402" width="704" height="120" rx="8" fill="none" stroke="#7a7a7a" stroke-width="1.5" stroke-dasharray="7 5"/>
+<text x="250" y="548" class="b" style="font-weight:700;fill:#555555">No se leen: cuatro columnas sin un solo dato</text>
+<rect x="740" y="64" width="190" height="380" rx="10" fill="#ffffff" stroke="#1a1a1a" stroke-width="2"/>
+<text x="756" y="94" class="h">Tres pasos</text>
+<text x="756" y="130" class="b" style="font-weight:700">1. Muestra</text>
+<text x="756" y="150" class="s">leer unas miles de</text>
+<text x="756" y="168" class="s">filas, todo como texto</text>
+<text x="756" y="206" class="b" style="font-weight:700">2. Contar</text>
+<text x="756" y="226" class="s">celdas con datos</text>
+<text x="756" y="244" class="s">en cada columna</text>
+<text x="756" y="282" class="b" style="font-weight:700">3. Excluir</text>
+<text x="756" y="302" class="s">las vacías en la</text>
+<text x="756" y="320" class="s">lectura definitiva</text>
+<rect x="752" y="344" width="166" height="86" rx="6" fill="#e6e6e6"/>
+<text x="762" y="366" class="s" style="font-weight:700">Con DuckDB se puede</text>
+<text x="762" y="384" class="s" style="font-weight:700">revisar el archivo</text>
+<text x="762" y="402" class="s" style="font-weight:700">completo con</text>
+<text x="762" y="420" class="m" style="font-weight:700">SUMMARIZE</text>
+<rect x="30" y="572" width="900" height="44" rx="8" fill="#1a1a1a"/>
+<text x="480" y="599" class="b" text-anchor="middle" style="fill:#ffffff;font-weight:700">Lo que no tiene datos no merece memoria, ni un nombre en la tabla de trabajo.</text>
+</svg>

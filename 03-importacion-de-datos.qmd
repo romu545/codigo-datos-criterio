@@ -3,11 +3,11 @@
 
 Hasta aquí preparamos el entorno. Ahora empezamos a trabajar con datos reales, y el primer paso de cualquier análisis es el más subestimado: traerlos al entorno de trabajo. La forma en que importamos condiciona todo lo que viene después. Una importación descuidada produce tildes dañadas, identificadores sin ceros iniciales, memoria agotada y resultados que cambian de un mes a otro sin que nadie sepa por qué.
 
-La importación ocupa dos capítulos (@fig-mapa-importacion). En este construimos el método: por qué importar exige criterio, qué herramientas usar y cómo definir un **contrato de lectura** que funcione igual con un archivo que con cien. En el siguiente (@sec-importacion-fuentes) aplicamos ese mismo método a Excel, Parquet, JSON, APIs y bases de datos. Cada capítulo está pensado para una sesión de estudio de unas dos horas.
+La importación ocupa tres capítulos (@fig-mapa-importacion). En este construimos el método: por qué importar exige criterio, qué herramientas usar y cómo definir un **contrato de lectura** que funcione igual con un archivo que con cien. En el siguiente (@sec-importacion-fuentes) aplicamos ese mismo método a Excel, Parquet, JSON, APIs y bases de datos. En el tercero (@sec-limpieza-temprana) completamos el contrato con la limpieza temprana: nombres de columnas, valores faltantes, booleanos, fechas y columnas vacías. Cada capítulo está pensado para una sesión de estudio de unas dos horas.
 
-![La importación en dos capítulos: primero el método con archivos de texto y después el mismo método aplicado a otras fuentes.](imagenes/importacion/mapa-importacion.svg){#fig-mapa-importacion fig-alt="Dos paneles. Capítulo 3, el contrato de lectura: importar no es un trámite, el ecosistema de herramientas, la heurística de importación y múltiples archivos. Capítulo 4, formatos y fuentes: Excel y Parquet, JSON y APIs, bases de datos, y elegir formato con un proyecto integrador. Una flecha final apunta al capítulo 5."}
+![La importación en tres capítulos: el método con archivos de texto, el mismo método aplicado a otras fuentes y la limpieza temprana que completa el contrato.](imagenes/importacion/mapa-importacion.svg){#fig-mapa-importacion fig-alt="Tres paneles. Capítulo 3, el contrato de lectura: importar no es un trámite, el ecosistema de herramientas, la heurística de importación y múltiples archivos. Capítulo 4, formatos y fuentes: Excel y Parquet, JSON y APIs, bases de datos, y elegir formato con un proyecto integrador. Capítulo 5, limpieza temprana: nombres de columnas, faltantes y booleanos, fechas, y columnas vacías con el contrato completo. Una flecha final apunta al capítulo 6, Tipos de datos y calidad."}
 
-Todos los ejemplos giran en torno a un mismo caso: las **operaciones comerciales y los recaudos de una red regional de distribución en Colombia, entre 2024 y 2026**. Los archivos de este capítulo están en la carpeta `datos/cap03/` del [repositorio de materiales](https://github.com/romu545/codigo-datos-criterio-material), y los del siguiente, en `datos/cap04/`.
+Todos los ejemplos giran en torno a un mismo caso: las **operaciones comerciales y los recaudos de una red regional de distribución en Colombia, entre 2024 y 2026**. Los archivos de este capítulo están en la carpeta `datos/cap03/` del [repositorio de materiales](https://github.com/romu545/codigo-datos-criterio-material); los de los dos siguientes, en `datos/cap04/` y `datos/cap05/`.
 
 ::: {.callout-tip}
 ## Antes de empezar
@@ -107,7 +107,26 @@ Verás este flujo en acción en los ejemplos de este capítulo y del siguiente.
 ::: {.callout-note}
 ## DuckDB desde la terminal, R o Python
 
-El motor y el lenguaje SQL son los mismos en los tres entornos; solo cambia la forma de enviar la consulta. En la terminal se escribe directamente en el programa `duckdb`. En R se abre una conexión con `dbConnect(duckdb())` y se consulta con `dbGetQuery(con, "...")`. En Python basta con `duckdb.sql("...").df()`. En todo el libro las pestañas de DuckDB usan R, el lenguaje principal, para que sus resultados aparezcan junto a los demás. Si prefieres Python, copia el texto SQL tal cual dentro de `duckdb.sql()`.
+El motor y el lenguaje SQL son los mismos en los tres entornos; solo cambia la forma de enviar la consulta. En la terminal se escribe directamente en el programa `duckdb`. En R se abre una conexión con `dbConnect(duckdb())` y se consulta con `dbGetQuery(con, r"(...)")`, con el SQL escrito como texto crudo (lo explicamos en la píldora que sigue). En Python basta con `duckdb.sql("...").df()`. En todo el libro las pestañas de DuckDB usan R, el lenguaje principal, para que sus resultados aparezcan junto a los demás. Si prefieres Python, copia el texto SQL tal cual dentro de `duckdb.sql()`.
+:::
+
+::: {.callout-note}
+## Píldora de curiosidades: texto crudo
+
+En todo el libro, las consultas de SQL que enviamos desde R van entre `r"(` y `)"`. Es un **texto crudo** (*raw string*), disponible desde R 4.0: todo lo que está dentro se toma tal cual, sin interpretar barras invertidas ni comillas. Así el SQL se escribe igual que en la terminal de DuckDB. Sin él, cada comilla doble dentro de la consulta habría que escribirla como `\"` y cada barra invertida como `\\`.
+
+```{r}
+#| label: texto-crudo
+cat("Ruta: C:\\datos\\cap03 y una columna \"N° Factura\"")   # texto normal
+cat(r"(Ruta: C:\datos\cap03 y una columna "N° Factura")")     # texto crudo
+```
+
+En R, los delimitadores pueden ser paréntesis, corchetes o llaves: `r"(...)"`, `r"[...]"` o `r"{...}"`. Si el texto contiene `)"`, se agregan guiones a ambos lados: `r"-(...)-"`.
+
+Los otros lenguajes tienen lo suyo:
+
+- **Python** tiene `r"..."`, que no interpreta las barras invertidas. Es la forma habitual de escribir expresiones regulares (`r"\d{10}"`) y rutas de Windows. Para varias líneas con comillas adentro están las comillas triples, `"""..."""`, y las dos cosas se combinan: `r"""..."""`. Una curiosidad: un texto crudo de Python no puede terminar en una barra invertida impar, así que `r"C:\datos\"` es un error.
+- **DuckDB** acepta textos entre signos de dólar, `$$...$$`, heredados de PostgreSQL. Adentro, la comilla simple no se escapa: `SELECT $$Calle 5 'B'$$` devuelve `Calle 5 'B'`, mientras que con comillas normales habría que escribir `'Calle 5 ''B'''`.
 :::
 
 ::: {.callout-tip}
@@ -153,7 +172,7 @@ Los programas infieren el tipo de cada columna mirando los valores. Es cómodo, 
 Hay dos estrategias válidas:
 
 - **Especificar el esquema columna por columna** cuando conocemos bien el archivo.
-- **Importar todas las columnas como texto** (`character` en R, `str` en Python, `VARCHAR` en DuckDB) como medida defensiva, y convertir después los tipos que sí son numéricos o de fecha. Así nada se pierde antes de validarlo en el Capítulo 5.
+- **Importar todas las columnas como texto** (`character` en R, `str` en Python, `VARCHAR` en DuckDB) como medida defensiva, y convertir después los tipos que sí son numéricos o de fecha. Así nada se pierde antes de validarlo en el @sec-tipos-calidad.
 
 ::: {.callout-warning}
 ## La inferencia depende del contenido
@@ -307,9 +326,9 @@ La lectura "funciona", pero mal. Estos son los problemas:
 ```{r}
 #| label: duckdb-ingenua
 #| error: true
-dbGetQuery(con, "
+dbGetQuery(con, r"(
   SELECT * FROM read_csv('datos/cap03/ventas_2026_01.csv', delim = ';')
-")
+)")
 ```
 
 DuckDB también asume `UTF-8` por defecto. A diferencia de lo que ocurría con `readr`, que mostraba las tildes dañadas, aquí la lectura **falla** con un error que indica la línea problemática.
@@ -318,11 +337,11 @@ Fíjate en las sugerencias que ofrece el mensaje. Una propone probar `encoding='
 
 ```{r}
 #| label: duckdb-describe
-dbGetQuery(con, "
+dbGetQuery(con, r"(
   DESCRIBE
   SELECT * FROM read_csv('datos/cap03/ventas_2026_01.csv',
                          delim = ';', encoding = 'latin-1')
-")[, c("column_name", "column_type")]
+)")[, c("column_name", "column_type")]
 ```
 
 Con `encoding = 'latin-1'` la lectura funciona. DuckDB detectó bien el delimitador (siete columnas) y reconoció `fecha` como `DATE`, pero quedan dos problemas:
@@ -412,7 +431,7 @@ memory usage: 195.4+ KB
 
 ```{r}
 #| label: duckdb-controlada
-ventas_duck <- dbGetQuery(con, "
+ventas_duck <- dbGetQuery(con, r"(
   SELECT fecha, codigo_dane, nit_cliente, ciudad, valor_venta
   FROM read_csv(
     'datos/cap03/ventas_2026_01.csv',
@@ -422,7 +441,7 @@ ventas_duck <- dbGetQuery(con, "
     dateformat = '%Y-%m-%d',
     types = {'codigo_dane': 'VARCHAR', 'nit_cliente': 'VARCHAR'}
   )
-")
+)")
 
 glimpse(ventas_duck)
 ```
@@ -435,7 +454,7 @@ La documentación de referencia de cada parámetro está en [readr](https://read
 
 **La lectura de reconocimiento.** El contrato supone que ya conocemos el archivo. Cuando no es así, por ejemplo con la primera entrega de un proveedor, con un archivo heredado sin documentación o con un mes en el que la inferencia empezó a dar tipos distintos, conviene un paso previo: leer **todas las columnas como texto**. Así nada se transforma todavía. Un código conserva sus ceros, una fecha mal escrita no se convierte en vacío y un monto con separadores extraños se ve tal como llegó.
 
-Con esa tabla de texto inspeccionamos antes de decidir: cuántos caracteres tienen los identificadores, qué valores distintos aparecen en las categorías, qué formato siguen las fechas y qué separador decimal usan los montos. Con lo que encontremos escribimos el contrato definitivo. Esta lectura no reemplaza al contrato, lo prepara: guardar números y fechas como texto ocupa más memoria y obliga a convertirlos después, así que es un paso de exploración y no la forma de trabajar todos los días. En el Capítulo 5 convertiremos estas inspecciones en validaciones formales.
+Con esa tabla de texto inspeccionamos antes de decidir: cuántos caracteres tienen los identificadores, qué valores distintos aparecen en las categorías, qué formato siguen las fechas y qué separador decimal usan los montos. Con lo que encontremos escribimos el contrato definitivo. Esta lectura no reemplaza al contrato, lo prepara: guardar números y fechas como texto ocupa más memoria y obliga a convertirlos después, así que es un paso de exploración y no la forma de trabajar todos los días. En el @sec-limpieza-temprana usaremos estas inspecciones para completar el contrato, y en el @sec-tipos-calidad las convertiremos en validaciones formales.
 
 ::: {.panel-tabset}
 
@@ -484,12 +503,12 @@ memory usage: 273.6+ KB
 
 ```{r}
 #| label: duckdb-reconocimiento
-dbGetQuery(con, "
+dbGetQuery(con, r"(
   DESCRIBE
   SELECT * FROM read_csv('datos/cap03/ventas_2026_01.csv',
                          delim = ';', encoding = 'latin-1',
                          all_varchar = true)
-")[, c("column_name", "column_type")]
+)")[, c("column_name", "column_type")]
 ```
 
 :::
@@ -613,13 +632,13 @@ dtype: int64
 
 ```{r}
 #| label: duckdb-sin-cuidado
-dbGetQuery(con, "
+dbGetQuery(con, r"(
   SELECT count(*)                      AS filas,
          count(*) - count(vlr_total)   AS vacios_vlr_total,
          count(*) - count(valor_total) AS vacios_valor_total
   FROM read_csv('datos/cap03/lotes_mensuales/recaudos_*.csv',
                 union_by_name = true, all_varchar = true)
-")
+)")
 ```
 
 El *glob* `recaudos_*.csv` ya excluye el archivo `borrador_notas.csv`. Con `union_by_name = true`, DuckDB alinea las columnas por nombre y deja ambas, `vlr_total` y `valor_total`, con vacíos donde no aplican. Sin esa opción, alinearía por posición, lo que sería peor.
@@ -729,7 +748,7 @@ valor_total               False                 False                 False     
 
 ```{r}
 #| label: duckdb-mapa-columnas
-dbGetQuery(con, "
+dbGetQuery(con, r"(
   WITH encabezados AS (
     SELECT
       parse_filename(filename) AS archivo,
@@ -743,7 +762,7 @@ dbGetQuery(con, "
   USING count(*)
   GROUP BY columna
   ORDER BY columna
-")
+)")
 ```
 
 `read_text()` lee cada archivo como un solo texto. De ahí tomamos la primera línea (quitando antes los retornos de carro que dejan los archivos creados en Windows) y la partimos por comas, con lo que obtenemos una fila por cada par archivo y columna. `PIVOT` convierte esa lista en la matriz: `1` si la columna está en el archivo y `0` si no. Esta versión ya está transpuesta; para tener una fila por archivo basta con cambiar `ON archivo` por `ON columna` y `GROUP BY columna` por `GROUP BY archivo`. Ten en cuenta que la consulta supone que el delimitador es la coma y que los nombres no van entre comillas.
@@ -817,7 +836,7 @@ dtype: int64
 
 ```{r}
 #| label: duckdb-con-cuidado
-recaudos_duck <- dbGetQuery(con, "
+recaudos_duck <- dbGetQuery(con, r"(
   SELECT
     id_recaudo,
     CAST(fecha AS DATE) AS fecha,
@@ -830,7 +849,7 @@ recaudos_duck <- dbGetQuery(con, "
     filename = true,
     all_varchar = true
   )
-")
+)")
 
 count(recaudos_duck, archivo_origen)
 ```
@@ -882,10 +901,10 @@ recaudos_2025 = ...         # TODO
 ```{r}
 #| label: ejercicio-3-1-duckdb
 #| eval: false
-recaudos_2025 <- dbGetQuery(con, "
+recaudos_2025 <- dbGetQuery(con, r"(
   -- TODO: leer solo recaudos_2025_*.csv, homologar columnas
   --       y agregar archivo_origen
-")
+)")
 ```
 
 :::
@@ -978,7 +997,7 @@ head(chat_duck, 4)
 sum(chat_duck$autor == "")
 ```
 
-`read_text()` lee el archivo completo como un solo texto, `string_split()` lo parte en líneas y `regexp_extract()` aplica el patrón. En DuckDB los nombres de las columnas se dan en una lista aparte, en el mismo orden de los grupos. Cuando una línea no coincide, DuckDB devuelve texto vacío en lugar de un valor faltante, por eso contamos `autor == ""`. La consulta está escrita como cadena cruda de R, `r"(...)"`, para no tener que duplicar cada barra invertida del patrón.
+`read_text()` lee el archivo completo como un solo texto, `string_split()` lo parte en líneas y `regexp_extract()` aplica el patrón. En DuckDB los nombres de las columnas se dan en una lista aparte, en el mismo orden de los grupos. Cuando una línea no coincide, DuckDB devuelve texto vacío en lugar de un valor faltante, por eso contamos `autor == ""`. Aquí el texto crudo `r"(...)"` es indispensable: sin él habría que duplicar cada barra invertida del patrón.
 
 :::
 

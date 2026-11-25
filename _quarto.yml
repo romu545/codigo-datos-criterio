@@ -34,22 +34,23 @@ book:
       chapters:
         - 03-importacion-de-datos.qmd
         - 04-importacion-formatos-y-fuentes.qmd
- #  - part: "Preparar y guardar los datos"
- #    chapters:
- #      - 05-tipos-de-datos-y-calidad.qmd
- #      - 06-transformacion-y-limpieza.qmd
- #      - 07-estructuras-formatos-y-almacenamiento.qmd
- #      - 08-exportacion-de-datos.qmd
+        - 05-importacion-limpieza-temprana.qmd
+    - part: "Preparar y guardar los datos"
+      chapters:
+        - 06-tipos-de-datos-y-calidad.qmd
+ #      - 07-transformacion-y-limpieza.qmd
+ #      - 08-estructuras-formatos-y-almacenamiento.qmd
+ #      - 09-exportacion-de-datos.qmd
  #  - part: "Analizar y programar"
  #    chapters:
- #      - 09-estadistica-descriptiva-exploracion-y-graficos.qmd
- #      - 10-funciones-personalizadas.qmd
- #      - 11-flujos-reproducibles-y-depuracion.qmd
+ #      - 10-estadistica-descriptiva-exploracion-y-graficos.qmd
+ #      - 11-funciones-personalizadas.qmd
+ #      - 12-flujos-reproducibles-y-depuracion.qmd
  #  - part: "Automatizar, comunicar y mantener"
  #    chapters:
- #      - 12-automatizacion-y-programacion-de-tareas.qmd
- #      - 13-reportes-reproducibles-y-comunicacion.qmd
- #      - 14-pruebas-seguridad-publicacion-y-mantenimiento.qmd
+ #      - 13-automatizacion-y-programacion-de-tareas.qmd
+ #      - 14-reportes-reproducibles-y-comunicacion.qmd
+ #      - 15-pruebas-seguridad-publicacion-y-mantenimiento.qmd
  #  - references.qmd
 
   page-footer:
@@ -60,6 +61,7 @@ book:
         aria-label: Repositorio del libro en GitHub
 
 
+lang: es
 bibliography: references.bib
 license: "CC BY-NC-SA"
 

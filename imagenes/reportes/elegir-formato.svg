@@ -1,0 +1,101 @@
+<svg xmlns="http://www.w3.org/2000/svg" xml:space="preserve" viewBox="0 0 960 560" width="960" height="560" role="img" aria-labelledby="titulo desc">
+<title id="titulo">Elegir el formato según lo que hará quien lo recibe</title>
+<desc id="desc">Una pregunta arriba: qué va a hacer quien lo recibe. Cinco respuestas, cada una con un formato, un ejemplo de la red de distribución y la herramienta del libro: leer, un reporte; calcular y filtrar, un Excel con formato; discutir en una reunión, una presentación; vigilar con frecuencia, un tablero; explorar por su cuenta, un tablero interactivo. Con trazo discontinuo, Evitar: elegir el formato por costumbre o porque se ve moderno, y meter en un tablero lo que nadie mira todos los días. Al pie: el formato lo decide el verbo de quien recibe, no la herramienta de quien produce.</desc>
+<style>
+  text{font-family:"Source Sans 3","Source Sans Pro","Segoe UI",Helvetica,Arial,sans-serif;fill:#1a1a1a}
+  .h{font-size:16px;font-weight:700}
+  .b{font-size:15.5px}
+  .s{font-size:13px;fill:#3d3d3d}
+  .v{font-size:18px;font-weight:700}
+  .m{font-family:"Source Code Pro",Consolas,"DejaVu Sans Mono",monospace;font-size:12px;fill:#3d3d3d}
+</style>
+<defs>
+  <marker id="fl" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#1a1a1a"/></marker>
+</defs>
+<rect x="0" y="0" width="960" height="560" fill="#ffffff"/>
+
+<rect x="300" y="16" width="360" height="46" rx="10" fill="#1a1a1a"/>
+<text x="480" y="45" class="b" text-anchor="middle" style="fill:#ffffff;font-weight:700">¿Qué va a hacer quien lo recibe?</text>
+
+<g>
+<line x1="480" y1="64" x2="104" y2="96" stroke="#1a1a1a" stroke-width="1.4" marker-end="url(#fl)"/>
+<line x1="480" y1="64" x2="292" y2="96" stroke="#1a1a1a" stroke-width="1.4" marker-end="url(#fl)"/>
+<line x1="480" y1="64" x2="480" y2="96" stroke="#1a1a1a" stroke-width="1.4" marker-end="url(#fl)"/>
+<line x1="480" y1="64" x2="668" y2="96" stroke="#1a1a1a" stroke-width="1.4" marker-end="url(#fl)"/>
+<line x1="480" y1="64" x2="856" y2="96" stroke="#1a1a1a" stroke-width="1.4" marker-end="url(#fl)"/>
+</g>
+
+<!-- Columnas -->
+<rect x="20" y="100" width="168" height="300" rx="8" fill="#ffffff" stroke="#1a1a1a" stroke-width="1.6"/>
+<text x="104" y="128" class="v" text-anchor="middle">Leer</text>
+<rect x="32" y="140" width="144" height="34" rx="5" fill="#1a1a1a"/>
+<text x="104" y="162" class="h" text-anchor="middle" style="fill:#ffffff;font-size:14px">Reporte</text>
+<text x="32" y="198" class="s">El jefe de Cali lee</text>
+<text x="32" y="214" class="s">el mes en cinco</text>
+<text x="32" y="230" class="s">minutos y lo reenvía.</text>
+<text x="32" y="262" class="s">Texto, tabla y un</text>
+<text x="32" y="278" class="s">gráfico, con números</text>
+<text x="32" y="294" class="s">calculados.</text>
+<text x="32" y="380" class="m">Quarto: html,</text>
+<text x="32" y="394" class="m">typst, docx</text>
+
+<rect x="208" y="100" width="168" height="300" rx="8" fill="#ffffff" stroke="#1a1a1a" stroke-width="1.6"/>
+<text x="292" y="128" class="v" text-anchor="middle">Calcular</text>
+<rect x="220" y="140" width="144" height="34" rx="5" fill="#1a1a1a"/>
+<text x="292" y="162" class="h" text-anchor="middle" style="fill:#ffffff;font-size:14px">Excel con formato</text>
+<text x="220" y="198" class="s">Finanzas filtra por</text>
+<text x="220" y="214" class="s">sucursal y agrega</text>
+<text x="220" y="230" class="s">sus propias cuentas.</text>
+<text x="220" y="262" class="s">Datos tabulares,</text>
+<text x="220" y="278" class="s">fórmulas vivas,</text>
+<text x="220" y="294" class="s">una hoja de notas.</text>
+<text x="220" y="380" class="m">openxlsx2,</text>
+<text x="220" y="394" class="m">XlsxWriter</text>
+
+<rect x="396" y="100" width="168" height="300" rx="8" fill="#ffffff" stroke="#1a1a1a" stroke-width="1.6"/>
+<text x="480" y="128" class="v" text-anchor="middle">Discutir</text>
+<rect x="408" y="140" width="144" height="34" rx="5" fill="#1a1a1a"/>
+<text x="480" y="162" class="h" text-anchor="middle" style="fill:#ffffff;font-size:14px">Presentación</text>
+<text x="408" y="198" class="s">El comité decide en</text>
+<text x="408" y="214" class="s">diez minutos qué</text>
+<text x="408" y="230" class="s">hacer con Cali.</text>
+<text x="408" y="262" class="s">Una idea por</text>
+<text x="408" y="278" class="s">diapositiva, el título</text>
+<text x="408" y="294" class="s">es la conclusión.</text>
+<text x="408" y="380" class="m">Quarto: revealjs,</text>
+<text x="408" y="394" class="m">pptx</text>
+
+<rect x="584" y="100" width="168" height="300" rx="8" fill="#ffffff" stroke="#1a1a1a" stroke-width="1.6"/>
+<text x="668" y="128" class="v" text-anchor="middle">Vigilar</text>
+<rect x="596" y="140" width="144" height="34" rx="5" fill="#1a1a1a"/>
+<text x="668" y="162" class="h" text-anchor="middle" style="fill:#ffffff;font-size:14px">Tablero</text>
+<text x="596" y="198" class="s">Operaciones mira</text>
+<text x="596" y="214" class="s">cada mañana si algo</text>
+<text x="596" y="230" class="s">se salió de lo normal.</text>
+<text x="596" y="262" class="s">Pocos indicadores,</text>
+<text x="596" y="278" class="s">siempre en el mismo</text>
+<text x="596" y="294" class="s">lugar, una pantalla.</text>
+<text x="596" y="380" class="m">Quarto: dashboard</text>
+
+<rect x="772" y="100" width="168" height="300" rx="8" fill="#ffffff" stroke="#1a1a1a" stroke-width="1.6"/>
+<text x="856" y="128" class="v" text-anchor="middle">Explorar</text>
+<rect x="784" y="140" width="144" height="34" rx="5" fill="#1a1a1a"/>
+<text x="856" y="162" class="h" text-anchor="middle" style="fill:#ffffff;font-size:13px">Tablero interactivo</text>
+<text x="784" y="198" class="s">Un gerente quiere</text>
+<text x="784" y="214" class="s">cruzar sucursal, mes</text>
+<text x="784" y="230" class="s">y canal a su gusto.</text>
+<text x="784" y="262" class="s">Filtros y selectores;</text>
+<text x="784" y="278" class="s">a veces, un servidor</text>
+<text x="784" y="294" class="s">que recalcula.</text>
+<text x="784" y="380" class="m">OJS, Shiny,</text>
+<text x="784" y="394" class="m">Power BI</text>
+
+<rect x="20" y="418" width="920" height="70" rx="8" fill="#ffffff" stroke="#7a7a7a" stroke-width="1.5" stroke-dasharray="7 5"/>
+<text x="36" y="442" class="h" style="fill:#555555">Evitar</text>
+<text x="100" y="442" class="s">elegir el formato por costumbre ("siempre mandamos un PowerPoint") o porque se ve moderno;</text>
+<text x="100" y="462" class="s">un tablero que nadie mira todos los días es un reporte difícil de leer; un Excel sin notas</text>
+<text x="100" y="480" class="s">es una tabla sin contexto que alguien va a malinterpretar.</text>
+
+<rect x="20" y="504" width="920" height="42" rx="8" fill="#1a1a1a"/>
+<text x="480" y="531" class="b" text-anchor="middle" style="fill:#ffffff;font-weight:700">El formato lo decide el verbo de quien recibe, no la herramienta de quien produce.</text>
+</svg>

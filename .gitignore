@@ -37,6 +37,7 @@ env/
 /data-private/
 /datos-privados/
 .env
+.Renviron
 .env.*
 !.env.example
 *.pem
@@ -49,3 +50,7 @@ env/
 
 # Salidas del flujo del capítulo 13: se regeneran en cada render (bitácoras con hora)
 /datos/cap13/salida/
+
+# Salidas de los reportes del capítulo 15: se regeneran al renderizar
+/reportes/salida/
+/reportes/.quarto/

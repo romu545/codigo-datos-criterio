@@ -47,12 +47,12 @@ book:
         - 11-estadistica-descriptiva-exploracion-y-graficos.qmd
         - 12-funciones-personalizadas.qmd
         - 13-flujos-reproducibles-y-depuracion.qmd
- #  - part: "Comunicar y mantener"
- #    chapters:
- #      - 14-graficos-para-comunicar.qmd
- #      - 15-reportes-con-quarto.qmd
- #      - 16-excel-presentaciones-y-tableros.qmd
- #      - 17-probar-proteger-publicar-y-mantener.qmd
+    - part: "Comunicar y mantener"
+      chapters:
+        - 14-graficos-para-comunicar.qmd
+        - 15-reportes-con-quarto.qmd
+        - 16-excel-presentaciones-y-tableros.qmd
+        - 17-probar-proteger-publicar-y-mantener.qmd
     - references.qmd
 
   page-footer:

@@ -1,0 +1,67 @@
+---
+title: "Entregas a domicilio"
+format:
+  dashboard:
+    embed-resources: true
+    nav-buttons: []
+execute:
+  echo: false
+  message: false
+  warning: false
+---
+
+```{r}
+#| label: datos
+source("../scripts/flujo_entregas.R", chdir = TRUE)
+library(ggplot2)
+carpeta <- "../datos/cap13"
+rutas <- c(list.files(file.path(carpeta, "entregas"), pattern = "\\.csv$", full.names = TRUE),
+           file.path(carpeta, "abril", "entregas_2026_04.csv"))
+pedidos <- leer_crudo(rutas) |> armonizar() |> validar()
+indicadores <- resumir(pedidos)
+ultimo <- max(indicadores$mes)
+red <- dplyr::filter(pedidos, canal != "retiro", format(fecha, "%Y-%m") == ultimo)
+numero <- function(x, d = 1) format(round(x, d), decimal.mark = ",", big.mark = ".")
+theme_set(theme_minimal(base_size = 13))
+```
+
+## Fila {height="22%"}
+
+```{r}
+#| content: valuebox
+#| title: "Pedidos a domicilio en el mes"
+list(value = numero(nrow(red), 0), color = "light")
+```
+
+```{r}
+#| content: valuebox
+#| title: "Entregas de más de 20 horas"
+list(value = paste(numero(100 * mean(red$tiempo_entrega_h > 20)), "%"), color = "light")
+```
+
+```{r}
+#| content: valuebox
+#| title: "Mediana de horas de entrega"
+list(value = numero(median(red$tiempo_entrega_h)), color = "light")
+```
+
+## Fila
+
+```{r}
+#| title: "Entregas tardías por sucursal y mes"
+#| fig-alt: "Líneas del porcentaje de entregas tardías por mes: Cali en negro y las demás sucursales en gris."
+ggplot(indicadores, aes(mes, pct_tardias, group = sucursal)) +
+  geom_line(data = dplyr::filter(indicadores, sucursal != "S03"), color = "grey80") +
+  geom_line(data = dplyr::filter(indicadores, sucursal == "S03"), linewidth = 1.3) +
+  annotate("text", x = 4.05, y = 29, label = "Cali", hjust = 0, fontface = "bold") +
+  labs(x = NULL, y = "%")
+```
+
+```{r}
+#| title: "Indicadores del mes"
+dplyr::filter(indicadores, mes == ultimo) |>
+  dplyr::transmute(Sucursal = sucursal, Pedidos = pedidos,
+                   `Mediana (h)` = numero(mediana_horas),
+                   `% tardías` = numero(pct_tardias)) |>
+  knitr::kable()
+```

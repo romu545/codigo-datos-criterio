@@ -527,7 +527,7 @@ SQL tampoco tiene un control de relación: la forma de protegerse es contar. Con
 
 Una misma información puede guardarse en tablas de formas distintas. Las metas de 2026 vienen en **formato ancho**: una fila por sucursal y una columna por mes. Es cómodo para leer, pero los nombres de las columnas guardan un dato, el mes, y eso complica casi todo lo demás: para comparar con las ventas, que tienen el mes en una columna, o para filtrar el primer trimestre, habría que escribir el nombre de cada columna.
 
-El **formato largo** tiene una fila por sucursal y mes, con el mes como columna. Es la forma que Hadley Wickham llamó **datos ordenados** (*tidy data*): cada variable en una columna, cada observación en una fila y cada valor en una celda (@fig-largo-ancho). La regla práctica es analizar en largo y presentar en ancho cuando la tabla es para que la lea una persona. Un costo del formato largo es que repite los identificadores en cada fila: con 8 sucursales y 12 meses no importa, pero con millones de filas conviene guardar esas columnas como categorías, que ocupan mucho menos (@sec-categorias).
+El **formato largo** tiene una fila por sucursal y mes, con el mes como columna. Es la forma que Hadley Wickham llamó **datos ordenados** (*tidy data*) [@wickham2014]: cada variable en una columna, cada observación en una fila y cada valor en una celda (@fig-largo-ancho). La regla práctica es analizar en largo y presentar en ancho cuando la tabla es para que la lea una persona. Un costo del formato largo es que repite los identificadores en cada fila: con 8 sucursales y 12 meses no importa, pero con millones de filas conviene guardar esas columnas como categorías, que ocupan mucho menos (@sec-categorias).
 
 ![Formato ancho y formato largo, y las funciones para pasar de uno a otro.](imagenes/transformacion/largo-ancho.svg){#fig-largo-ancho fig-alt="A la izquierda, una tabla ancha con una columna por mes: sucursal, ene, feb y mar, con las metas de S01 y S02. Es cómoda para leer y para reportes, pero los nombres de columna guardan datos. A la derecha, la misma información en formato largo, con una fila por sucursal y mes y las columnas sucursal, mes y meta; es cómoda para filtrar, agrupar, unir y graficar. Una flecha de ancho a largo con pivot_longer, melt y UNPIVOT, y otra de largo a ancho con pivot_wider, pivot y PIVOT. Abajo, la definición de datos ordenados: cada variable en una columna, cada observación en una fila y cada valor en una celda."}
 
@@ -672,8 +672,11 @@ Ciudad y departamento están separados por `" - "`:
 #| label: separar-delim
 metas |>
   select(sucursal, ciudad_departamento) |>
-  separate_wider_delim(ciudad_departamento, delim = " - ",
-                       names = c("ciudad", "departamento")) |>
+  separate_wider_delim(
+    ciudad_departamento,
+    delim = " - ",
+    names = c("ciudad", "departamento")
+  ) |>
   head(3)
 ```
 
@@ -685,8 +688,14 @@ pedidos <- read_csv("datos/cap07/pedidos_web.csv", show_col_types = FALSE)
 
 pedidos |>
   select(contacto) |>
-  separate_wider_regex(contacto,
-                       patterns = c(nombre = ".*?", " <", correo = "[^>]+", ">")) |>
+  separate_wider_regex(
+    contacto,
+    patterns = c(
+      nombre = ".*?", 
+      " <",
+      correo = "[^>]+", ">"
+      )
+  ) |>
   head(2)
 ```
 
@@ -699,7 +708,11 @@ Los productos de cada pedido necesitan dos pasos: primero separar la lista en fi
 items <- pedidos |>
   select(pedido, items) |>
   separate_longer_delim(items, delim = "; ") |>
-  separate_wider_delim(items, delim = " x", names = c("producto", "unidades")) |>
+  separate_wider_delim(
+    items,
+    delim = " x",
+    names = c("producto", "unidades")
+  ) |>
   mutate(unidades = as.integer(unidades))
 
 head(items, 4)

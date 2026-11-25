@@ -1,0 +1,63 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 400" width="960" height="400" role="img" aria-labelledby="titulo desc">
+<title id="titulo">Las capas de los datos de un proyecto</title>
+<desc id="desc">Tres cajas de izquierda a derecha unidas por flechas: cruda, limpia y analítica. Desde la analítica sale una flecha hacia compartir. Con trazo discontinuo, Evitar: modificar la capa cruda, compartir desde un objeto de la sesión y guardar intermedios que nadie vuelve a leer. Al pie: cada capa se puede reconstruir desde la anterior con un script.</desc>
+<style>
+  text{font-family:"Source Sans 3","Source Sans Pro","Segoe UI",Helvetica,Arial,sans-serif;fill:#1a1a1a}
+  .h{font-size:17px;font-weight:700}
+  .b{font-size:15.5px}
+  .s{font-size:14px;fill:#3d3d3d}
+  .m{font-family:"Source Code Pro",Consolas,"DejaVu Sans Mono",monospace;font-size:12.5px}
+</style>
+<defs>
+  <marker id="fl" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#1a1a1a"/></marker>
+</defs>
+<rect x="0" y="0" width="960" height="400" fill="#ffffff"/>
+
+<rect x="30" y="20" width="210" height="190" rx="10" fill="#ffffff" stroke="#1a1a1a" stroke-width="1.6"/>
+<text x="46" y="48" class="h">Cruda</text>
+<text x="46" y="74" class="s">los archivos tal como</text>
+<text x="46" y="92" class="s">llegaron de la fuente</text>
+<text x="46" y="122" class="s">nunca se modifican</text>
+<text x="46" y="160" class="m" style="fill:#3d3d3d">cartera_2026_t1</text>
+<text x="46" y="178" class="m" style="fill:#3d3d3d">clientes</text>
+
+<line x1="244" y1="115" x2="276" y2="115" stroke="#1a1a1a" stroke-width="2" marker-end="url(#fl)"/>
+
+<rect x="282" y="20" width="230" height="190" rx="10" fill="#ffffff" stroke="#1a1a1a" stroke-width="1.6"/>
+<text x="298" y="48" class="h">Limpia</text>
+<text x="298" y="74" class="s">leída con contrato, auditada</text>
+<text x="298" y="92" class="s">y corregida con reglas;</text>
+<text x="298" y="110" class="s">una tabla por tabla de la fuente</text>
+<text x="298" y="150" class="m" style="fill:#3d3d3d">cartera_limpia</text>
+<text x="298" y="168" class="m" style="fill:#3d3d3d">cuarentena</text>
+<text x="298" y="186" class="m" style="fill:#3d3d3d">bitacora</text>
+
+<line x1="516" y1="115" x2="548" y2="115" stroke="#1a1a1a" stroke-width="2" marker-end="url(#fl)"/>
+
+<rect x="554" y="20" width="230" height="190" rx="10" fill="#1a1a1a"/>
+<text x="570" y="48" class="h" style="fill:#ffffff">Analítica</text>
+<text x="570" y="74" class="s" style="fill:#ffffff">tablas armadas para un uso:</text>
+<text x="570" y="92" class="s" style="fill:#ffffff">lo que se analiza y se comparte</text>
+<text x="570" y="132" class="m" style="fill:#ffffff">cartera_analitica</text>
+<text x="570" y="150" class="m" style="fill:#ffffff">cierres/corte=...</text>
+<text x="570" y="168" class="m" style="fill:#ffffff">tablero_indicadores</text>
+<text x="570" y="186" class="m" style="fill:#ffffff">diccionario</text>
+
+<line x1="788" y1="115" x2="820" y2="115" stroke="#1a1a1a" stroke-width="2" marker-end="url(#fl)"/>
+
+<rect x="826" y="60" width="104" height="110" rx="10" fill="#ffffff" stroke="#1a1a1a" stroke-width="1.6"/>
+<text x="878" y="98" class="h" text-anchor="middle">Compartir</text>
+<text x="878" y="122" class="s" text-anchor="middle">personas y</text>
+<text x="878" y="140" class="s" text-anchor="middle">herramientas</text>
+
+<path d="M 640 214 Q 400 262 135 214" fill="none" stroke="#1a1a1a" stroke-width="1.6" marker-end="url(#fl)"/>
+<text x="390" y="262" class="s" text-anchor="middle">si algo falla: borrar limpia y analítica, y volver a ejecutar los scripts</text>
+
+<rect x="30" y="280" width="900" height="56" rx="10" fill="#ffffff" stroke="#7a7a7a" stroke-width="1.5" stroke-dasharray="7 5"/>
+<text x="46" y="304" class="h" style="fill:#555555">Evitar</text>
+<text x="110" y="304" class="s">modificar la capa cruda; compartir desde un objeto de la sesión en lugar de un archivo</text>
+<text x="110" y="324" class="s">de la capa analítica; guardar intermedios que nadie vuelve a leer y que se quedan desactualizados.</text>
+
+<rect x="30" y="346" width="900" height="44" rx="8" fill="#1a1a1a"/>
+<text x="480" y="373" class="b" text-anchor="middle" style="fill:#ffffff;font-weight:700">Cada capa se puede reconstruir desde la anterior con un script.</text>
+</svg>

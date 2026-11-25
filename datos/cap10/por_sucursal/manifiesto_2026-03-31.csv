@@ -1,0 +1,9 @@
+sucursal,responsable,ruta,facturas,valor
+S01,Laura Gómez,datos/cap10/por_sucursal/cartera_S01_2026-03-31.csv,25,125655942.21
+S02,Andrés Mejía,datos/cap10/por_sucursal/cartera_S02_2026-03-31.csv,17,63356407.87
+S03,Sofía Rincón,datos/cap10/por_sucursal/cartera_S03_2026-03-31.csv,29,129715972.47
+S04,Carlos Peña,datos/cap10/por_sucursal/cartera_S04_2026-03-31.csv,29,137993940.57
+S05,Valentina Ruiz,datos/cap10/por_sucursal/cartera_S05_2026-03-31.csv,28,169019704.97
+S06,Jorge Castro,datos/cap10/por_sucursal/cartera_S06_2026-03-31.csv,20,120771977.31
+S07,Natalia Ortiz,datos/cap10/por_sucursal/cartera_S07_2026-03-31.csv,31,230219294.98
+S08,Felipe Díaz,datos/cap10/por_sucursal/cartera_S08_2026-03-31.csv,22,107645497.39

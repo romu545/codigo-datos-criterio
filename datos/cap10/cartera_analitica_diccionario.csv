@@ -1,0 +1,12 @@
+columna,tipo,faltantes,descripcion
+factura,character,0,Número de la factura; clave de la tabla
+nit,character,0,"NIT del cliente, texto de 10 dígitos con ceros iniciales"
+sucursal,character,0,Código de la sucursal (S01 a S08)
+ciudad,character,0,"Ciudad de la sucursal, estandarizada en el capítulo 8"
+region,character,0,Región de la sucursal
+fecha_emision,Date,0,Fecha de emisión
+fecha_vencimiento,Date,0,Fecha de vencimiento
+fecha_pago,Date,201,Fecha de pago; vacía si la factura no se ha pagado
+valor_factura,numeric,0,Valor de la factura en pesos
+pagada,logical,0,TRUE si la factura está pagada
+revisar,logical,0,TRUE si un valor atípico se aceptó pero debe revisarse

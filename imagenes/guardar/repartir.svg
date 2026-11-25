@@ -1,0 +1,63 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 420" width="960" height="420" role="img" aria-labelledby="titulo desc">
+<title id="titulo">Repartir una tabla en un archivo por grupo, con manifiesto</title>
+<desc id="desc">A la izquierda, la cartera pendiente al 31 de marzo, 201 facturas de ocho sucursales. Se reparte por sucursal en ocho archivos. Debajo, el manifiesto: una fila por archivo con el número de facturas y el valor. Dos comprobaciones: la suma de las facturas del manifiesto es 201 y cada archivo contiene una sola sucursal. Con trazo discontinuo, Evitar: entregar sin comprobar que las partes suman el todo, o filtrar a mano cada sucursal. Al pie: a cada quien lo suyo, y completo.</desc>
+<style>
+  text{font-family:"Source Sans 3","Source Sans Pro","Segoe UI",Helvetica,Arial,sans-serif;fill:#1a1a1a}
+  .h{font-size:17px;font-weight:700}
+  .b{font-size:15.5px}
+  .s{font-size:14px;fill:#3d3d3d}
+  .m{font-family:"Source Code Pro",Consolas,"DejaVu Sans Mono",monospace;font-size:12.5px}
+  .c{font-family:"Source Code Pro",Consolas,"DejaVu Sans Mono",monospace;font-size:12px}
+</style>
+<defs>
+  <marker id="fl" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#1a1a1a"/></marker>
+</defs>
+<rect x="0" y="0" width="960" height="420" fill="#ffffff"/>
+
+<rect x="30" y="30" width="200" height="150" rx="10" fill="#1a1a1a"/>
+<text x="130" y="62" class="h" text-anchor="middle" style="fill:#ffffff">pendiente</text>
+<text x="130" y="88" class="s" text-anchor="middle" style="fill:#ffffff">cartera al 31 de marzo</text>
+<text x="130" y="120" class="b" text-anchor="middle" style="fill:#ffffff">201 facturas</text>
+<text x="130" y="144" class="b" text-anchor="middle" style="fill:#ffffff">8 sucursales</text>
+
+<line x1="234" y1="105" x2="300" y2="105" stroke="#1a1a1a" stroke-width="2" marker-end="url(#fl)"/>
+<text x="267" y="94" class="c" text-anchor="middle">split()</text>
+<text x="267" y="126" class="c" text-anchor="middle">nest()</text>
+
+<rect x="306" y="30" width="250" height="30" rx="4" fill="#ffffff" stroke="#8a8a8a"/>
+<text x="318" y="50" class="c">cartera_S01_2026-03-31.csv</text>
+<rect x="306" y="66" width="250" height="30" rx="4" fill="#ffffff" stroke="#8a8a8a"/>
+<text x="318" y="86" class="c">cartera_S02_2026-03-31.csv</text>
+<rect x="306" y="102" width="250" height="30" rx="4" fill="#ffffff" stroke="#8a8a8a"/>
+<text x="318" y="122" class="c">cartera_S03_2026-03-31.csv</text>
+<text x="431" y="150" class="c" text-anchor="middle">...</text>
+<rect x="306" y="158" width="250" height="30" rx="4" fill="#ffffff" stroke="#8a8a8a"/>
+<text x="318" y="178" class="c">cartera_S08_2026-03-31.csv</text>
+<text x="306" y="212" class="s">iwalk() o pwalk(): un archivo por sucursal</text>
+
+<rect x="610" y="30" width="320" height="190" rx="10" fill="#ffffff" stroke="#1a1a1a" stroke-width="1.6"/>
+<text x="626" y="56" class="h">Manifiesto</text>
+<text x="626" y="84" class="c">sucursal</text><text x="790" y="84" class="c" text-anchor="end">facturas</text><text x="912" y="84" class="c" text-anchor="end">valor</text>
+<line x1="626" y1="92" x2="912" y2="92" stroke="#8a8a8a"/>
+<text x="626" y="112" class="c">S01</text><text x="790" y="112" class="c" text-anchor="end">25</text><text x="912" y="112" class="c" text-anchor="end">125.655.942</text>
+<text x="626" y="132" class="c">S02</text><text x="790" y="132" class="c" text-anchor="end">17</text><text x="912" y="132" class="c" text-anchor="end">63.356.408</text>
+<text x="626" y="152" class="c">...</text>
+<line x1="626" y1="164" x2="912" y2="164" stroke="#8a8a8a"/>
+<text x="626" y="186" class="c" style="font-weight:700">suma</text><text x="790" y="186" class="c" text-anchor="end" style="font-weight:700">201</text>
+<text x="626" y="208" class="s">una fila por archivo entregado</text>
+
+<line x1="560" y1="105" x2="604" y2="105" stroke="#1a1a1a" stroke-width="2" marker-end="url(#fl)"/>
+
+<rect x="30" y="236" width="430" height="80" rx="10" fill="#ffffff" stroke="#1a1a1a" stroke-width="1.6"/>
+<text x="46" y="262" class="h">Comprobar leyendo los archivos</text>
+<text x="46" y="286" class="s">las partes suman el todo: 201 facturas y el mismo valor</text>
+<text x="46" y="304" class="s">cada archivo contiene una sola sucursal, la de su nombre</text>
+
+<rect x="490" y="236" width="440" height="80" rx="10" fill="#ffffff" stroke="#7a7a7a" stroke-width="1.5" stroke-dasharray="7 5"/>
+<text x="506" y="262" class="h" style="fill:#555555">Evitar</text>
+<text x="506" y="286" class="s">entregar sin comprobar que las partes suman el todo;</text>
+<text x="506" y="304" class="s">filtrar y guardar a mano cada sucursal.</text>
+
+<rect x="30" y="336" width="900" height="44" rx="8" fill="#1a1a1a"/>
+<text x="480" y="363" class="b" text-anchor="middle" style="fill:#ffffff;font-weight:700">A cada quien lo suyo, y completo.</text>
+</svg>

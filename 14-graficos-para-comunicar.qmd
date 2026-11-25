@@ -12,7 +12,7 @@ Este capítulo abre la última parte del libro, sobre comunicar. Retoma los grá
 ## Antes de empezar
 
 1. Este capítulo usa los pedidos de enero a abril y las funciones del flujo del @sec-flujos (`scripts/flujo_entregas.R` y `.py`), que leen, armonizan, validan y resumen los datos.
-2. En R basta `ggplot2` y `scales`. En Python, `matplotlib` y `seaborn`, y `plotly` para el ejemplo interactivo: `uv pip install plotly`.
+2. En R usamos `ggplot2` y `scales`, y para combinar varios gráficos, `patchwork` y `cowplot`: `install.packages(c("patchwork", "cowplot"))`. En Python, `matplotlib` y `seaborn`, y `plotly` para el ejemplo interactivo: `uv pip install plotly`.
 3. DuckDB no tiene pestaña en este capítulo. Su papel, si los datos son grandes, es el de siempre: calcular la tabla pequeña que se va a graficar.
 :::
 
@@ -26,8 +26,10 @@ use("ggplot2", c("ggplot", "aes", "geom_line", "geom_point", "geom_text", "geom_
                  "scale_y_continuous", "scale_size_area", "scale_fill_manual",
                  "scale_color_manual", "labs", "theme_minimal", "theme", "theme_set",
                  "element_blank", "element_text", "expansion", "coord_equal",
-                 "guides"))
+                 "guides", "geom_col", "geom_histogram", "scale_x_continuous"))
 use("scales", "label_percent")
+use("patchwork", "plot_annotation")
+use("cowplot", "plot_grid")
 
 source("scripts/flujo_entregas.R")
 rutas <- c(list.files("datos/cap13/entregas", pattern = "\\.csv$", full.names = TRUE),
@@ -336,6 +338,240 @@ print({k: round(100 * v) for k, v in proporciones.items()})
 
 :::
 
+## La gramática detrás de cada gráfico {#sec-gramatica}
+
+Todos los gráficos de este capítulo, y los del @sec-explorar, se construyeron con las mismas piezas. `ggplot2` implementa una idea de Leland Wilkinson, la **gramática de los gráficos**: un gráfico no es un tipo ("de barras", "de líneas") sino una combinación de capas, y cada capa combina las mismas piezas. Conocerlas es lo que permite pasar de copiar ejemplos a construir el gráfico que el mensaje necesita:
+
+| Pieza | Qué decide | Ejemplo en este capítulo |
+|---|---|---|
+| Datos | Qué tabla se dibuja | `indicadores`, `por_sucursal` |
+| Estéticas (`aes()`) | Qué columna va a qué propiedad visual | `aes(mes, pct_tardias)` |
+| Geometrías (`geom_*()`) | Qué forma toma cada dato | `geom_line()`, `geom_point()`, `geom_tile()` |
+| Estadísticas (`stat_*()`) | Qué cálculo se hace antes de dibujar | `geom_histogram()` cuenta; `stat_ecdf()` acumula |
+| Escalas (`scale_*()`) | Cómo se traduce un valor en posición, color o tamaño | `scale_y_continuous(labels = ...)`, `scale_size_area()` |
+| Sistema de coordenadas (`coord_*()`) | Cómo se ubica el plano | `coord_equal()` en la cuadrícula |
+| Facetas (`facet_*()`) | En cuántos paneles se divide | `facet_wrap(~ panel)` |
+| Tema (`theme()`) | Todo lo que no es dato: tipografía, fondo, cuadrícula | El tema común de `theme_set()` |
+
+: Las piezas de la gramática de los gráficos {#tbl-gramatica}
+
+### Las estéticas: qué propiedad visual codifica cada dato
+
+Una **estética** es una propiedad visual de una geometría. Las más usadas son las mismas en casi todas las geometrías, aunque no todas las tienen:
+
+| Estética | Qué controla | Notas |
+|---|---|---|
+| `x`, `y` | La posición | La comparación más precisa que existe (@sec-categorias-graficos) |
+| `colour` (o `color`) | El color de las líneas, los puntos y los bordes | En barras y áreas, solo el borde |
+| `fill` | El color del relleno | Barras, áreas, cuadros y las formas de punto 21 a 25 |
+| `alpha` | La transparencia, de 0 (invisible) a 1 (opaco) | Revela dónde se acumulan los datos (@sec-explorar) |
+| `size` y `linewidth` | El tamaño de los puntos y el grosor de las líneas | Para tamaños proporcionales, `scale_size_area()` |
+| `shape` | La forma de los puntos | Las formas 21 a 25 tienen borde (`colour`) y relleno (`fill`) separados |
+| `linetype` | El tipo de línea: continua, discontinua, punteada | Útil cuando el gráfico se imprime en blanco y negro |
+| `label` | El texto que escribe `geom_text()` | Las etiquetas directas |
+
+: Las estéticas más usadas {#tbl-esteticas}
+
+La distinción que más errores produce es entre **asignar** una estética a una columna y **fijarla** a un valor. Dentro de `aes()`, una estética se asigna a una columna de los datos, y `ggplot2` construye una escala y una leyenda. Fuera de `aes()`, como argumento de la geometría, se fija a un valor para todos los datos.
+
+### Ejemplo guiado 14.4: asignar y fijar
+
+::: {.panel-tabset group="lenguaje"}
+
+### R
+
+```{r}
+#| label: fig-asignar-fijar
+#| fig-cap: "El error clásico: un color escrito dentro de aes() se trata como un dato."
+#| fig-subcap:
+#|   - "color = \"black\" dentro de aes()"
+#|   - "color = \"black\" fuera de aes()"
+#| fig-alt:
+#|   - "Ocho puntos de color salmón y una leyenda con una sola entrada que dice black: el texto black se trató como un dato."
+#|   - "Los mismos ocho puntos, en negro y sin leyenda."
+#| layout-ncol: 2
+#| fig-height: 3
+ggplot(por_sucursal, aes(mediana, pct_tardias, color = "black")) +
+  geom_point(size = 3)
+
+ggplot(por_sucursal, aes(mediana, pct_tardias)) +
+  geom_point(size = 3, color = "black")
+```
+
+En el primer gráfico, `"black"` dentro de `aes()` se interpretó como una columna constante con el texto `"black"`: `ggplot2` le asignó el primer color de su paleta, que es un salmón, y armó una leyenda con una sola entrada. El segundo es lo que se quería. La regla: **dentro de `aes()`, columnas; fuera, valores**.
+
+Con esa regla se combinan las estéticas. En este gráfico de barras, el relleno se asigna a una columna (`fill = es_cali`) y el borde, el ancho y la transparencia se fijan:
+
+```{r}
+#| label: fig-esteticas
+#| fig-cap: "Relleno asignado a una columna; borde, ancho y transparencia fijados."
+#| fig-alt: "Ocho barras horizontales con el porcentaje de entregas tardías de cada sucursal, ordenadas de mayor a menor. La barra de Cali, S03, es negra y mucho más larga, con 36,6 %; las demás son grises con borde negro, de 10 % en S07 a 1,4 % en S02. Cada barra tiene su valor escrito al final."
+#| fig-height: 3.2
+porcentaje <- \(x) paste0(format(round(x, 1), decimal.mark = ","), " %")
+
+ggplot(por_sucursal, aes(x = pct_tardias, y = reorder(sucursal, pct_tardias))) +
+  geom_col(aes(fill = es_cali), colour = "black", linewidth = 0.3, width = 0.7,
+           alpha = 0.9) +
+  geom_text(aes(label = porcentaje(pct_tardias)), hjust = -0.15, size = 3.3) +
+  scale_fill_manual(values = c("grey85", "black"), guide = "none") +
+  scale_x_continuous(expand = expansion(mult = c(0, 0.15))) +
+  labs(title = "Cali tiene siete veces más entregas tardías que S01, la sucursal más grande",
+       x = "% de entregas de más de 20 horas", y = NULL)
+```
+
+El título compara a Cali con `S01` y no con la sucursal que le sigue en la lista, `S07`, porque el 10 % de `S07` sale de 10 pedidos: compararse con una cifra frágil sería el error del @sec-de-trabajo-a-explicativo, repetido en el título. `porcentaje()` escribe los valores con coma decimal, como el resto del libro.
+
+`reorder(sucursal, pct_tardias)` ordena las sucursales por su porcentaje, la misma idea de `fct_reorder()` del @sec-explorar con una función de R base. `geom_col()` dibuja barras con la altura que dan los datos; `geom_bar()`, en cambio, cuenta filas, porque su estadística es contar. Esa diferencia es la columna de estadísticas de la @tbl-gramatica.
+
+### Python
+
+```python
+fig, ejes = plt.subplots(1, 2, figsize=(9, 3))
+ejes[0].scatter(por_sucursal["mediana"], por_sucursal["pct_tardias"],
+                c=["black" if s == "S03" else "0.7" for s in por_sucursal["sucursal"]],
+                s=60, alpha=0.8, marker="o", edgecolors="black", linewidths=0.5)
+orden = por_sucursal.sort_values("pct_tardias")
+ejes[1].barh(orden["sucursal"], orden["pct_tardias"],
+             color=["black" if s == "S03" else "0.85" for s in orden["sucursal"]],
+             edgecolor="black", linewidth=0.3, height=0.7)
+plt.show()
+pct = orden.set_index("sucursal")["pct_tardias"]
+print(round(pct["S03"] / pct["S01"], 1))
+```
+
+```text
+7.3
+```
+
+En `matplotlib` no hay escalas que traduzcan columnas en colores: cada estética se pasa como un valor o como una lista de valores, uno por dato. `c` y `color` son el relleno; `edgecolor` (o `edgecolors` en `scatter()`), el borde; `alpha`, la transparencia; `s`, el área del punto; `marker`, la forma, y `linestyle`, el tipo de línea. `seaborn` sí asigna columnas a estéticas, con los argumentos `hue`, `size` y `style`, más cerca de la idea de `ggplot2`.
+
+:::
+
+### La tipografía
+
+La tipografía es parte del tema, y se cambia con `theme(text = element_text(family = ...))`. Pero hay un detalle técnico que explica casi todos los problemas: quien dibuja las letras no es `ggplot2`, sino el **dispositivo gráfico**, el programa que convierte el gráfico en una imagen. El dispositivo por defecto de R en Windows solo conoce unas pocas fuentes; el del paquete `ragg` usa cualquier fuente instalada en el sistema, y es el que conviene usar. En Quarto se elige con la opción `dev: ragg_png` del bloque o del documento:
+
+```{r}
+#| label: fig-tipografia
+#| fig-cap: "El mismo gráfico con tres tipografías del sistema."
+#| fig-alt: "Tres versiones del mismo título y del mismo gráfico de barras pequeño, cada una con una tipografía distinta: Segoe UI, Bahnschrift y Georgia."
+#| fig-height: 2.4
+#| dev: ragg_png
+muestra <- function(fuente) {
+  ggplot(por_sucursal, aes(pct_tardias, reorder(sucursal, pct_tardias))) +
+    geom_col(fill = "grey60", width = 0.6) +
+    labs(title = fuente, subtitle = "% de entregas tardías", x = NULL, y = NULL) +
+    theme(text = element_text(family = fuente), axis.text.y = element_blank())
+}
+muestra("Segoe UI") | muestra("Bahnschrift") | muestra("Georgia")
+```
+
+Tres criterios para elegir. **Legibilidad antes que personalidad**: las fuentes sin remates (*sans serif*), como Segoe UI o Bahnschrift, se leen mejor en pantalla y en tamaños pequeños. **Coherencia**: el gráfico usa la misma tipografía que el documento o la presentación donde va. Y **portabilidad**: la fuente tiene que existir en el equipo donde se genera el gráfico; Bahnschrift viene con Windows pero no con macOS. Para no depender del sistema, el paquete `systemfonts` registra un archivo de fuente que viaja con el proyecto (`register_font()`), y en Python `matplotlib` la cambia con `plt.rcParams["font.family"] = "Bahnschrift"`.
+
+El bloque anterior usó una pieza que todavía no habíamos presentado: el operador `|` entre gráficos, que los pone uno al lado del otro. Viene del paquete `patchwork`, y es el tema de la siguiente sección.
+
+## Varios gráficos en una figura {#sec-componer}
+
+Muchas veces el mensaje necesita más de un gráfico: la evolución en el tiempo, la comparación entre sucursales y la distribución que explica la diferencia. Las facetas del @sec-explorar repiten **el mismo** gráfico para cada grupo; para combinar gráficos **distintos** en filas y columnas hacen falta otras herramientas:
+
+| Herramienta | Lenguaje | Cómo se usa | Cuándo |
+|---|---|---|---|
+| `patchwork` | R | Operadores: `p1 | p2` lado a lado, `p1 / p2` uno sobre otro | La forma más legible para gráficos de `ggplot2` |
+| `cowplot` | R | `plot_grid(p1, p2, ncol = 2, labels = "AUTO")` | Más control sobre alineación y etiquetas; muy usado en artículos |
+| `lattice` | R | Un sistema de gráficos aparte, con fórmulas: `y ~ x | grupo` | Gráficos por grupos en una línea; viene con R |
+| `subplot_mosaic()` | Python | Un esquema de texto: `"AA;BC"` | La forma más clara en `matplotlib` |
+
+: Herramientas para combinar gráficos {#tbl-componer}
+
+### Ejemplo guiado 14.5: una lámina para el comité
+
+Armamos en una sola figura el resumen de este capítulo: la evolución de las entregas tardías arriba, a todo lo ancho, y abajo la paradoja de Cali y la distribución que la explica.
+
+::: {.panel-tabset group="lenguaje"}
+
+### R
+
+```{r}
+#| label: fig-lamina
+#| fig-cap: "Tres gráficos en una lámina, compuestos con patchwork."
+#| fig-alt: "Una figura con tres gráficos. Arriba, a todo lo ancho, el porcentaje de entregas tardías por mes con Cali en negro y las demás sucursales en gris. Abajo a la izquierda, la mediana de horas frente al porcentaje de tardías, con Cali sola en la esquina superior izquierda. Abajo a la derecha, el histograma de los tiempos de entrega de Cali, con dos montañas separadas, una alrededor de 4 horas y otra alrededor de 26. Cada gráfico tiene una letra, A, B y C, y la figura tiene un título general: Cali concentra las entregas tardías porque tiene dos clases de entrega."
+#| fig-height: 6.5
+p_tiempo <- ggplot(indicadores, aes(mes, pct_tardias, group = sucursal)) +
+  geom_line(data = resto, color = "grey80") +
+  geom_line(data = cali, linewidth = 1.2) +
+  scale_x_date(breaks = meses, labels = c("enero", "febrero", "marzo", "abril")) +
+  labs(subtitle = "% de entregas tardías por mes; Cali en negro", x = NULL, y = NULL)
+
+p_paradoja <- ggplot(por_sucursal, aes(mediana, pct_tardias, color = es_cali)) +
+  geom_point(aes(size = pedidos)) +
+  scale_color_manual(values = c("grey60", "black"), guide = "none") +
+  scale_size_area(max_size = 5, guide = "none") +
+  labs(subtitle = "Mediana de horas y % de tardías", x = "mediana (horas)", y = NULL)
+
+p_cali <- ggplot(filter(a_domicilio, sucursal == "S03"), aes(tiempo_entrega_h)) +
+  geom_histogram(binwidth = 2, boundary = 0, fill = "grey30") +
+  labs(subtitle = "Tiempos de entrega de Cali", x = "horas", y = NULL)
+
+p_tiempo / (p_paradoja | p_cali) +
+  plot_annotation(
+    title = "Cali concentra las entregas tardías porque tiene dos clases de entrega",
+    caption = "Fuente: flujo de entregas, enero a abril de 2026.",
+    tag_levels = "A")
+```
+
+`/` pone un gráfico encima de otro y `|` uno al lado del otro, y los paréntesis agrupan, como en una operación aritmética: la figura es "el gráfico del tiempo, encima de (la paradoja al lado de la distribución)". `plot_annotation()` agrega un título y una fuente para toda la lámina, y `tag_levels = "A"` etiqueta cada gráfico con una letra, para poder decir "como muestra el panel C". `patchwork` alinea los ejes y los márgenes de los gráficos por su cuenta.
+
+Con `cowplot`, la misma lámina se arma con `plot_grid()`, que recibe los gráficos y el número de filas o columnas:
+
+```{r}
+#| label: lamina-cowplot
+#| eval: false
+plot_grid(p_tiempo,
+          plot_grid(p_paradoja, p_cali, ncol = 2, labels = c("B", "C")),
+          ncol = 1, labels = c("A", ""))
+```
+
+`lattice` es otra cosa: un sistema de gráficos distinto de `ggplot2`, más antiguo, que viene instalado con R. Su idea central son los **gráficos enrejados** (*trellis*): un gráfico por grupo, declarado con una fórmula. Vale la pena conocerlo porque aparece en código de muchos años y porque, para ciertos gráficos por grupos, es muy breve:
+
+```{r}
+#| label: fig-lattice
+#| fig-cap: "Un gráfico enrejado de lattice: una fórmula, un panel por sucursal."
+#| fig-alt: "Ocho paneles pequeños, uno por sucursal, con el porcentaje de entregas tardías de enero a abril como puntos unidos por líneas. El panel de S03 está muy por encima de los demás."
+#| fig-height: 3.6
+lattice::xyplot(pct_tardias ~ mes | sucursal, data = indicadores, type = "b",
+                layout = c(4, 2), col = "black", xlab = NULL, ylab = "% tardías")
+```
+
+La fórmula `pct_tardias ~ mes | sucursal` se lee "el porcentaje según el mes, para cada sucursal": la barra vertical `|` hace lo mismo que `facet_wrap()`. `type = "b"` dibuja puntos y líneas (*both*). Para gráficos nuevos, `ggplot2` es la opción más completa; `lattice` sigue siendo útil para entender código antiguo y para gráficos rápidos por grupos.
+
+### Python
+
+```python
+tardias_cali = a_domicilio.loc[a_domicilio["sucursal"] == "S03", "tiempo_entrega_h"]
+
+fig, ejes = plt.subplot_mosaic("AA;BC", figsize=(9, 6.5), layout="constrained")
+for s, d in indicadores.groupby("sucursal"):
+    ejes["A"].plot(d["mes"], d["pct_tardias"], color="black" if s == "S03" else "0.8",
+                   lw=2.5 if s == "S03" else 1)
+ejes["B"].scatter(por_sucursal["mediana"], por_sucursal["pct_tardias"],
+                  c=["black" if s == "S03" else "0.6" for s in por_sucursal["sucursal"]])
+ejes["C"].hist(tardias_cali, bins=range(0, 36, 2), color="0.3")
+for letra, ax in ejes.items():
+    ax.set_title(letra, loc="left", weight="bold")
+fig.suptitle("Cali concentra las entregas tardías porque tiene dos clases de entrega",
+             x=0.01, ha="left", weight="bold")
+plt.show()
+print(sorted(ejes))
+```
+
+```text
+['A', 'B', 'C']
+```
+
+`subplot_mosaic("AA;BC")` describe la cuadrícula con texto: cada fila se separa con `;` y cada letra es un panel, así que `"AA"` ocupa toda la primera fila y `"BC"` divide la segunda en dos. Devuelve un diccionario de ejes con las letras como claves. `layout="constrained"` acomoda los márgenes para que nada se superponga.
+
+:::
+
 ## Color, accesibilidad y texto {#sec-color-accesibilidad}
 
 Los gráficos de este capítulo usan casi solo grises y negro. No es una limitación estética: es una forma de forzar la regla más útil del color en un gráfico que explica, **un color para el mensaje y gris para todo lo demás**. Cuando se necesitan más colores, el criterio cambia según lo que representan:
@@ -357,7 +593,7 @@ La accesibilidad incluye también a quien no ve el gráfico: un lector de pantal
 
 Volvamos a la pregunta del principio. Parte de lo que hace atractivas las páginas que fabrica una IA es la interactividad: pasar el ratón sobre un punto y ver su valor, elegir qué serie destacar. Quarto lo hace sin salir del flujo, con **Observable Plot**, una biblioteca de gráficos para el navegador que viene incluida en Quarto. Los datos los calcula R, y el gráfico se dibuja en la página, en el navegador de quien lee.
 
-### Ejemplo guiado 14.4: elegir qué sucursal destacar
+### Ejemplo guiado 14.6: elegir qué sucursal destacar
 
 ::: {.panel-tabset group="lenguaje"}
 
@@ -397,7 +633,7 @@ Plot.plot({
 
 `transpose()` convierte la tabla, que llega columna por columna, en una lista de filas, que es lo que espera Plot. `viewof destacada = Inputs.select(...)` crea el selector y guarda su valor en `destacada`; cada vez que cambia, Quarto vuelve a dibujar las celdas que lo usan. En `Plot.plot()`, las marcas son las capas, en el mismo orden que en `ggplot2`: primero todas las líneas en gris, después la destacada en negro, y encima los puntos, con `tip: true` para mostrar sus datos al pasar el ratón.
 
-Lo importante no es JavaScript: es que los datos del gráfico interactivo son los mismos `indicadores` que calculó el flujo, y que el gráfico se regenera con el resto del documento. En R, los paquetes `ggiraph` y `plotly` hacen interactivo un gráfico de `ggplot2` sin escribir JavaScript; la contrapartida es una dependencia más. Los gráficos interactivos solo funcionan en las salidas HTML: en un PDF o en un documento de Word no hay ratón.
+Lo importante no es JavaScript: es que los datos del gráfico interactivo son los mismos `indicadores` que calculó el flujo, y que el gráfico se regenera con el resto del documento. En R, los paquetes `ggiraph` y `plotly` hacen interactivo un gráfico de `ggplot2` sin escribir JavaScript; la contrapartida es una dependencia más. Los gráficos interactivos solo funcionan en las salidas HTML: en un PDF o en un documento de Word no hay ratón. Y los de Observable, además, necesitan que la página se sirva desde una dirección web, como la de este libro: abierto con doble clic desde una carpeta, el navegador los bloquea (lo veremos en la @sec-tableros).
 
 ### Python
 

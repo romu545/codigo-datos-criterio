@@ -199,16 +199,17 @@ La misma fuente produce dos presentaciones. La de `revealjs` es una página web:
 
 ![La segunda diapositiva de la presentación, generada con revealjs.](imagenes/reportes/captura-diapositiva.png){#fig-diapositiva fig-alt="Una diapositiva con el título Dos de cada tres entregas tardías vienen de Cali y un gráfico de líneas del porcentaje de entregas tardías por mes, con Cali en negro, muy por encima de las demás sucursales en gris. Abajo a la derecha, el número de diapositiva, 2 de 4." width="80%"}
 
-## Tableros: para vigilar {#sec-tableros}
+## Tableros: para vigilar y explorar {#sec-tableros}
 
-Un tablero responde una pregunta que se hace todos los días: ¿todo va bien? Por eso tiene reglas propias, distintas de las del reporte:
+Un tablero responde una pregunta que se hace todos los días: ¿todo va bien? Y cuando algo no va bien, permite buscar dónde. Por eso tiene reglas propias, distintas de las del reporte:
 
 - **Pocos indicadores, siempre en el mismo lugar.** El valor de un tablero está en que quien lo mira cada mañana sabe dónde está cada número y nota cuándo cambia. Un tablero con treinta gráficos es un reporte difícil de leer.
-- **Los números más importantes, grandes y arriba.** En Quarto se llaman *value boxes*: cajas con un solo número y su nombre.
-- **Contexto para cada número.** Un 5,9 % de entregas tardías no dice nada solo; dice algo al lado de los meses anteriores o de una meta.
-- **Se actualiza solo.** Un tablero que hay que regenerar a mano deja de mirarse. Con el flujo programado del @sec-programar, el tablero se puede generar después de cada carga.
+- **Los números más importantes, grandes y arriba**, cada uno con su contexto: un 29,1 % de entregas tardías no dice nada solo; dice algo al lado de una meta.
+- **Filtros que cambian todo a la vez.** Elegir otra sucursal o otro mes actualiza los indicadores, los gráficos y la tabla. Es lo que convierte un tablero de "mirar" en uno de "explorar".
+- **Alertas que no dependen solo del color**, como en el @sec-graficos-comunicar: el indicador que supera la meta cambia de color, pero también muestra un ícono y una frase.
+- **Se actualiza solo.** Un tablero que hay que regenerar a mano deja de mirarse. Con el flujo programado del @sec-programar, el tablero se genera después de cada carga.
 
-Quarto tiene un formato para tableros, `format: dashboard`. Las filas se definen con títulos de nivel 2 y cada bloque de código es una tarjeta. Este es el tablero de las entregas, `reportes/tablero_entregas.qmd`:
+Quarto tiene un formato para tableros, `format: dashboard`. Las páginas se definen con títulos de nivel 1, las filas con títulos de nivel 2 y cada bloque de código es una tarjeta. Y con las celdas de Observable del @sec-graficos-comunicar, el tablero se vuelve interactivo sin servidor: los filtros, los indicadores, los gráficos y la tabla reaccionan en el navegador de quien lo mira. Este es el tablero de las entregas, `reportes/tablero_entregas.qmd`:
 
 ```{r}
 #| label: tablero-archivo
@@ -225,15 +226,36 @@ generar("tablero_entregas.qmd")
 file.exists("reportes/salida/tablero_entregas.html")
 ```
 
-![El tablero de entregas, generado con el formato dashboard de Quarto.](imagenes/reportes/captura-tablero.png){#fig-tablero fig-alt="Un tablero con una barra de título, Entregas a domicilio. Arriba, tres cajas con números grandes: 628 pedidos a domicilio en el mes, 5,9 % de entregas de más de 20 horas y una mediana de 9,9 horas de entrega. Abajo, dos tarjetas: a la izquierda, el gráfico de líneas de entregas tardías por sucursal y mes con Cali en negro; a la derecha, una tabla con los pedidos, la mediana y el porcentaje de tardías de las ocho sucursales en el mes."}
+![La página principal del tablero, con Cali seleccionada en abril.](imagenes/reportes/captura-tablero.png){#fig-tablero fig-alt="Un tablero con una barra de navegación negra con dos páginas, Resumen y Pedidos. A la izquierda, una barra lateral con tres filtros: el mes, abril de 2026; la sucursal, S03; y un control deslizante con la meta de tardías, 10 %. Arriba, cuatro tarjetas: 79 pedidos a domicilio; 29,1 % de entregas de más de 20 horas, en rojo, con un ícono de alerta y la frase supera la meta de 10 %; una mediana de 4,7 horas; y una calificación promedio de 4,1 sobre 5, con 63 de 79 pedidos calificados. Abajo, tres gráficos: las entregas tardías por mes con Cali en negro y una línea roja discontinua en la meta; la distribución de los tiempos de entrega de Cali, con dos grupos separados antes y después de la línea de 20 horas; y las sucursales ordenadas por su porcentaje de tardías, con Cali en rojo por superar la meta."}
 
-Las tres cajas de arriba son bloques con `content: valuebox`, que devuelven una lista con el valor y el color. Debajo, `## Fila` abre una segunda fila con dos tarjetas, cada una con su título (`title`). El tablero se genera como un solo archivo HTML, igual que la presentación.
+![La página de pedidos: una tabla con búsqueda, filtrada por la misma selección.](imagenes/reportes/captura-tablero-pedidos.png){#fig-tablero-pedidos fig-alt="La segunda página del tablero, Pedidos, con la misma barra lateral. Arriba, un campo de búsqueda con el texto 79 pedidos. Debajo, una tabla con los pedidos de Cali en abril, ordenados del más lento al más rápido, con columnas para el pedido, la fecha, la sucursal, el canal, los kilómetros, las horas, el valor, la calificación y si fue devuelto. Los números usan coma decimal y punto de miles."}
 
-Este tablero es **estático**: muestra los datos del momento en que se generó, y para verlos actualizados hay que volver a generarlo. Es suficiente para la mayoría de los casos, y tiene una gran ventaja: es un archivo que se puede enviar, publicar en una carpeta compartida o en una página web, sin servidor. Cuando quien lo mira necesita explorar por su cuenta, hay tres caminos de menor a mayor esfuerzo:
+El tablero tiene las piezas de un tablero de una herramienta de inteligencia de negocios:
 
-1. **Interactividad en el navegador**, con las celdas de Observable del @sec-graficos-comunicar dentro del mismo tablero: selectores y filtros que funcionan sin servidor, sobre los datos que trae el archivo.
-2. **Shiny**, que existe para R y para Python: un servidor recalcula con cada clic, así que puede consultar datos que no caben en el navegador o que cambian en vivo. A cambio, necesita un servidor encendido, y eso es otra responsabilidad.
-3. **Una herramienta de inteligencia de negocios**, como Power BI, cuando la organización ya la usa. El consejo del @sec-importacion sigue en pie: que la herramienta reciba tablas ya preparadas por el flujo, como el modelo estrella del @sec-guardar-compartir, y no que repita la limpieza.
+- **Una barra lateral global** (`# {.sidebar}`), con tres controles de `Inputs`: dos listas (`Inputs.select()`) y un control deslizante (`Inputs.range()`) para la meta. Al ser global, filtra las dos páginas.
+- **Tarjetas de indicadores** hechas con una función propia, `tarjeta()`, que escribe el valor en grande y una nota debajo; si se supera la meta, el valor se pone rojo y la nota agrega un ícono de alerta. Quarto tiene cajas de valor (*value boxes*) incorporadas, pero no permiten cambiar el color según los datos; escribir la tarjeta como una función de pocas líneas da ese control.
+- **Gráficos que reaccionan a los filtros**, con Observable Plot: la línea de la meta se mueve cuando se mueve el control, la sucursal elegida se destaca, y al pasar el ratón cada punto o barra muestra sus datos (`tip: true`). La distribución de los tiempos deja ver, para Cali, las dos clases de entrega, y para cualquier otra sucursal, una sola.
+- **Una segunda página con la tabla de pedidos**, con búsqueda (`Inputs.search()`) y orden por cualquier columna con un clic (`Inputs.table()`), con números en formato colombiano (`locale: "es-CO"`).
+- **Un tema propio**, en el archivo `reportes/tablero.scss`: los colores, la tipografía y el estilo de las tarjetas. Es el equivalente del tema de `ggplot2`, para todo el tablero.
+
+Las celdas de Observable se escriben en JavaScript, pero el patrón es el de siempre: R calcula los datos con el flujo y los entrega con `ojs_define()`, y cada celda define **una sola** cosa, un valor o un gráfico, que se recalcula cuando cambia algo de lo que depende. Un detalle que costó encontrar: los faltantes de R llegan a JavaScript como el texto `"NA"`, no como un valor vacío, y la comprobación de las calificaciones tiene que preguntar si el valor es un número (`typeof d.calificacion === "number"`). Es el mismo problema de tipos del @sec-tipos-calidad, en otro lenguaje.
+
+::: {.callout-warning}
+## Un tablero interactivo necesita un servidor web
+
+Las celdas de Observable no funcionan si el archivo HTML se abre con doble clic desde una carpeta: el navegador bloquea, por seguridad, las funciones de JavaScript que necesitan, y el tablero muestra un mensaje de error en cada tarjeta. El tablero tiene que **servirse** desde una dirección web: publicado con `quarto publish` (@sec-publicar) en GitHub Pages o en un servidor de la organización, o en el propio equipo con `quarto preview reportes/tablero_entregas.qmd`, que lo abre en el navegador a través de un servidor local. El reporte del @sec-reportes y un tablero sin celdas de Observable no tienen esta limitación: son archivos que se pueden enviar por correo.
+:::
+
+¿Le tiene algo que envidiar este tablero a uno de Power BI o de Tableau? En lo que se ve y en la interacción para las preguntas que se diseñaron, poco: filtros, indicadores con alertas, gráficos con información al pasar el ratón, varias páginas y una tabla con búsqueda. Y tiene ventajas que esas herramientas no tienen: es código que se versiona, se revisa y se regenera con el flujo, sale de los mismos datos validados que el reporte y el Excel, y no necesita licencias. Lo que sí ofrecen esas herramientas, y conviene saberlo antes de elegir, es otra cosa: conectores a cientos de fuentes, actualización programada en un servicio en la nube, seguridad por filas (cada usuario ve solo sus datos), y sobre todo que una persona sin conocimientos de programación pueda armar sus propias vistas arrastrando campos. Si la organización necesita eso, la herramienta de inteligencia de negocios es la respuesta, y el consejo del @sec-importacion sigue en pie: que reciba tablas preparadas por el flujo, como el modelo estrella del @sec-guardar-compartir, y no que repita la limpieza.
+
+::: {.callout-note}
+## Fuera del alcance de este libro, pero a considerar
+
+Dos herramientas merecen un lugar en la caja de herramientas de cualquier analista que comunique resultados, aunque este libro no las desarrolle:
+
+- **Shiny**, para R y para Python, construye aplicaciones web interactivas en las que un servidor recalcula con cada acción del usuario. Es el paso siguiente cuando un tablero necesita consultar datos que no caben en el navegador, actualizarse en vivo, permitir que el usuario cargue un archivo o ejecutar un modelo con los parámetros que elige. A cambio, necesita un servidor encendido y alguien que lo mantenga. Quarto puede incluir componentes de Shiny en sus tableros (`server: shiny`), así que el paso desde lo que vimos aquí es corto. Su documentación oficial, para [R](https://shiny.posit.co/r/getstarted/) y para [Python](https://shiny.posit.co/py/), es el mejor punto de partida.
+- **gt** en R y **great_tables** en Python construyen tablas para comunicar con el mismo cuidado que `ggplot2` pone en los gráficos: títulos y notas al pie, grupos de filas y de columnas, formato de números y fechas por columna, colores según los valores y pequeños gráficos dentro de las celdas. Son la respuesta cuando una tabla, y no un gráfico, es el centro de un reporte. Comparten diseño y autores, así que lo que se aprende en un lenguaje sirve en el otro.
+:::
 
 ## Ejercicio 16.1: el paquete del comité {#sec-ejercicio-formatos}
 

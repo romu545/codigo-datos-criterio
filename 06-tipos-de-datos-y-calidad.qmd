@@ -62,7 +62,7 @@ En pandas y en R, los tipos con mayúscula o con la palabra *nullable* existen p
 
 Parquet guarda el tipo de cada columna dentro del archivo. Leamos la cartera y comprobemos qué entiende cada herramienta.
 
-::: {.panel-tabset}
+::: {.panel-tabset group="lenguaje"}
 
 ### R
 
@@ -153,7 +153,7 @@ La coerción tiene usos legítimos: `sum()` de un vector lógico cuenta los `TRU
 
 ### Ejemplo guiado 6.2: conversiones que rinden cuentas
 
-::: {.panel-tabset}
+::: {.panel-tabset group="lenguaje"}
 
 ### R
 
@@ -236,7 +236,7 @@ dbGetQuery(con, "SELECT CAST('12a' AS INTEGER)")
 
 Los números decimales de las tres herramientas (`double`, `float64`, `DOUBLE`) siguen el estándar IEEE 754: se guardan en binario con unos 15 a 17 dígitos significativos. La consecuencia es que muchos números que en decimal son exactos, como `0.1`, en binario no lo son. La suma `0.1 + 0.2` no da exactamente `0.3`, y una comparación con `==` falla.
 
-::: {.panel-tabset}
+::: {.panel-tabset group="lenguaje"}
 
 ### R
 
@@ -313,7 +313,7 @@ La @fig-elegir-tipo resume en seis preguntas cómo elegir el tipo de una columna
 
 ### Ejemplo guiado 6.3: la ciudad como categoría
 
-::: {.panel-tabset}
+::: {.panel-tabset group="lenguaje"}
 
 ### R
 
@@ -428,7 +428,7 @@ El trabajo sigue cuatro pasos (@fig-flujo-auditoria): perfilar la tabla, escribi
 
 Un **perfil** es un resumen de cada columna: mínimo, máximo, cantidad de faltantes y de valores distintos. No responde ninguna pregunta de negocio, pero en un par de pantallas muestra casi todo lo que está fuera de lugar. Es lo primero que se hace con una tabla nueva.
 
-::: {.panel-tabset}
+::: {.panel-tabset group="lenguaje"}
 
 ### R
 
@@ -497,7 +497,7 @@ La completitud se mide contando faltantes por columna, y ya lo hicimos en el cap
 
 La unicidad tiene dos niveles. Una **fila repetida** es idéntica a otra en todas sus columnas: casi siempre es una doble carga y no hay nada que decidir. Una **clave repetida** es más delicada: la misma factura aparece en dos filas con contenido distinto, y alguien tiene que decidir cuál versión vale.
 
-::: {.panel-tabset}
+::: {.panel-tabset group="lenguaje"}
 
 ### R
 
@@ -575,7 +575,7 @@ Las facturas con un solo valor distinto son filas copiadas; las que tienen dos s
 
 Una regla de calidad es una **condición que cada fila debe cumplir**, escrita como una expresión lógica: `TRUE` si la fila cumple, `FALSE` si no. Al escribirlas hay que decidir qué hacer con los faltantes. Si `calificacion` es `NA`, la regla "la calificación va de 1 a 5" no se puede evaluar, y en R la comparación devuelve `NA`. La convención que seguiremos es que **una regla de validez no juzga los faltantes**: los deja pasar de forma explícita (`is.na(x) | ...`), porque de ellos se encarga la regla de completitud. Así cada problema se cuenta en una sola regla.
 
-::: {.panel-tabset}
+::: {.panel-tabset group="lenguaje"}
 
 ### R
 
@@ -733,7 +733,7 @@ Hasta aquí escribimos las reglas sueltas, en varios bloques. Para que la audito
 
 La severidad separa lo urgente de lo que puede esperar. Una regla que **bloquea** señala un dato que no se puede usar tal como está, como una factura sin NIT o con valor negativo. Una regla que **advierte** señala algo que conviene revisar, pero que no impide el análisis, como una ciudad mal escrita o una factura muy grande.
 
-::: {.panel-tabset}
+::: {.panel-tabset group="lenguaje"}
 
 ### R
 
@@ -952,7 +952,7 @@ El área de tesorería registra en `datos/cap06/recaudos_2026_t1.parquet` cada p
 
 Para las reglas que usan la cartera, quita antes sus filas idénticas con `distinct()` (o `drop_duplicates()`), para que la unión no duplique recaudos.
 
-::: {.panel-tabset}
+::: {.panel-tabset group="lenguaje"}
 
 ### R
 

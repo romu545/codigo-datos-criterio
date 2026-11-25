@@ -71,7 +71,7 @@ Casi cualquier transformación se arma con seis operaciones (@fig-verbos): elegi
 
 Queremos la fecha, el producto y las unidades de las ventas de la sucursal `S03` (Cali) con más de 30 unidades, de mayor a menor.
 
-::: {.panel-tabset}
+::: {.panel-tabset group="lenguaje"}
 
 ### R
 
@@ -180,7 +180,7 @@ subset(df, x > 1)
 
 Agreguemos a cada venta su valor bruto (unidades por precio), su valor neto (con el descuento), el mes y un tamaño: grande desde 30 unidades, mediano desde 10 y pequeño por debajo.
 
-::: {.panel-tabset}
+::: {.panel-tabset group="lenguaje"}
 
 ### R
 
@@ -300,7 +300,7 @@ dbGetQuery(con, r"(
 
 Hay dos operaciones que se parecen y conviene distinguir. **Resumir** reduce cada grupo a una fila: el total vendido por sucursal y mes. **Calcular dentro del grupo** conserva todas las filas y agrega un valor que depende del grupo: la participación de cada producto en las ventas de su sucursal. La segunda es la que en SQL se llama **función de ventana**.
 
-::: {.panel-tabset}
+::: {.panel-tabset group="lenguaje"}
 
 ### R
 
@@ -410,7 +410,7 @@ Para analizar por categoría o por región necesitamos traer información de `pr
 
 La unión más común en análisis es la **izquierda**: conserva todas las filas de la tabla principal y le agrega columnas de la otra. Tiene una propiedad que sirve de control: si cada fila de la principal encuentra como máximo una pareja, el número de filas no cambia. Cuando cambia, la clave está repetida en la segunda tabla, y cada repetición multiplica filas sin ningún error. Es una de las fuentes más comunes de totales inflados.
 
-::: {.panel-tabset}
+::: {.panel-tabset group="lenguaje"}
 
 ### R
 
@@ -535,7 +535,7 @@ El **formato largo** tiene una fila por sucursal y mes, con el mes como columna.
 
 Vamos a pasar las metas a formato largo, unirlas con las ventas del trimestre para calcular el cumplimiento de cada sucursal en cada mes y, al final, presentar el resultado en una tabla ancha.
 
-::: {.panel-tabset}
+::: {.panel-tabset group="lenguaje"}
 
 ### R
 
@@ -662,7 +662,7 @@ Otra forma de desorden es guardar varios datos en una sola celda. Hay dos casos,
 
 ### Ejemplo guiado 7.6: ciudades, contactos y pedidos
 
-::: {.panel-tabset}
+::: {.panel-tabset group="lenguaje"}
 
 ### R
 
@@ -813,7 +813,7 @@ Al leer JSON o respuestas de API (@sec-importacion-fuentes) es común que una co
 
 Todo lo anterior se hizo con 6.000 filas. ¿Qué pasa con 10 millones? `dplyr` y `pandas` trabajan con la tabla completa en la memoria RAM, y eso tiene dos límites. El primero es la memoria: la tabla tiene que caber, y muchas operaciones crean copias temporales. El segundo es la velocidad: `pandas` usa un solo núcleo del procesador para casi todo, y `dplyr` también.
 
-Para esos casos hay herramientas diseñadas con otras reglas. **data.table** (R) modifica las tablas en su lugar, sin copias, y usa varios núcleos. **polars** (Python) usa todos los núcleos y tiene un **modo perezoso**: con `scan_parquet()` describe el cálculo completo y solo lo ejecuta al final, leyendo del archivo únicamente las columnas y filas que necesita. **DuckDB**, como vimos desde el @sec-importacion, trabaja sobre el archivo en disco, y `arrow::open_dataset()` y `duckplyr` llevan esa idea a la sintaxis de `dplyr` (@fig-volumen).
+Para esos casos hay herramientas diseñadas con otras reglas. **data.table** (R) modifica las tablas en su lugar, sin copias, y usa varios núcleos. **collapse** (R) reescribe en C las operaciones más comunes (sumas, medias, resúmenes por grupo) y las ofrece con nombres que empiezan por `f`, como `fsum()` y `fgroup_by()`, sin depender de ningún otro paquete. **polars** (Python, y también R) usa todos los núcleos y tiene un **modo perezoso**: con `scan_parquet()` describe el cálculo completo y solo lo ejecuta al final, leyendo del archivo únicamente las columnas y filas que necesita. **DuckDB**, como vimos desde el @sec-importacion, trabaja sobre el archivo en disco, y `arrow::open_dataset()` y `duckplyr` llevan esa idea a la sintaxis de `dplyr` (@fig-volumen).
 
 ![Qué herramienta usar según el tamaño de los datos frente a la memoria del equipo.](imagenes/transformacion/volumen.svg){#fig-volumen fig-alt="Una escala del tamaño de los datos frente a la memoria RAM, con tres cajas. Si los datos caben con holgura, menos de una quinta parte de la RAM: dplyr, R base y pandas; lo más legible gana. Si caben pero justo, o el cálculo tarda demasiado: data.table, dtplyr, polars o DuckDB sobre el archivo; motores multihilo y sin copias. Si no caben o son muchos archivos: DuckDB, duckplyr, arrow open_dataset o polars en modo perezoso; se reduce en disco y llega a la memoria solo el resultado. Con trazo discontinuo, Evitar: cargar todo en memoria para usar al final unas pocas columnas o filas, o un resumen."}
 
@@ -821,7 +821,7 @@ Para esos casos hay herramientas diseñadas con otras reglas. **data.table** (R)
 
 Calculemos el valor y las unidades por sucursal y producto en `ventas_grande.parquet`, con cada herramienta, y midamos el tiempo. `system.time()` mide en R y `time.perf_counter()` en Python. Los tiempos dependen del equipo: lo que importa son las proporciones.
 
-::: {.panel-tabset}
+::: {.panel-tabset group="lenguaje"}
 
 ### R
 
@@ -829,6 +829,7 @@ Calculemos el valor y las unidades por sucursal y producto en `ventas_grande.par
 #| label: volumen-r
 #| message: false
 use("data.table", "as.data.table")
+use("collapse", c("fgroup_by", "fsummarise", "fsum"))
 ruta_grande <- "datos/cap07/ventas_grande.parquet"
 segundos <- function(expr) round(system.time(expr)[["elapsed"]], 2)
 
@@ -846,6 +847,11 @@ grande_dt <- as.data.table(grande)
 t_dt <- segundos(
   r_dt <- grande_dt[, .(valor = sum(valor_venta), unidades = sum(unidades)),
                     by = .(sucursal, producto)]
+)
+t_collapse <- segundos(
+  r_collapse <- grande |>
+    fgroup_by(sucursal, producto) |>
+    fsummarise(valor = fsum(valor_venta), unidades = fsum(unidades))
 )
 
 # 3. Resumir sobre el archivo, sin cargarlo
@@ -865,15 +871,32 @@ t_arrow <- segundos(
 
 data.frame(
   paso     = c("leer el archivo completo", "resumir con dplyr", "resumir con data.table",
+               "resumir con collapse",
                "leer y resumir con DuckDB", "leer y resumir con arrow"),
-  segundos = c(t_leer, t_dplyr, t_dt, t_duckdb, t_arrow)
+  segundos = c(t_leer, t_dplyr, t_dt, t_collapse, t_duckdb, t_arrow)
 )
-c(nrow(r_dplyr), nrow(r_dt), nrow(r_duckdb), nrow(r_arrow))
+c(nrow(r_dplyr), nrow(r_dt), nrow(r_collapse), nrow(r_duckdb), nrow(r_arrow))
 ```
 
-La sintaxis de `data.table` es `tabla[filas, columnas, by = grupos]`: los corchetes de R base, ampliados. `.()` es una abreviatura de `list()`. Observa los tres órdenes de magnitud. Para `dplyr`, el resumen tarda incluso más que la lectura; `data.table` resume en una fracción de ese tiempo, porque usa varios núcleos y no copia la tabla. Pero ambos necesitan antes leer los 10 millones de filas a la memoria: casi 400 MB para usar al final 96 filas. DuckDB, en cambio, lee del archivo solo las cuatro columnas que necesita, resume por partes en varios núcleos y entrega el resultado en menos tiempo del que los demás tardan solo en leer. `arrow` sigue la misma idea, con un motor algo más lento.
+La sintaxis de `data.table` es `tabla[filas, columnas, by = grupos]`: los corchetes de R base, ampliados. `.()` es una abreviatura de `list()`. Observa los tres órdenes de magnitud. Para `dplyr`, el resumen tarda incluso más que la lectura; `data.table` resume en una fracción de ese tiempo, porque usa varios núcleos y no copia la tabla, y `collapse`, con sus funciones escritas en C, tarda todavía menos. Pero los tres necesitan antes leer los 10 millones de filas a la memoria: casi 400 MB para usar al final 96 filas. DuckDB, en cambio, lee del archivo solo las cuatro columnas que necesita, resume por partes en varios núcleos y entrega el resultado en menos tiempo del que los demás tardan solo en leer. `arrow` sigue la misma idea, con un motor algo más lento.
 
 `data.table` tiene, además, asignación **por referencia** con `:=`: `grande_dt[, valor_neto := valor_venta * 0.9]` crea la columna dentro de la misma tabla, sin copiarla. Es la razón de su velocidad y también un cambio de hábito, porque en el resto de R modificar una copia no altera el original. Si prefieres la sintaxis de `dplyr` con el motor de `data.table`, existe [dtplyr](https://dtplyr.tidyverse.org/); con el motor de DuckDB, [duckplyr](https://duckplyr.tidyverse.org/), presentado en el @sec-importacion.
+
+[collapse](https://sebkrantz.github.io/collapse/) es la opción para quien quiere velocidad sin cambiar de forma de pensar: `fgroup_by()` y `fsummarise()` se leen como `group_by()` y `summarise()`, funcionan sobre las mismas tablas de R y no modifican nada por referencia. Su otra ventaja es el criterio de dependencias del @sec-importacion: es un solo paquete, escrito en C, sin dependencias. La versión de R de [polars](https://pola-rs.github.io/r-polars/) ofrece el mismo motor que la de Python, con su modo perezoso; no está en CRAN y se instala desde el repositorio de sus autores:
+
+```{r}
+#| label: volumen-polars-r
+#| eval: false
+install.packages("polars", repos = "https://community.r-multiverse.org")
+library(polars)
+
+pl$scan_parquet("datos/cap07/ventas_grande.parquet")$
+  group_by("sucursal", "producto")$
+  agg(pl$col("valor_venta")$sum()$alias("valor"), pl$col("unidades")$sum())$
+  collect()
+```
+
+La sintaxis encadena métodos con `$`, la misma lógica de la versión de Python. El paquete [tidypolars](https://tidypolars.etiennebacher.com/) permite escribir esas consultas con los verbos de `dplyr`.
 
 ```{r}
 #| label: volumen-liberar
@@ -991,7 +1014,7 @@ Con `pedidos_web.csv`, `productos.csv` y lo que aprendiste en el capítulo:
 4. Calcula el valor de cada línea (`unidades * precio_lista`) y el valor total de cada pedido.
 5. Construye una tabla ancha con una fila por ciudad del pedido (`BOG`, `MED`, `CAL`, `BAQ`), una columna por categoría y, en cada celda, las unidades pedidas.
 
-::: {.panel-tabset}
+::: {.panel-tabset group="lenguaje"}
 
 ### R
 

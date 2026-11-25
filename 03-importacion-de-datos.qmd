@@ -236,7 +236,7 @@ En este libro usaremos `use()` por brevedad. Requiere R 4.4 o superior; si traba
 
 **Primero, qué sale mal con la configuración por defecto.**
 
-::: {.panel-tabset}
+::: {.panel-tabset group="lenguaje"}
 
 ### R
 
@@ -361,7 +361,7 @@ Los tipos se declaran con las funciones `col_*()` dentro de `cols()`: `col_chara
 
 Python y DuckDB siguen la misma idea. En `pandas`, `read_csv()` es la función general (`read_table()` es su envoltorio con tabulador): `dtype` fija el tipo de cada columna y `parse_dates`, junto con `date_format`, interpreta las fechas con un formato explícito. En DuckDB, `read_csv()` también es la función general: `types` fija el tipo de algunas columnas y deja que el motor infiera el resto, `dateformat` declara el formato de las fechas, y `columns` define el esquema completo y desactiva la detección automática.
 
-::: {.panel-tabset}
+::: {.panel-tabset group="lenguaje"}
 
 ### R
 
@@ -456,7 +456,7 @@ La documentación de referencia de cada parámetro está en [readr](https://read
 
 Con esa tabla de texto inspeccionamos antes de decidir: cuántos caracteres tienen los identificadores, qué valores distintos aparecen en las categorías, qué formato siguen las fechas y qué separador decimal usan los montos. Con lo que encontremos escribimos el contrato definitivo. Esta lectura no reemplaza al contrato, lo prepara: guardar números y fechas como texto ocupa más memoria y obliga a convertirlos después, así que es un paso de exploración y no la forma de trabajar todos los días. En el @sec-limpieza-temprana usaremos estas inspecciones para completar el contrato, y en el @sec-tipos-calidad las convertiremos en validaciones formales.
 
-::: {.panel-tabset}
+::: {.panel-tabset group="lenguaje"}
 
 ### R
 
@@ -575,7 +575,7 @@ La carpeta `datos/cap03/lotes_mensuales/` contiene los recaudos de cuatro meses:
 
 Primero veamos qué pasa si apilamos sin cuidado.
 
-::: {.panel-tabset}
+::: {.panel-tabset group="lenguaje"}
 
 ### R
 
@@ -649,7 +649,7 @@ El *glob* `recaudos_*.csv` ya excluye el archivo `borrador_notas.csv`. Con `unio
 
 El mapa responde tres preguntas: qué archivo no se parece a los demás, qué columnas faltan en algunos archivos y cuáles podrían ser la misma columna con otro nombre. Para verlo completo, lo aplicamos a todos los CSV de la carpeta, incluido el distractor.
 
-::: {.panel-tabset}
+::: {.panel-tabset group="lenguaje"}
 
 ### R
 
@@ -773,7 +773,7 @@ El mapa muestra dos hallazgos. Primero, `borrador_notas.csv` no comparte ninguna
 
 Con el diagnóstico hecho, corregimos: leemos cada archivo como texto, homologamos el nombre de la columna, agregamos `archivo_origen` y solo entonces convertimos los tipos.
 
-::: {.panel-tabset}
+::: {.panel-tabset group="lenguaje"}
 
 ### R
 
@@ -862,7 +862,7 @@ count(recaudos_duck, archivo_origen)
 
 Importa **únicamente** los recaudos de 2025 que están en `datos/cap03/lotes_mensuales/`, usando un patrón (no una lista manual). Estandariza los nombres de columna, agrega `archivo_origen` y verifica que, después de unir los archivos, no haya valores nulos inesperados. Escribe tu solución en el espacio siguiente.
 
-::: {.panel-tabset}
+::: {.panel-tabset group="lenguaje"}
 
 ### R
 
@@ -921,7 +921,7 @@ El archivo `chat_soporte_sucursales.txt` simula el chat del equipo de soporte de
 
 El patrón describe esa estructura. `(?<fecha>...)` captura la fecha, `(?<hora>...)` la hora, `(?<autor>...)` todo lo que hay antes de los dos puntos y `(?<mensaje>...)` el resto de la línea. Como dijimos, las expresiones regulares se estudian a fondo más adelante; por ahora basta con reconocer que cada grupo entre paréntesis se vuelve una columna.
 
-::: {.panel-tabset}
+::: {.panel-tabset group="lenguaje"}
 
 ### R
 

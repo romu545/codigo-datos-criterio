@@ -1,0 +1,64 @@
+<svg xmlns="http://www.w3.org/2000/svg" xml:space="preserve" viewBox="0 0 960 560" width="960" height="560" role="img" aria-labelledby="titulo desc">
+<title id="titulo">Dos redes de seguridad: validar los datos y probar el código</title>
+<desc id="desc">Dos columnas. A la izquierda, la validación de los datos: revisa los datos en cada ejecución del flujo; atrapó el archivo de abril, con fechas día/mes/año y minutos en lugar de horas; se escribe con validar() y se ejecuta dentro del flujo. A la derecha, las pruebas del código: revisan las funciones cada vez que alguien cambia el código; atraparían a quien simplifica armonizar() y borra sin querer la conversión de minutos; se escriben con testthat o pytest, con tablas mínimas hechas a mano. Abajo, la integración continua: un servidor ejecuta las pruebas en cada cambio que se sube al repositorio. Con trazo discontinuo, Evitar: creer que una red reemplaza a la otra. Al pie: la validación protege de los datos nuevos; las pruebas, de los cambios en el código.</desc>
+<style>
+  text{font-family:"Source Sans 3","Source Sans Pro","Segoe UI",Helvetica,Arial,sans-serif;fill:#1a1a1a}
+  .h{font-size:16px;font-weight:700}
+  .b{font-size:15.5px}
+  .s{font-size:13px;fill:#3d3d3d}
+  .m{font-family:"Source Code Pro",Consolas,"DejaVu Sans Mono",monospace;font-size:12px}
+  .e{font-size:12px;font-weight:700;fill:#555555;letter-spacing:0.5px}
+</style>
+<rect x="0" y="0" width="960" height="560" fill="#ffffff"/>
+
+<!-- Izquierda: validación -->
+<rect x="30" y="20" width="430" height="330" rx="10" fill="#ffffff" stroke="#1a1a1a" stroke-width="1.6"/>
+<text x="48" y="48" class="h">Validar los datos</text>
+<text x="48" y="68" class="s">pregunta: ¿estos datos se pueden usar?</text>
+
+<text x="48" y="100" class="e">CUÁNDO CORRE</text>
+<text x="48" y="118" class="s">en cada ejecución del flujo, sobre los datos de ese día</text>
+
+<text x="48" y="150" class="e">QUÉ ATRAPÓ</text>
+<rect x="48" y="160" width="394" height="58" rx="5" fill="#1a1a1a"/>
+<text x="60" y="182" class="m" style="fill:#ffffff">el paso 'validar' falló: 820 fechas sin</text>
+<text x="60" y="200" class="m" style="fill:#ffffff">leer en entregas_2026_04.csv</text>
+
+<text x="48" y="246" class="e">CÓMO SE ESCRIBE</text>
+<text x="48" y="264" class="m">validar(d): columnas, fechas, únicos,</text>
+<text x="48" y="282" class="m">tiempos de menos de 72 horas</text>
+<text x="48" y="314" class="s">Protege de los datos nuevos: un archivo que</text>
+<text x="48" y="332" class="s">llega distinto, un error en la fuente.</text>
+
+<!-- Derecha: pruebas -->
+<rect x="500" y="20" width="430" height="330" rx="10" fill="#ffffff" stroke="#1a1a1a" stroke-width="1.6"/>
+<text x="518" y="48" class="h">Probar el código</text>
+<text x="518" y="68" class="s">pregunta: ¿las funciones hacen lo que dicen?</text>
+
+<text x="518" y="100" class="e">CUÁNDO CORRE</text>
+<text x="518" y="118" class="s">cada vez que alguien cambia el código, con datos fijos</text>
+
+<text x="518" y="150" class="e">QUÉ ATRAPARÍA</text>
+<rect x="518" y="160" width="394" height="58" rx="5" fill="#1a1a1a"/>
+<text x="530" y="182" class="m" style="fill:#ffffff">Error: armonizar convierte los minutos</text>
+<text x="530" y="200" class="m" style="fill:#ffffff">a horas: objeto tiempo_entrega_h no encontrado</text>
+
+<text x="518" y="246" class="e">CÓMO SE ESCRIBE</text>
+<text x="518" y="264" class="m">test_that("...", expect_equal(...))</text>
+<text x="518" y="282" class="m">def test_...(): assert ...</text>
+<text x="518" y="314" class="s">Protege de los cambios: alguien simplifica una</text>
+<text x="518" y="332" class="s">función y borra sin querer un caso que importaba.</text>
+
+<!-- Integración continua -->
+<rect x="30" y="366" width="900" height="74" rx="10" fill="#f2f2f2"/>
+<text x="48" y="392" class="h">Integración continua: que las pruebas corran solas</text>
+<text x="48" y="414" class="s">Un servidor (GitHub Actions, por ejemplo) ejecuta las pruebas en cada cambio que se sube al repositorio,</text>
+<text x="48" y="432" class="s">y marca el cambio como fallido si alguna no pasa: el error se ve antes de que llegue al reporte del mes.</text>
+
+<rect x="30" y="454" width="900" height="44" rx="8" fill="#ffffff" stroke="#7a7a7a" stroke-width="1.5" stroke-dasharray="7 5"/>
+<text x="46" y="482" class="h" style="fill:#555555">Evitar</text>
+<text x="110" y="482" class="s">creer que una red reemplaza a la otra: un código perfecto con datos malos falla igual, y al revés.</text>
+
+<rect x="30" y="510" width="900" height="40" rx="8" fill="#1a1a1a"/>
+<text x="480" y="536" class="b" text-anchor="middle" style="fill:#ffffff;font-weight:700">La validación protege de los datos nuevos; las pruebas, de los cambios en el código.</text>
+</svg>

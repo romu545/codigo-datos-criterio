@@ -1,0 +1,91 @@
+<svg xmlns="http://www.w3.org/2000/svg" xml:space="preserve" viewBox="0 0 960 600" width="960" height="600" role="img" aria-labelledby="titulo desc">
+<title id="titulo">Un reporte parametrizado: una plantilla, muchos reportes</title>
+<desc id="desc">A la izquierda, la plantilla reporte_entregas.qmd con tres partes numeradas: el encabezado con los parámetros sucursal y mes; el texto con números en línea; y los bloques de código que leen, calculan y grafican. En el medio, el comando quarto render con el parámetro de cada sucursal. A la derecha, tres reportes generados, con la frase real de cada uno: S01 con 124 pedidos y 3,2 % de tardías; S03 con 79 pedidos y 29,1 %; S07 con 1 pedido, 0 % y una advertencia de pocos datos que solo aparece en ese reporte. Abajo, la misma plantilla sale como HTML, PDF o Word. Al pie: los números del texto se calculan al generar el documento; nadie los copia.</desc>
+<style>
+  text{font-family:"Source Sans 3","Source Sans Pro","Segoe UI",Helvetica,Arial,sans-serif;fill:#1a1a1a}
+  .h{font-size:16px;font-weight:700}
+  .b{font-size:15.5px}
+  .s{font-size:13px;fill:#3d3d3d}
+  .m{font-family:"Source Code Pro",Consolas,"DejaVu Sans Mono",monospace;font-size:12px}
+  .n{font-size:12px;font-weight:700;fill:#ffffff}
+</style>
+<defs>
+  <marker id="fl" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#1a1a1a"/></marker>
+</defs>
+<rect x="0" y="0" width="960" height="600" fill="#ffffff"/>
+
+<!-- Plantilla -->
+<text x="30" y="30" class="h">La plantilla: reporte_entregas.qmd</text>
+<rect x="30" y="42" width="350" height="372" rx="8" fill="#ffffff" stroke="#1a1a1a" stroke-width="1.6"/>
+<circle cx="48" cy="64" r="10" fill="#1a1a1a"/><text x="48" y="68" class="n" text-anchor="middle">1</text>
+<text x="66" y="68" class="h" style="font-size:14px">Encabezado: los parámetros</text>
+<rect x="46" y="78" width="318" height="78" rx="4" fill="#f2f2f2"/>
+<text x="56" y="96" class="m">---</text>
+<text x="56" y="112" class="m">params:</text>
+<text x="72" y="128" class="m" font-weight="700">sucursal: "S03"</text>
+<text x="72" y="144" class="m" font-weight="700">mes: "2026-04"</text>
+
+<circle cx="48" cy="180" r="10" fill="#1a1a1a"/><text x="48" y="184" class="n" text-anchor="middle">2</text>
+<text x="66" y="184" class="h" style="font-size:14px">Texto con números en línea</text>
+<rect x="46" y="194" width="318" height="92" rx="4" fill="#f2f2f2"/>
+<text x="56" y="212" class="s">La sucursal **`r params$sucursal`**</text>
+<text x="56" y="230" class="s">entregó **`r contar(esta$pedidos, ...)`**</text>
+<text x="56" y="248" class="s">a domicilio; el `r numero(esta$pct_tardias)` %</text>
+<text x="56" y="266" class="s">tardó más de 20 horas...</text>
+
+<circle cx="48" cy="310" r="10" fill="#1a1a1a"/><text x="48" y="314" class="n" text-anchor="middle">3</text>
+<text x="66" y="314" class="h" style="font-size:14px">Bloques de código</text>
+<rect x="46" y="324" width="318" height="74" rx="4" fill="#f2f2f2"/>
+<text x="56" y="342" class="m">source("../scripts/flujo_entregas.R")</text>
+<text x="56" y="360" class="m">pedidos &lt;- leer_crudo(rutas) |&gt; ...</text>
+<text x="56" y="378" class="m">ggplot(indicadores, ...)</text>
+
+<!-- Comando -->
+<text x="402" y="200" class="h" style="font-size:14px">Un comando por sucursal</text>
+<rect x="402" y="212" width="196" height="96" rx="6" fill="#1a1a1a"/>
+<text x="414" y="234" class="m" style="fill:#ffffff">quarto render</text>
+<text x="428" y="252" class="m" style="fill:#ffffff">reporte_entregas.qmd</text>
+<text x="428" y="270" class="m" style="fill:#ffffff" font-weight="700">-P sucursal:S07</text>
+<text x="428" y="288" class="m" style="fill:#ffffff">-P mes:2026-04</text>
+<line x1="382" y1="230" x2="398" y2="230" stroke="#1a1a1a" stroke-width="2" marker-end="url(#fl)"/>
+<path d="M 600 230 C 620 230, 616 92, 632 92" fill="none" stroke="#1a1a1a" stroke-width="1.6" marker-end="url(#fl)"/>
+<line x1="600" y1="260" x2="628" y2="226" stroke="#1a1a1a" stroke-width="1.6" marker-end="url(#fl)"/>
+<path d="M 600 290 C 616 290, 616 350, 632 350" fill="none" stroke="#1a1a1a" stroke-width="1.6" marker-end="url(#fl)"/>
+
+<!-- Reportes -->
+<text x="636" y="30" class="h">Los reportes, abril de 2026</text>
+<rect x="636" y="42" width="294" height="104" rx="8" fill="#ffffff" stroke="#1a1a1a" stroke-width="1.4"/>
+<text x="650" y="64" class="h" style="font-size:14px">reporte_S01_2026-04</text>
+<text x="650" y="86" class="s">La sucursal S01 entregó 124 pedidos</text>
+<text x="650" y="104" class="s">a domicilio; el 3,2 % tardó más</text>
+<text x="650" y="122" class="s">de 20 horas, frente al 5,9 % de la red.</text>
+
+<rect x="636" y="172" width="294" height="104" rx="8" fill="#ffffff" stroke="#1a1a1a" stroke-width="1.4"/>
+<text x="650" y="194" class="h" style="font-size:14px">reporte_S03_2026-04</text>
+<text x="650" y="216" class="s">La sucursal S03 entregó 79 pedidos</text>
+<text x="650" y="234" class="s">a domicilio; el 29,1 % tardó más</text>
+<text x="650" y="252" class="s">de 20 horas, frente al 5,9 % de la red.</text>
+
+<rect x="636" y="302" width="294" height="112" rx="8" fill="#1a1a1a"/>
+<text x="650" y="324" class="h" style="font-size:14px;fill:#ffffff">reporte_S07_2026-04</text>
+<text x="650" y="346" class="s" style="fill:#ffffff">La sucursal S07 entregó 1 pedido</text>
+<text x="650" y="364" class="s" style="fill:#ffffff">a domicilio; el 0 % tardó más...</text>
+<text x="650" y="390" class="s" style="fill:#ffffff;font-weight:700">Atención: con menos de 30 pedidos,</text>
+<text x="650" y="406" class="s" style="fill:#ffffff">no conviene compararla.</text>
+
+<!-- Formatos -->
+<rect x="30" y="434" width="900" height="104" rx="8" fill="#f2f2f2"/>
+<text x="46" y="458" class="h" style="font-size:14px">La misma plantilla, en el formato que necesita quien lo recibe</text>
+<rect x="46" y="472" width="270" height="50" rx="6" fill="#ffffff" stroke="#8a8a8a"/>
+<text x="58" y="492" class="m" font-weight="700">--to html</text>
+<text x="58" y="512" class="s">un archivo, se abre en el navegador</text>
+<rect x="336" y="472" width="270" height="50" rx="6" fill="#ffffff" stroke="#8a8a8a"/>
+<text x="348" y="492" class="m" font-weight="700">--to typst</text>
+<text x="348" y="512" class="s">PDF para imprimir, sin instalar LaTeX</text>
+<rect x="626" y="472" width="290" height="50" rx="6" fill="#ffffff" stroke="#8a8a8a"/>
+<text x="638" y="492" class="m" font-weight="700">--to docx</text>
+<text x="638" y="512" class="s">Word, para quien tiene que editarlo</text>
+
+<rect x="30" y="552" width="900" height="38" rx="8" fill="#1a1a1a"/>
+<text x="480" y="577" class="b" text-anchor="middle" style="fill:#ffffff;font-weight:700">Los números del texto se calculan al generar el documento: nadie los copia.</text>
+</svg>

@@ -58,7 +58,7 @@ Antes de leer una sola línea con código ya se ven varias mañas típicas de un
 
 Veamos qué pasa si leemos el archivo sin contrato, dejando que la herramienta adivine.
 
-::: {.panel-tabset}
+::: {.panel-tabset group="lenguaje"}
 
 ### R
 
@@ -133,7 +133,7 @@ Hay dos maneras de llegar a esos nombres. La **automática** aplica las reglas 1
 
 ### Ejemplo guiado 5.1: nombres automáticos y nombres explícitos
 
-::: {.panel-tabset}
+::: {.panel-tabset group="lenguaje"}
 
 ### R
 
@@ -284,7 +284,7 @@ La regla práctica es **declarar los faltantes por columna**, no con una sola li
 
 Queremos que `N/A` y `SIN DATO` sean faltantes, que `999` lo sea solo en la calificación, y que el guion del saldo sea un cero.
 
-::: {.panel-tabset}
+::: {.panel-tabset group="lenguaje"}
 
 ### R
 
@@ -408,7 +408,7 @@ Hay una trampa frecuente al convertir a mano. Comparar con un solo valor, como `
 
 ### Ejemplo guiado 5.3: `¿Pagó?` y `Cliente Activo` como booleanos
 
-::: {.panel-tabset}
+::: {.panel-tabset group="lenguaje"}
 
 ### R
 
@@ -549,7 +549,7 @@ La regla para importar marcas de tiempo es: **leer el instante con su zona y mos
 
 ### Ejemplo guiado 5.4: fechas día/mes/año y marcas de tiempo en UTC
 
-::: {.panel-tabset}
+::: {.panel-tabset group="lenguaje"}
 
 ### R
 
@@ -676,7 +676,7 @@ La muestra tiene un límite: una columna vacía en las primeras miles de filas p
 
 ### Ejemplo guiado 5.5: detectar y omitir las columnas vacías
 
-::: {.panel-tabset}
+::: {.panel-tabset group="lenguaje"}
 
 ### R
 
@@ -758,7 +758,7 @@ dbGetQuery(con, r"(
 
 Ahora reunimos todo en una sola lectura: nombres explícitos, columnas vacías fuera, faltantes declarados por columna, booleanos, fechas, números con el formato colombiano y la zona horaria. El resultado se guarda en Parquet, `datos/cap05/cartera_2026_02.parquet`, para que nadie tenga que repetir estas decisiones: quien lo abra encontrará los nombres, los tipos y los faltantes ya resueltos.
 
-::: {.panel-tabset}
+::: {.panel-tabset group="lenguaje"}
 
 ### R
 
@@ -957,7 +957,7 @@ Los asesores comerciales registran sus visitas a las sucursales en el libro `dat
 
 Al final, comprueba que la tabla tiene 40 filas, que la fecha no tiene faltantes y que `hubo_venta` es booleana sin faltantes. Guarda el resultado como `datos/cap05/visitas_comerciales.parquet`.
 
-::: {.panel-tabset}
+::: {.panel-tabset group="lenguaje"}
 
 ### R
 

@@ -65,7 +65,7 @@ Cada capa se reconstruye desde la anterior con un script. Esa es la prueba de qu
 
 Armamos la tabla analítica de la cartera: la cartera limpia del Ejemplo 8.7 con la sucursal y la región de cada factura. Después la guardamos y comprobamos lo que más importa al guardar: que al leerla de nuevo sea **idéntica** a la que escribimos.
 
-::: {.panel-tabset}
+::: {.panel-tabset group="lenguaje"}
 
 ### R
 
@@ -264,7 +264,7 @@ La cartera analítica es la foto de hoy. Para el seguimiento, el área de carter
 
 Una factura está pendiente en un corte si se emitió antes o en esa fecha y no se había pagado: no tiene fecha de pago, o la pagó después del corte.
 
-::: {.panel-tabset}
+::: {.panel-tabset group="lenguaje"}
 
 ### R
 
@@ -431,7 +431,7 @@ La cartera analítica responde preguntas sobre hoy. Los cierres responden pregun
 
 ### Ejemplo guiado 10.3: la cartera por edades en cada cierre
 
-::: {.panel-tabset}
+::: {.panel-tabset group="lenguaje"}
 
 ### R
 
@@ -549,7 +549,7 @@ El caso más frecuente de compartir es repartir: un archivo por sucursal, por ve
 
 Cada jefe de sucursal debe recibir las facturas pendientes de sus clientes al cierre de marzo, en un archivo que pueda abrir en Excel, con la razón social de cada cliente.
 
-::: {.panel-tabset}
+::: {.panel-tabset group="lenguaje"}
 
 ### R
 
@@ -721,7 +721,7 @@ Aquí el libro de Excel solo transporta datos: una tabla por hoja, sin formatos.
 
 ### Ejemplo guiado 10.5: la cartera pendiente en un libro, una hoja por sucursal
 
-::: {.panel-tabset}
+::: {.panel-tabset group="lenguaje"}
 
 ### R
 
@@ -786,7 +786,7 @@ Cuando quien recibe es un programa, las reglas cambian de tono. Una persona tole
 
 El sistema contable recibe cada mes la cartera pendiente para provisionar las facturas vencidas. Su especificación dice: columnas `factura`, `nit`, `fecha_vencimiento`, `valor` y `dias_vencida`, en ese orden; separador coma; codificación UTF-8 **sin** marca de Excel; fechas `AAAA-MM-DD`; valores en pesos enteros, sin decimales ni separador de miles; el NIT con sus 10 dígitos.
 
-::: {.panel-tabset}
+::: {.panel-tabset group="lenguaje"}
 
 ### R
 
@@ -877,7 +877,7 @@ Con `datos/cap07/ventas_2026_t1.parquet` y `datos/cap07/sucursales.csv`:
 4. Arma el manifiesto con una fila por libro y hoja: región, sucursal, ventas y valor neto. Comprueba que suma las 6.000 ventas y el valor neto total del trimestre.
 5. ¿Por qué no conviene particionar el conjunto del punto 1 por NIT?
 
-::: {.panel-tabset}
+::: {.panel-tabset group="lenguaje"}
 
 ### R
 

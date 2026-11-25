@@ -1,0 +1,81 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 600" width="960" height="600" role="img" aria-labelledby="titulo desc">
+<title id="titulo">Dónde busca una función sus variables</title>
+<desc id="desc">A la izquierda, el código: se define regla_rango, que crea y devuelve la función cumple; se llama regla_rango con calificacion, 1 y 5, y se guarda el resultado; en el entorno global alguien crea minimo igual a 100; al final se llama calificacion_valida con entregas. A la derecha, tres cajas anidadas: el entorno global, con minimo igual a 100; dentro, el entorno de la llamada a regla_rango, con columna, minimo igual a 1 y maximo igual a 5; dentro, la llamada a cumple, con datos. Flechas numeradas muestran el orden de búsqueda de minimo: primero en la llamada a cumple, donde no está; después en el entorno donde cumple fue creada, donde vale 1. El minimo igual a 100 del entorno global nunca se consulta. Al pie: una función busca sus variables donde fue creada, no donde se la llama.</desc>
+<style>
+  text{font-family:"Source Sans 3","Source Sans Pro","Segoe UI",Helvetica,Arial,sans-serif;fill:#1a1a1a}
+  .h{font-size:16.5px;font-weight:700}
+  .b{font-size:15.5px}
+  .s{font-size:13.5px;fill:#3d3d3d}
+  .n{font-size:14px;font-weight:700;fill:#ffffff}
+  .m{font-family:"Source Code Pro",Consolas,"DejaVu Sans Mono",monospace;font-size:13.5px}
+</style>
+<defs>
+  <marker id="fl" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#1a1a1a"/></marker>
+</defs>
+<rect x="0" y="0" width="960" height="600" fill="#ffffff"/>
+
+<!-- Código -->
+<text x="30" y="34" class="h">El código</text>
+<rect x="30" y="46" width="380" height="290" rx="8" fill="#f2f2f2"/>
+<text x="44" y="72" class="m" xml:space="preserve">regla_rango &lt;- function(columna,</text>
+<text x="44" y="92" class="m" xml:space="preserve">                        minimo, maximo) {</text>
+<text x="44" y="112" class="m" xml:space="preserve">  function(datos) {</text>
+<text x="44" y="132" class="m" xml:space="preserve">    x &lt;- datos[[columna]]</text>
+<text x="44" y="152" class="m" xml:space="preserve">    is.na(x) | (x &gt;= <tspan font-weight="700">minimo</tspan> &amp;</text>
+<text x="44" y="172" class="m" xml:space="preserve">                x &lt;= maximo)</text>
+<text x="44" y="192" class="m" xml:space="preserve">  }</text>
+<text x="44" y="212" class="m" xml:space="preserve">}</text>
+<text x="44" y="244" class="m" xml:space="preserve">calificacion_valida &lt;-</text>
+<text x="44" y="264" class="m" xml:space="preserve">  regla_rango("calificacion", 1, 5)</text>
+<text x="44" y="292" class="m" xml:space="preserve">minimo &lt;- 100   # en otra parte</text>
+<text x="44" y="320" class="m" xml:space="preserve"><tspan font-weight="700">calificacion_valida(entregas)</tspan></text>
+
+<text x="30" y="362" class="s">La función de adentro, cumple, se crea en cada</text>
+<text x="30" y="380" class="s">llamada a regla_rango() y se devuelve sin nombre;</text>
+<text x="30" y="398" class="s">calificacion_valida es esa función.</text>
+
+<!-- Entornos -->
+<text x="440" y="34" class="h">Los entornos, uno dentro de otro</text>
+<rect x="440" y="46" width="490" height="380" rx="12" fill="#ececec" stroke="#1a1a1a" stroke-width="1.6"/>
+<text x="458" y="72" class="h">Entorno global</text>
+<text x="458" y="94" class="m">entregas, regla_rango, calificacion_valida</text>
+<rect x="756" y="104" width="160" height="28" rx="4" fill="#ffffff" stroke="#7a7a7a" stroke-dasharray="5 4"/>
+<text x="836" y="123" class="m" text-anchor="middle">minimo = 100</text>
+<text x="458" y="124" class="s">no se consulta:</text>
+
+<rect x="462" y="146" width="446" height="262" rx="12" fill="#d6d6d6" stroke="#1a1a1a" stroke-width="1.6"/>
+<text x="480" y="172" class="h">Donde se creó la función</text>
+<text x="480" y="192" class="s">la llamada regla_rango("calificacion", 1, 5)</text>
+<rect x="480" y="204" width="410" height="30" rx="4" fill="#ffffff" stroke="#1a1a1a"/>
+<text x="492" y="224" class="m" xml:space="preserve">columna = "calificacion"  <tspan font-weight="700">minimo = 1</tspan>  maximo = 5</text>
+
+<rect x="486" y="254" width="400" height="136" rx="12" fill="#ffffff" stroke="#1a1a1a" stroke-width="1.6"/>
+<text x="504" y="280" class="h">La llamada a la función</text>
+<text x="504" y="300" class="s">calificacion_valida(entregas)</text>
+<text x="504" y="326" class="m">datos = entregas</text>
+<text x="504" y="348" class="m">x = la columna calificacion</text>
+<text x="504" y="374" class="s">aquí no hay ningún minimo</text>
+
+<!-- Orden de búsqueda -->
+<circle cx="860" cy="330" r="13" fill="#1a1a1a"/>
+<text x="860" y="335" class="n" text-anchor="middle">1</text>
+<path d="M 860 316 C 860 280, 860 260, 860 238" fill="none" stroke="#1a1a1a" stroke-width="2" marker-end="url(#fl)"/>
+<circle cx="890" cy="252" r="13" fill="#1a1a1a"/>
+<text x="890" y="257" class="n" text-anchor="middle">2</text>
+
+<!-- Explicación -->
+<text x="30" y="444" class="h">El orden en que se busca minimo</text>
+<circle cx="44" cy="470" r="11" fill="#1a1a1a"/>
+<text x="44" y="475" class="n" text-anchor="middle" style="font-size:12px">1</text>
+<text x="62" y="475" class="s">En la propia llamada (sus parámetros y lo que crea en el cuerpo): no está.</text>
+<circle cx="44" cy="496" r="11" fill="#1a1a1a"/>
+<text x="44" y="501" class="n" text-anchor="middle" style="font-size:12px">2</text>
+<text x="62" y="501" class="s">En el entorno donde la función fue creada: ahí está, y vale 1. La búsqueda termina.</text>
+<circle cx="44" cy="522" r="11" fill="#7a7a7a"/>
+<text x="44" y="527" class="n" text-anchor="middle" style="font-size:12px">3</text>
+<text x="62" y="527" class="s">Si no estuviera, seguiría al entorno global y después a los paquetes cargados. El minimo = 100</text>
+<text x="62" y="545" class="s">del entorno global existe, pero la búsqueda nunca llega a él: por eso la regla sigue usando 1.</text>
+
+<rect x="30" y="556" width="900" height="38" rx="8" fill="#1a1a1a"/>
+<text x="480" y="580" class="b" text-anchor="middle" style="fill:#ffffff;font-weight:700">Una función busca sus variables donde fue creada, no donde se la llama.</text>
+</svg>

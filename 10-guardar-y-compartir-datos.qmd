@@ -272,15 +272,30 @@ Una factura está pendiente en un corte si se emitió antes o en esa fecha y no 
 #| label: cierres-foto
 foto_cartera <- function(cartera, corte) {
   cartera |>
-    filter(fecha_emision <= corte, is.na(fecha_pago) | fecha_pago > corte) |>
-    mutate(corte        = corte,
-           dias_vencida = as.integer(corte - fecha_vencimiento),
-           edad = case_when(dias_vencida <= 0  ~ "al día",
-                            dias_vencida <= 15 ~ "1 a 15",
-                            dias_vencida <= 30 ~ "16 a 30",
-                            .default = "más de 30")) |>
-    select(corte, factura, nit, sucursal, valor_factura, fecha_vencimiento,
-           dias_vencida, edad)
+    filter(
+      fecha_emision <= corte,
+      is.na(fecha_pago) | fecha_pago > corte
+    ) |>
+    mutate(
+      corte = corte,
+      dias_vencida = as.integer(corte - fecha_vencimiento),
+      edad = case_when(
+        dias_vencida <= 0  ~ "al día",
+        dias_vencida <= 15 ~ "1 a 15",
+        dias_vencida <= 30 ~ "16 a 30",
+        .default = "más de 30"
+        )
+    ) |>
+    select(
+      corte,
+      factura,
+      nit, 
+      sucursal, 
+      valor_factura, 
+      fecha_vencimiento,
+      dias_vencida,
+      edad
+      )
 }
 
 cortes <- as.Date(c("2026-01-31", "2026-02-28", "2026-03-31"))
@@ -560,8 +575,13 @@ partes <- split(pendiente, pendiente$sucursal)
 names(partes)
 
 iwalk(partes, \(tabla, sucursal) {
-  write_excel_csv2(tabla, sprintf("datos/cap10/por_sucursal/cartera_%s_2026-03-31.csv",
-                                  sucursal))
+  write_excel_csv2(
+    tabla,
+    sprintf(
+      "datos/cap10/por_sucursal/cartera_%s_2026-03-31.csv",
+      sucursal
+    )
+  )
 })
 list.files("datos/cap10/por_sucursal")
 ```
@@ -574,8 +594,16 @@ list.files("datos/cap10/por_sucursal")
 #| label: repartir-envios
 responsables <- tibble(
   sucursal    = sprintf("S%02d", 1:8),
-  responsable = c("Laura Gómez", "Andrés Mejía", "Sofía Rincón", "Carlos Peña",
-                  "Valentina Ruiz", "Jorge Castro", "Natalia Ortiz", "Felipe Díaz")
+  responsable = c(
+    "Laura Gómez",
+    "Andrés Mejía",
+    "Sofía Rincón",
+    "Carlos Peña",
+    "Valentina Ruiz",
+    "Jorge Castro",
+    "Natalia Ortiz",
+    "Felipe Díaz"
+  )
 )
 
 envios <- pendiente |>

@@ -1,0 +1,64 @@
+<svg xmlns="http://www.w3.org/2000/svg" xml:space="preserve" viewBox="0 0 960 600" width="960" height="600" role="img" aria-labelledby="titulo desc">
+<title id="titulo">Depurar con método: el caso del archivo de abril</title>
+<desc id="desc">Cinco pasos numerados, cada uno con lo que se hizo con el archivo de abril: leer el mensaje, reproducir con lo mínimo, aislar la causa, corregir la causa y blindar el flujo. Con trazo discontinuo, Evitar: cambiar cosas al azar hasta que el error desaparezca, o borrar las filas que fallan. Al pie: cada error encontrado se convierte en una regla que lo detecta la próxima vez.</desc>
+<style>
+  text{font-family:"Source Sans 3","Source Sans Pro","Segoe UI",Helvetica,Arial,sans-serif;fill:#1a1a1a}
+  .h{font-size:16px;font-weight:700}
+  .b{font-size:15.5px}
+  .s{font-size:13.5px;fill:#3d3d3d}
+  .m{font-family:"Source Code Pro",Consolas,"DejaVu Sans Mono",monospace;font-size:12.5px}
+  .n{font-size:15px;font-weight:700;fill:#ffffff}
+</style>
+<defs>
+  <marker id="fl" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#1a1a1a"/></marker>
+</defs>
+<rect x="0" y="0" width="960" height="600" fill="#ffffff"/>
+
+<!-- Paso 1 -->
+<circle cx="44" cy="40" r="15" fill="#1a1a1a"/><text x="44" y="45" class="n" text-anchor="middle">1</text>
+<text x="70" y="45" class="h">Leer el mensaje: dónde, qué y cuál</text>
+<rect x="70" y="56" width="560" height="50" rx="6" fill="#f2f2f2"/>
+<text x="82" y="76" class="m">Error in `list_rbind()`:</text>
+<text x="82" y="95" class="m">! Can't combine `..3$fecha` &lt;date&gt; and `..4$fecha` &lt;character&gt;.</text>
+<text x="650" y="72" class="s">dónde: list_rbind()</text>
+<text x="650" y="88" class="s">qué: tipos distintos en fecha</text>
+<text x="650" y="104" class="s">cuál: el elemento 4, abril</text>
+
+<!-- Paso 2 -->
+<circle cx="44" cy="146" r="15" fill="#1a1a1a"/><text x="44" y="151" class="n" text-anchor="middle">2</text>
+<text x="70" y="151" class="h">Reproducir con lo mínimo</text>
+<text x="70" y="174" class="s">enero + febrero + marzo: funciona.   marzo + abril: falla.   Desde aquí, solo esos dos archivos.</text>
+
+<!-- Paso 3 -->
+<circle cx="44" cy="214" r="15" fill="#1a1a1a"/><text x="44" y="219" class="n" text-anchor="middle">3</text>
+<text x="70" y="219" class="h">Aislar la causa: comparar lo que funciona con lo que falla</text>
+<rect x="70" y="232" width="380" height="92" rx="6" fill="#ffffff" stroke="#1a1a1a"/>
+<text x="84" y="252" class="h" style="font-size:13.5px">marzo</text>
+<text x="84" y="274" class="m">fecha              2026-03-01</text>
+<text x="84" y="294" class="m">tiempo_entrega_h   8.9</text>
+<text x="84" y="314" class="s">fecha ISO, tiempo en horas</text>
+<rect x="470" y="232" width="380" height="92" rx="6" fill="#1a1a1a"/>
+<text x="484" y="252" class="h" style="font-size:13.5px;fill:#ffffff">abril</text>
+<text x="484" y="274" class="m" style="fill:#ffffff">fecha              01/04/2026</text>
+<text x="484" y="294" class="m" style="fill:#ffffff">tiempo_entrega_min 174</text>
+<text x="484" y="314" class="s" style="fill:#ffffff">otro formato de fecha y minutos: dos cambios</text>
+<text x="70" y="344" class="s">El mensaje avisaba de uno; la comparación encontró los dos.</text>
+
+<!-- Paso 4 -->
+<circle cx="44" cy="384" r="15" fill="#1a1a1a"/><text x="44" y="389" class="n" text-anchor="middle">4</text>
+<text x="70" y="389" class="h">Corregir la causa, en el paso que le corresponde</text>
+<text x="70" y="412" class="s">armonizar() reconoce los dos formatos de fecha y convierte los minutos a horas. Lectura y resumen no cambian.</text>
+
+<!-- Paso 5 -->
+<circle cx="44" cy="450" r="15" fill="#1a1a1a"/><text x="44" y="455" class="n" text-anchor="middle">5</text>
+<text x="70" y="455" class="h">Blindar: una regla para la próxima vez</text>
+<text x="70" y="478" class="s">validar() revisa columnas, fechas leídas y tiempos de menos de 72 horas: si mañana llegan minutos</text>
+<text x="70" y="496" class="s">en la columna de horas, el flujo se detiene con un mensaje claro en lugar de calcular indicadores falsos.</text>
+
+<rect x="70" y="512" width="860" height="34" rx="8" fill="#ffffff" stroke="#7a7a7a" stroke-width="1.5" stroke-dasharray="7 5"/>
+<text x="86" y="534" class="h" style="fill:#555555;font-size:14px">Evitar</text>
+<text x="146" y="534" class="s">cambiar cosas al azar hasta que el error desaparezca, o borrar las filas que fallan: la causa queda.</text>
+
+<rect x="30" y="556" width="900" height="36" rx="8" fill="#1a1a1a"/>
+<text x="480" y="579" class="b" text-anchor="middle" style="fill:#ffffff;font-weight:700">Cada error encontrado se convierte en una regla que lo detecta la próxima vez.</text>
+</svg>

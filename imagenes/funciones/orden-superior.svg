@@ -1,0 +1,78 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 960 470" width="960" height="470" role="img" aria-labelledby="titulo desc">
+<title id="titulo">Funciones que reciben funciones y funciones que devuelven funciones</title>
+<desc id="desc">Dos paneles. A la izquierda, una función que recibe una función: map recibe una lista de tres tablas y la función nrow, aplica nrow a cada tabla y devuelve 25, 24 y 23. A la derecha, una función que devuelve una función: regla_rango recibe calificacion, 1 y 5, y devuelve una función nueva, calificacion_valida, que todavía no se ha ejecutado; después, calificacion_valida recibe la tabla entregas y devuelve un vector de TRUE y FALSE. Abajo, la tabla de reglas: una columna de funciones fabricadas con pmap, una por fila. Al pie: en R y en Python una función es un valor; se puede pasar, devolver y guardar en una tabla.</desc>
+<style>
+  text{font-family:"Source Sans 3","Source Sans Pro","Segoe UI",Helvetica,Arial,sans-serif;fill:#1a1a1a}
+  .h{font-size:17px;font-weight:700}
+  .b{font-size:15.5px}
+  .s{font-size:13.5px;fill:#3d3d3d}
+  .m{font-family:"Source Code Pro",Consolas,"DejaVu Sans Mono",monospace;font-size:13.5px}
+</style>
+<defs>
+  <marker id="fl" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#1a1a1a"/></marker>
+</defs>
+<rect x="0" y="0" width="960" height="470" fill="#ffffff"/>
+
+<!-- Panel izquierdo -->
+<rect x="30" y="20" width="440" height="250" rx="10" fill="#ffffff" stroke="#1a1a1a" stroke-width="1.6"/>
+<text x="46" y="46" class="h">Recibe una función</text>
+<text x="46" y="68" class="m">map(indicadores, nrow)</text>
+
+<rect x="46" y="86" width="110" height="26" rx="4" fill="#f2f2f2" stroke="#8a8a8a"/>
+<text x="101" y="104" class="m" text-anchor="middle">tabla 1</text>
+<rect x="46" y="118" width="110" height="26" rx="4" fill="#f2f2f2" stroke="#8a8a8a"/>
+<text x="101" y="136" class="m" text-anchor="middle">tabla 2</text>
+<rect x="46" y="150" width="110" height="26" rx="4" fill="#f2f2f2" stroke="#8a8a8a"/>
+<text x="101" y="168" class="m" text-anchor="middle">tabla 3</text>
+
+<rect x="196" y="112" width="96" height="40" rx="20" fill="#1a1a1a"/>
+<text x="244" y="137" class="m" text-anchor="middle" style="fill:#ffffff">nrow</text>
+<text x="244" y="104" class="s" text-anchor="middle">la función</text>
+<line x1="160" y1="99" x2="194" y2="124" stroke="#1a1a1a" stroke-width="1.5" marker-end="url(#fl)"/>
+<line x1="160" y1="131" x2="192" y2="131" stroke="#1a1a1a" stroke-width="1.5" marker-end="url(#fl)"/>
+<line x1="160" y1="163" x2="194" y2="140" stroke="#1a1a1a" stroke-width="1.5" marker-end="url(#fl)"/>
+
+<line x1="296" y1="132" x2="336" y2="132" stroke="#1a1a1a" stroke-width="2" marker-end="url(#fl)"/>
+<rect x="342" y="86" width="110" height="90" rx="4" fill="#ffffff" stroke="#1a1a1a"/>
+<text x="397" y="112" class="m" text-anchor="middle">25</text>
+<text x="397" y="136" class="m" text-anchor="middle">24</text>
+<text x="397" y="160" class="m" text-anchor="middle">23</text>
+<text x="46" y="208" class="s">map() pone el recorrido; la función que recibe</text>
+<text x="46" y="226" class="s">dice qué hacer con cada elemento. Igual: lapply(),</text>
+<text x="46" y="244" class="s">reduce(), across(), do.call(); en Python, map() y agg().</text>
+
+<!-- Panel derecho -->
+<rect x="490" y="20" width="440" height="250" rx="10" fill="#ffffff" stroke="#1a1a1a" stroke-width="1.6"/>
+<text x="506" y="46" class="h">Devuelve una función (fábrica)</text>
+<text x="506" y="68" class="m">regla_rango("calificacion", 1, 5)</text>
+<rect x="506" y="86" width="140" height="40" rx="20" fill="#1a1a1a"/>
+<text x="576" y="111" class="m" text-anchor="middle" style="fill:#ffffff">regla_rango</text>
+<line x1="650" y1="106" x2="690" y2="106" stroke="#1a1a1a" stroke-width="2" marker-end="url(#fl)"/>
+<rect x="696" y="86" width="218" height="40" rx="20" fill="#ffffff" stroke="#1a1a1a" stroke-width="1.6"/>
+<text x="805" y="111" class="m" text-anchor="middle">calificacion_valida</text>
+<text x="696" y="144" class="s">una función nueva, sin ejecutar,</text>
+<text x="696" y="162" class="s">que recuerda 1 y 5</text>
+<line x1="805" y1="170" x2="805" y2="192" stroke="#1a1a1a" stroke-width="2" marker-end="url(#fl)"/>
+<text x="560" y="210" class="m">calificacion_valida(entregas)</text>
+<text x="560" y="234" class="m">TRUE TRUE FALSE TRUE ...</text>
+<text x="506" y="258" class="s">Se ejecuta después, con los datos: dos momentos distintos.</text>
+
+<!-- Tabla de reglas -->
+<rect x="30" y="286" width="900" height="124" rx="10" fill="#ffffff" stroke="#1a1a1a" stroke-width="1.6"/>
+<text x="46" y="312" class="h">Una tabla con una columna de funciones</text>
+<text x="46" y="332" class="s">pmap(list(columna, minimo, maximo), regla_rango): una regla fabricada por fila</text>
+<text x="60" y="360" class="m" font-weight="700">columna</text>
+<text x="250" y="360" class="m" font-weight="700">minimo</text>
+<text x="340" y="360" class="m" font-weight="700">maximo</text>
+<text x="430" y="360" class="m" font-weight="700">cumple</text>
+<line x1="60" y1="366" x2="900" y2="366" stroke="#8a8a8a"/>
+<text x="60" y="384" class="m">calificacion</text><text x="250" y="384" class="m">1</text><text x="340" y="384" class="m">5</text>
+<rect x="430" y="372" width="56" height="18" rx="9" fill="#1a1a1a"/><text x="458" y="385" class="m" text-anchor="middle" style="fill:#ffffff;font-size:11px">&lt;fn&gt;</text>
+<text x="60" y="402" class="m">unidades</text><text x="250" y="402" class="m">1</text><text x="340" y="402" class="m">500</text>
+<rect x="430" y="390" width="56" height="18" rx="9" fill="#1a1a1a"/><text x="458" y="403" class="m" text-anchor="middle" style="fill:#ffffff;font-size:11px">&lt;fn&gt;</text>
+<text x="520" y="384" class="s">agregar una regla es agregar una fila;</text>
+<text x="520" y="402" class="s">evaluarlas todas es un map() sobre cumple</text>
+
+<rect x="30" y="422" width="900" height="40" rx="8" fill="#1a1a1a"/>
+<text x="480" y="447" class="b" text-anchor="middle" style="fill:#ffffff;font-weight:700">En R y en Python una función es un valor: se puede pasar, devolver y guardar en una tabla.</text>
+</svg>

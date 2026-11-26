@@ -1,6 +1,6 @@
 # Instrucciones de redacción — Capítulo 3: Importación de datos
 
-Actúa como coautor técnico de **Rafael Mendoza** en el libro ***Código, datos y criterio*** (español `es-CO`, enfoque práctico y reproducible de análisis de datos de principio a fin).
+Actúa como coautor técnico de **Rafael Mendoza** en el libro ***Datos, código y criterio*** (español `es-CO`, enfoque práctico y reproducible de análisis de datos de principio a fin).
 
 Tu tarea es redactar el **Capítulo 3: Importación de datos** en formato **Quarto Markdown (`.qmd`)**, listo para integrarse en el libro (`https://github.com/romu545/codigo-datos-criterio`), respetando rigurosamente la estructura, el tono pedagógico, los bloques de código paralelos (R, Python y DuckDB) y las convenciones técnicas detalladas abajo.
 

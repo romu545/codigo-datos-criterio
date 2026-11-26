@@ -4,7 +4,7 @@
 
 ## Contexto
 
-- **Título:** Código, datos y criterio. **Autor:** Rafael Mendoza. **Idioma:** español (`es-CO`).
+- **Título:** Datos, código y criterio (antes «Código, datos y criterio»; el repositorio conserva el nombre codigo-datos-criterio). **Autor:** Rafael Mendoza. **Idioma:** español (`es-CO`).
 - **Enfoque:** análisis de datos de principio a fin, práctico y reproducible. R es el lenguaje principal y Python aparece en pestañas para comparar. También se usan SQL (DuckDB) y PowerShell.
 - **Herramientas del entorno:** Positron, R, Python (instalado con `uv`), DuckDB. Git es opcional al inicio.
 - **Sistemas operativos:** Windows (`winget`) y macOS (instaladores oficiales o Homebrew).

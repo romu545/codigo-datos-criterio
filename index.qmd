@@ -8,7 +8,7 @@ La idea es aprender los conceptos antes que memorizar funciones. Cada capítulo 
 
 Hoy basta con describir un problema para que una herramienta de inteligencia artificial devuelva código en segundos. Esa velocidad es real y vale la pena aprovecharla. Pero cambia la pregunta de fondo: si escribir código cuesta cada vez menos, ¿qué es lo que sigue teniendo valor?
 
-El título de este libro propone una respuesta. **Código, datos y criterio** son tres cosas distintas. La inteligencia artificial es muy buena con la primera. Las otras dos, entender los datos y decidir si un resultado tiene sentido, siguen dependiendo de quien hace el análisis.
+El título de este libro propone una respuesta. **Datos, código y criterio** son tres cosas distintas, y van en el orden en que aparecen en un análisis: los datos llegan, el código los transforma y el criterio decide qué significan. La inteligencia artificial es muy buena con el código. Los otros dos, entender los datos y decidir si un resultado tiene sentido, siguen dependiendo de quien hace el análisis.
 
 ## Un ejemplo de este mismo libro {.unnumbered}
 

@@ -53,15 +53,15 @@ Cinco partes (Quarto `part:`). El número de cada archivo coincide con su capít
 
 **III. Preparar y guardar los datos**
 
-6. Tipos de datos y calidad (`06-...`). Regla: medir antes de corregir. Dimensiones de calidad, reglas escritas como datos con severidad `bloquea`/`advierte`. Scripts `auditoria_cartera.R` y `.py`. Datos `datos/cap06/`.
+6. Tipos de datos y calidad (`06-...`). Regla: medir antes de corregir. Dimensiones de calidad, reglas escritas como datos con severidad `bloquea`/`advierte`; las mismas reglas como contrato con `pointblank` y `pandera` (`#sec-contratos`). Scripts `auditoria_cartera.R` y `.py`. Datos `datos/cap06/`.
 7. Transformar y ordenar (`07-...`). Seis operaciones en todas sus escrituras, uniones con `relationship`/`validate`, largo y ancho, volumen con 10 millones de filas (dplyr, data.table, collapse, arrow, DuckDB, pandas, polars). Datos `datos/cap07/`.
-8. Limpiar (`08-...`). Principios (crudo intacto, cuarentena, bitácora), texto, expresiones regulares, estandarizar categorías, limpieza completa de la cartera (379 limpias, 23 en cuarentena, 4 copias). Datos `datos/cap08/`.
+8. Limpiar (`08-...`). Principios (crudo intacto, cuarentena, bitácora), texto, expresiones regulares, estandarizar categorías, limpieza completa de la cartera (379 limpias, 23 en cuarentena, 4 copias). Ejemplo 8.8 (`#sec-clasificar-ia`): clasificar 400 reclamos de texto libre con un modelo de lenguaje en cuatro pasos (ocultar datos personales con regex, preguntar con salida estructurada y guardar las respuestas con versión de instrucciones, medir contra 150 revisados a mano, decidir por categoría); código de la API con `eval: false` (`ellmer` en R, SDK `anthropic` con `messages.parse` en Python, modelo `claude-opus-5-5`); las respuestas de `reclamos_clasificados.csv` son **simuladas** y el texto lo dice (generador `scripts/generar_datos_cap08_reclamos.R`). Datos `datos/cap08/`.
 9. Transformar a escala (`09-...`). Muchas columnas, muchas tablas (`reduce`), uniones por desigualdad, completar la estructura, columnas-lista, iterar con criterio. Abre con código copiado y pegado. Datos `datos/cap09/`.
 10. Guardar y compartir los datos (`10-...`). Hilo: ¿quién va a leer esto? Capas, ida y vuelta, metadatos, idempotencia, historia de cierres, un archivo por sucursal, CSV con contrato. Salidas en `datos/cap10/`.
 
 **IV. Analizar y programar**
 
-11. Explorar los datos (`11-...`). Abre con el mito del 80 %. Guía de preguntas, gráficos de trabajo (`ggplot2`, `seaborn`), patrones sembrados en `datos/cap11/`.
+11. Explorar los datos (`11-...`). Abre con el mito del 80 %. Guía de preguntas, gráficos de trabajo (`ggplot2`, `seaborn`), patrones sembrados en `datos/cap11/`. Remuestreo de medianas (`#sec-remuestreo`, cita `efron1979`): S07 entre 9,3 y 15,8 h; la diferencia S07 menos S02 cambia de signo según la semilla (R −0,4, Python +0,3), y el texto lo usa como lección.
 12. Funciones propias (`12-...`). Anatomía, argumentos, anónimas, orden superior, alcance y clausuras, evaluación perezosa, validación, clases pequeñas (S3, `dataclass`), hacia paquetes. Scripts `inventario.R` y `.py`.
 13. Flujos reproducibles y depuración (`13-...`). Abre con el fallo del archivo de abril. Flujo como tubería (`scripts/flujo_entregas.R` y `.py`), sesión limpia, rehacer solo lo que cambió, depurar en cinco pasos y, al final, programar tareas (`#sec-programar`). Datos `datos/cap13/`.
 
@@ -70,7 +70,7 @@ Cinco partes (Quarto `part:`). El número de cada archivo coincide con su capít
 14. Gráficos que explican (`14-...`). Del gráfico de trabajo al explicativo: gramática de gráficos, destacado, etiquetas directas, anotaciones, tipografía, composición (`patchwork`, `cowplot`), accesibilidad, interactivo con Observable Plot y `plotly`.
 15. Reportes con Quarto (`15-...`). Plantilla parametrizada `reportes/reporte_entregas.qmd` (y versión Python), un reporte por sucursal, HTML, PDF con Typst y Word.
 16. Excel, presentaciones y tableros (`16-...`). Elegir por el verbo de quien recibe; Excel con `openxlsx2` y `XlsxWriter`; `revealjs` y `pptx`; tablero sin servidor `reportes/tablero_entregas.qmd`.
-17. Probar, proteger, publicar y mantener (`17-...`). Validar datos frente a probar código (`tests/testthat/test-flujo.R`, `tests/test_flujo.py`), secretos en variables de entorno, seudonimizar, GitHub Actions, `quarto publish`, cierre del libro sobre el criterio.
+17. Probar, proteger, publicar y mantener (`17-...`). Validar datos frente a probar código (`tests/testthat/test-flujo.R`, `tests/test_flujo.py`), secretos en variables de entorno, seudonimizar, Ley 1581 de 2012 (`#sec-habeas-data`: principios del art. 4, datos sensibles, transferencia internacional del art. 26; verificada en el Régimen Legal de Bogotá), GitHub Actions, `quarto publish`, cierre del libro sobre el criterio.
 
 Cierra con `references.qmd` («Referencias», a partir de `references.bib`).
 
@@ -81,11 +81,15 @@ Cierra con `references.qmd` («Referencias», a partir de `references.bib`).
 - **Pestañas:** las de lenguaje usan `::: {.panel-tabset group="lenguaje"}` (Quarto recuerda la elección del lector en todo el libro); las de sistema operativo, `group="sistema"`. La del Cap. 2 (formas de descargar los materiales) queda sin grupo. Las pestañas de DuckDB se ejecutan desde R.
 - **SQL desde R:** en texto crudo `r"(...)"` en todo el libro.
 - **Formato del código:** R con `air` (estilo tidyverse, 80 caracteres; `air.toml`) y Python con `ruff format` (PEP 8, 79 caracteres; `ruff.toml`). Para reformatear los bloques dentro de los `.qmd` hay que extraerlos, porque ninguno de los dos formatea Quarto directamente. Consecuencia aceptada: `air` abre en varias líneas las llamadas con SQL en texto crudo y las listas largas de `use()`. El fragmento suelto del inicio del Cap. 12 no se formatea (no es código completo).
-- **Bloques de Python:** no se ejecutan al renderizar (son bloques `python` con la salida escrita a mano); se verificaron aparte. Si cambia una versión de `pandas` o `polars`, hay que volver a verificarlos.
+- **Bloques de Python (desde el 27 nov. 2026 se ejecutan):** son bloques `{python}` que `knitr` ejecuta con `reticulate` en el mismo proceso de R. El entorno es el `.venv` del proyecto, creado con `uv sync` a partir de `pyproject.toml` y `uv.lock` (Python 3.14, `.python-version`); el `.Rprofile` fija `RETICULATE_PYTHON` a ese `.venv`. Para renderizar en un equipo nuevo: `uv sync` y `install.packages("reticulate")`. Solo quedan con `eval: false` los ejercicios por completar, la descarga de materiales (Cap. 2), las llamadas a servicios externos (Cap. 4 API, Cap. 8 modelo de lenguaje) y la medición sobre el CSV grande del Cap. 4 (igual que en R). `_quarto.yml` activa `jupyter_compat: true`: solo se imprime el valor de la última expresión de cada bloque, como en Jupyter (sin él, `reticulate` imprime el valor de cada llamada a `matplotlib` dentro de un `for`).
+- **Conflicto de `arrow.dll` en Windows:** el paquete `arrow` de R y `pyarrow` traen cada uno una biblioteca llamada `arrow.dll`; en un mismo proceso gana la que se carga primero, y si R carga la suya antes, `pyarrow` (y `pd.read_parquet`) fallan. El `.Rprofile`, solo cuando Quarto renderiza (`QUARTO_DOCUMENT_PATH`), importa `pyarrow` antes que cualquier capítulo cargue `arrow`.
+- **pandas 3 en las salidas reales:** el texto es de tipo `str`, no `object` (las salidas escritas a mano decían `object`); las fechas leídas de Parquet siguen llegando como `object` (`datetime.date`). El ancho de las tablas es de 80 columnas al renderizar (`knitr` lo fija; no se puede cambiar sin ensanchar también las salidas de R): para tablas anchas, `print(df.to_string())`.
 - **Referencias cruzadas:** `lang: es` va en el nivel superior de `_quarto.yml`. Antes de una sección, artículo femenino (`en la @sec-fechas`); antes de un capítulo, masculino (`en el @sec-importacion`).
-- **Citas:** citar formalmente solo un par de referencias por tema (`wickham2014`, `gelman2013`, `cleveland1984`, `wickham2019`, `wickham2023`); las demás se mencionan en el texto con enlace.
+- **Citas:** citar formalmente solo un par de referencias por tema (`wickham2014`, `gelman2013`, `cleveland1984`, `wickham2019`, `wickham2023`, `efron1979`); las demás se mencionan en el texto con enlace.
 - **Aperturas:** cada capítulo abre de una forma distinta (pregunta, caso, error real, código copiado), no siempre con el resumen del anterior.
 - **Un solo libro, no tres tomos:** la comparación entre herramientas es lo que distingue al libro. Si algún día se quieren ediciones en PDF por lenguaje, hacerlo con perfiles de Quarto y `.content-visible`.
+- **Auditorías (decisión 27 nov. 2026):** los Cap. 3, 7, 8 y 11 cierran con «Auditoría N.1» (`#sec-auditoria-*`): un pedido corto, el código típico de un asistente que se ejecuta sin errores (pestañas R y Python), la pregunta, y la solución en `callout-tip collapse="true"` con evidencia ejecutada y una lección general. No se dice que el código lo generó un asistente real, sino que es «del tipo que entrega». Cifras: Cap. 3, 1.215 códigos DANE sin cero; Cap. 7, 6 de 8 sucursales «cumplen» la meta frente a 1 real (S08) por `P07` repetido y descuento ignorado; Cap. 8, `na.omit()` + `distinct(nit)` dejan 179 de 200 clientes con 19 repetidos; Cap. 11, ranking por promedio frente a mediana y % > 24 h (S03 28,2 %).
+- **«Otra herramienta» (decisión 27 nov. 2026):** `dplyr` es la sintaxis principal de R; las alternativas aparecen en secciones `### Otra herramienta: ...` con el mismo problema resuelto y una tabla de cuándo conviene cada una. Hechas: `collapse` en el Cap. 9 (`#sec-otra-collapse`: mismo resumen, 1.000 remuestreos unas 5 veces más rápidos, `fmean()` ignora faltantes por defecto) y contratos con `pointblank`/`pandera` en el Cap. 6 (`#sec-contratos`). Criterio: no alternar herramientas al azar; solo donde la alternativa tiene una razón concreta.
 - **Power BI:** solo notas aparte; las transformaciones pesadas van en R o Python y en Power BI queda el modelo estrella.
 
 ## Hallazgos técnicos que conviene recordar
@@ -105,16 +109,20 @@ Cierra con `references.qmd` («Referencias», a partir de `references.bib`).
 **Revisión y contenido**
 
 - [ ] Revisar el libro completo en el HTML renderizado.
+- [ ] Hacer la revisión con otras IA siguiendo `_revision/README.md` y registrar los hallazgos en `_revision/hallazgos.md`.
+- [ ] Agregar `fig-alt` a los gráficos de las pestañas de Python (ahora que se ejecutan, se dibujan sin texto alternativo).
 - [ ] Decidir el público del libro y escribir sus requisitos en «Para quién es este libro» (hoy dice que no hace falta conocer R ni Python en profundidad, pero ningún capítulo explica asignación, vectores ni data frames).
 - [ ] Decidir si se agregan prefacio, agradecimientos y una sección de alcance («qué cubre y qué no») en `index.qmd`.
 - [ ] Rehacer con el estilo explicativo los diagramas que solo etiquetan: `transformacion/volumen.svg`, `transformacion/verbos.svg`, `calidad/flujo-auditoria.svg` y `limpieza/flujo-limpieza.svg` (con las cifras reales), `importacion/flujo-hibrido.svg` y `guardar/capas.svg`.
 - [ ] Los tiempos del Ejemplo 7.7 son los de la máquina del autor; revisar el texto si se renderiza en otra máquina y cambia el orden de las herramientas.
 - [ ] Revisar la nota sobre CVE-2024-27322 (RDS, corregida en R 4.4.0) en `_tabla-formatos.qmd` antes de publicar.
-- [ ] Decidir si se suma un segundo ámbito de análisis desde la parte IV (datos abiertos reales: calidad del aire o clima, Saber 11, encuestas de hogares del DANE con factores de expansión), con copia fija en materiales, fecha de descarga y licencia.
+- [ ] Más secciones «Otra herramienta» donde haya una razón concreta (candidatas: `data.table` para modificar por referencia, R base para scripts sin dependencias, `polars` en Python).
+- [ ] Decidir si se suma un capítulo final de proyecto integrador con datos públicos reales; o un segundo ámbito de análisis desde la parte IV (datos abiertos reales: calidad del aire o clima, Saber 11, encuestas de hogares del DANE con factores de expansión), con copia fija en materiales, fecha de descarga y licencia.
 
 **Repositorio de materiales**
 
 - [ ] Unir el PR #2 de materiales (`datos-capitulos-3-a-6`, abierto desde el 25 nov. 2026): mientras no se una, `main` de materiales no tiene datos y la descarga del Cap. 2 no sirve.
+- [ ] Correr `_herramientas/sincronizar_materiales.py --aplicar` después de hacer commit de los reclamos del Cap. 8 (el script solo copia archivos que git sigue).
 - [ ] Hacer commit en materiales de la copia sincronizada el 27 nov. 2026 (capítulos 9, 11 y 13, `reportes/`, `tests/`, scripts del flujo y scripts formateados) y abrir su PR.
 - [ ] Crear los scripts generadores de `datos/cap03/` y `datos/cap04/` (los archivos ya están copiados).
 

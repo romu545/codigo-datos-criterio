@@ -50,7 +50,21 @@ Puedes leer los capítulos en orden o consultar un tema puntual. Para aprovechar
 
 Los archivos de práctica, los datos de ejemplo y otros materiales complementarios estarán en el [repositorio de materiales](https://github.com/romu545/codigo-datos-criterio-material). El texto del libro está en el [repositorio del libro](https://github.com/romu545/codigo-datos-criterio). Si encuentras un error o tienes una pregunta, puedes abrir un *issue* en el repositorio del libro.
 
-# Licencia {.unnumbered}
+# Cómo se hizo este libro {.unnumbered}
+
+Un libro que pide criterio frente a la inteligencia artificial debe decir cómo la usó. Este libro se escribió con la ayuda de Claude, un asistente de inteligencia artificial de Anthropic.
+
+**Lo que hizo el autor:** definir el enfoque, el público, la estructura de los capítulos y el caso de la red de distribución; tomar las decisiones sobre qué enseñar, qué herramientas comparar y qué dejar por fuera; revisar los borradores y responder por el resultado.
+
+**Lo que hizo el asistente, bajo esa dirección:** redactar borradores de texto, escribir y formatear el código, generar los datos sintéticos y sus scripts, dibujar los diagramas y proponer ejemplos, auditorías y ejercicios.
+
+**Cómo se verificó:** todo el código de R y de Python se ejecuta cada vez que se genera el libro, y las cifras del texto salen de esas ejecuciones. Solo quedan sin ejecutar los bloques que descargan archivos, consultan servicios externos o son ejercicios por completar. Las referencias bibliográficas y las citas de normas se verificaron contra la fuente.
+
+Nada de eso garantiza que no haya errores. Si encuentras uno, abre un *issue* en el [repositorio del libro](https://github.com/romu545/codigo-datos-criterio/issues): es exactamente el tipo de revisión que este libro propone.
+
+# Edición y licencia {.unnumbered}
+
+Primera edición, 2026. Las correcciones posteriores quedan registradas en el [historial del repositorio](https://github.com/romu545/codigo-datos-criterio/commits/main); una nueva edición se anunciará aquí cuando cambie el contenido de forma sustancial.
 
 El texto de este libro se publica bajo licencia [CC BY-NC-SA 4.0](https://creativecommons.org/licenses/by-nc-sa/4.0/deed.es): puedes compartirlo y adaptarlo con fines no comerciales, dando crédito al autor y manteniendo la misma licencia.
 

@@ -2,68 +2,51 @@
 
 ## Estructura del libro
 
-El libro sigue el recorrido de un análisis, desde preparar el entorno hasta publicar y mantener los resultados. Los 17 capítulos se agrupan en cinco partes. R es el lenguaje principal y Python aparece en pestañas para comparar implementaciones; SQL, con DuckDB, se usa para consultar datos sin cargarlos en memoria, y la terminal, para instalar y automatizar.
+El libro sigue el recorrido de un análisis, desde preparar el entorno hasta publicar y mantener los resultados. Los 17 capítulos se agrupan en cinco partes. R es el lenguaje principal y Python aparece en pestañas para comparar implementaciones; SQL, con DuckDB, se usa para consultar datos sin cargarlos en memoria, y la terminal, para instalar y automatizar. Todos los ejemplos usan el mismo caso: las operaciones comerciales de una red de distribución con ocho sucursales en Colombia.
 
-**Parte I. Punto de partida**
+### Parte I. Punto de partida
 
-1. **Introducción**  
-   Este capítulo: cómo está organizado el libro y cómo aprovecharlo.
+**1. Introducción.** Este capítulo. Explica cómo está organizado el libro, qué vas a aprender en cada parte y cómo aprovechar los ejemplos, los ejercicios y las auditorías.
 
-2. **Fundamentos y preparación del entorno**  
-   Qué hace cada herramienta (Positron, R, Python, `uv` y DuckDB), cómo instalarlas en Windows y macOS, cómo descargar los materiales e instalar los paquetes que usa el libro.
+**2. Fundamentos y preparación del entorno.** Antes de analizar datos hay que saber qué hace cada pieza del entorno y por qué no son intercambiables: el editor (Positron), los lenguajes (R y Python), el gestor de entornos de Python (`uv`) y el motor de consultas (DuckDB). El capítulo explica cómo instalarlas en Windows y en macOS, cómo comprobar que funcionan, cómo descargar los materiales del libro y cómo instalar de una vez todos los paquetes que se usan después. Al terminar tendrás un entorno con el que cualquier ejemplo del libro se puede ejecutar.
 
-**Parte II. Obtener los datos**
+### Parte II. Obtener los datos
 
-3. **Importación de datos I: el contrato de lectura**  
-   Por qué la importación condiciona la memoria, la velocidad y la reproducibilidad del análisis; herramientas en R, Python y DuckDB; codificación, delimitadores, tipos de columna y selección temprana de columnas; lectura de múltiples archivos con patrones y control de la deriva de esquema.
+**3. Importación de datos I: el contrato de lectura.** Leer un archivo parece un trámite, pero de esa lectura dependen la memoria que ocupa el análisis, su velocidad y que el resultado sea el mismo el próximo mes. Aprenderás a escribir un **contrato de lectura**: declarar cómo está escrito el archivo (codificación, delimitador, separador decimal), qué tipo tiene cada columna y qué columnas se necesitan, para que nada se adivine. Verás qué pasa cuando no se declara (identificadores que pierden su cero inicial, tildes dañadas) y cómo leer muchos archivos a la vez cuando sus columnas cambian de nombre con el tiempo.
 
-4. **Importación de datos II: formatos y fuentes**  
-   Lectura de Excel, Parquet y JSON; consumo de APIs; consultas a bases de datos delegando el trabajo al motor; criterios para elegir formato y un proyecto que integra cuatro fuentes en un archivo Parquet.
+**4. Importación de datos II: formatos y fuentes.** El mismo contrato, aplicado a fuentes que no son texto plano: hojas de Excel con filas decorativas, archivos Parquet, respuestas JSON de una API y bases de datos. Aprenderás a pedirle al motor de la base de datos que haga el trabajo pesado y te entregue solo el resultado, a medir cuánto se gana al pasar de CSV a Parquet y a elegir el formato adecuado para cada situación. El capítulo cierra con un proyecto que reúne cuatro fuentes distintas en un solo archivo.
 
-5. **Importación de datos III: limpieza temprana**  
-   Cómo resolver desde la lectura lo que depende de cómo se escribió el dato: nombres de columnas, marcas de faltante por columna, sí y no como booleanos, fechas en cada lenguaje y zonas horarias, separadores numéricos y columnas vacías.
+**5. Importación de datos III: limpieza temprana.** Hay problemas que se resuelven mejor al leer que después: nombres de columnas con espacios y tildes, faltantes escritos como «N/A» o «-», respuestas de sí o no, fechas en formatos distintos y zonas horarias, separadores de miles y columnas vacías. El capítulo traza una frontera útil: lo que depende de cómo se escribió el dato se corrige al importar; lo que depende de lo que dice el dato se deja para los capítulos de calidad y limpieza.
 
-**Parte III. Preparar y guardar los datos**
+### Parte III. Preparar y guardar los datos
 
-6. **Tipos de datos y calidad**  
-   Qué consecuencias tiene el tipo de cada columna (coerción, decimales, identificadores y categorías) y cómo medir la calidad de una tabla: perfil, dimensiones de calidad, reglas de validación escritas como datos y un reporte que marca cada fila con sus problemas.
+**6. Tipos de datos y calidad.** El tipo de una columna decide qué se puede hacer con ella, y una conversión mal hecha borra datos sin avisar. Aprenderás a convertir tipos contando lo que se pierde, a manejar decimales y dinero, y a tratar los identificadores como texto. La segunda mitad enseña a **medir la calidad** de una tabla antes de corregir nada: completitud, unicidad, validez, consistencia, integridad y plausibilidad, con reglas escritas como datos que producen un reporte y marcan cada fila con sus problemas. También verás esas mismas reglas como un contrato de datos con `pointblank` y `pandera`.
 
-7. **Transformación y limpieza I: transformar y ordenar**  
-   Las operaciones básicas en sus distintas escrituras (corchetes, signo de dólar, `transform()` y `dplyr` en R; corchetes, `.loc`, `assign()` y `query()` en `pandas`; SQL en DuckDB), resúmenes por grupo y funciones de ventana, uniones sin multiplicar filas, formato largo y ancho, separación de valores en columnas y filas, y herramientas para cuando el volumen crece (`data.table`, `collapse`, `polars`, DuckDB).
+**7. Transformación y limpieza I: transformar y ordenar.** Las operaciones básicas de transformación (elegir, filtrar, ordenar, crear columnas, resumir y unir) en las distintas formas en que las encontrarás escritas: R base, `dplyr`, `pandas` y SQL. Aprenderás a unir tablas sin multiplicar filas por accidente, a pasar de formato ancho a largo y de vuelta, a separar valores que vienen juntos en una celda y a decidir qué herramienta usar cuando la tabla tiene millones de filas. Cierra con una auditoría: un cálculo de cumplimiento de metas que parece correcto y no lo es.
 
-8. **Transformación y limpieza II: limpiar**  
-   Principios de una limpieza reproducible, texto y expresiones regulares, estandarización de categorías con ayuda de los datos, consolidación de duplicados, faltantes, valores imposibles y atípicos, y una limpieza completa con cuarentena, bitácora y una nueva auditoría de calidad.
+**8. Transformación y limpieza II: limpiar.** Limpiar no es arreglar lo que se vea raro, sino aplicar reglas que se puedan explicar y repetir, y dejar constancia de cada cambio. Aprenderás a normalizar texto, a usar expresiones regulares, a estandarizar categorías con ayuda de los propios datos, a consolidar registros duplicados, a completar faltantes solo cuando hay de dónde y a distinguir un valor imposible de uno atípico, con una cuarentena para lo que no se puede decidir. También verás cómo clasificar texto libre con un modelo de lenguaje y medir cuánto acierta antes de confiar en él.
 
-9. **Transformación y limpieza III: transformar a escala**  
-   Cómo dejar de copiar y pegar: la misma operación sobre muchas columnas y muchas tablas, uniones por rangos y por la fecha más cercana, completar combinaciones que faltan, tablas anidadas y cuándo conviene un bucle.
+**9. Transformación y limpieza III: transformar a escala.** Cuando una operación se repite, copiar y pegar el código es el camino más corto a un error. Este capítulo enseña a aplicar la misma operación a muchas columnas, muchas tablas o muchos grupos; a unir tablas por rangos de fechas o de valores, como un precio vigente o un tramo de comisión; a completar combinaciones que faltan, y a decidir cuándo conviene un bucle y cuándo una función que recorre listas. Incluye la primera sección «Otra herramienta», con `collapse`.
 
-10. **Guardar y compartir los datos**  
-    Guardar según quién va a leer los datos: capas cruda, limpia y analítica; formatos que conservan los tipos; metadatos y diccionario de datos; procesos que se pueden repetir sin duplicar filas; un archivo por destinatario y archivos con contrato para otros sistemas.
+**10. Guardar y compartir los datos.** La pregunta que guía el capítulo es quién va a leer los datos: el propio proceso, un compañero u otro sistema. Aprenderás a organizar los datos en capas (cruda, limpia y analítica), a elegir formatos que conserven los tipos, a documentar las tablas con metadatos y un diccionario, a escribir procesos que se pueden repetir sin duplicar filas y a repartir un archivo por destinatario con solo lo que le corresponde.
 
-**Parte IV. Analizar y programar**
+### Parte IV. Analizar y programar
 
-11. **Explorar los datos**  
-    Preguntas para recorrer una tabla nueva: qué es una fila, dónde faltan datos, centro, dispersión y forma de las distribuciones, comparación entre grupos, categorías y relaciones, con gráficos de trabajo hechos para entender, no para presentar.
+**11. Explorar los datos.** Explorar es hacerle preguntas a una tabla nueva antes de sacar conclusiones: qué representa cada fila, dónde faltan datos y por qué, cómo se distribuyen los valores, en qué se diferencian los grupos y qué variables se mueven juntas. Aprenderás a elegir el resumen adecuado (media, mediana, dispersión robusta), a dibujar gráficos de trabajo que muestran los datos y no solo su resumen, y a medir con remuestreo cuánto se puede confiar en una comparación cuando hay pocos datos.
 
-12. **Funciones propias**  
-    Anatomía de una función, argumentos, funciones anónimas y de orden superior, alcance y clausuras, validación de entradas, clases pequeñas y el camino hacia los paquetes.
+**12. Funciones propias.** El libro escribe funciones desde el capítulo 3; aquí se estudian a fondo. Aprenderás cómo se construye una función, cómo recibe sus argumentos, qué son las funciones anónimas y las que reciben otras funciones, de dónde toma una función las variables que no recibe (alcance y clausuras), cómo validar las entradas y cuándo vale la pena una clase. Cierra con el camino para convertir un conjunto de funciones en un paquete.
 
-13. **Flujos reproducibles y depuración**  
-    Un análisis como una tubería de pasos con nombre, ejecutado en una sesión limpia; rehacer solo lo que cambió; un método para depurar errores y programar tareas para que el flujo corra solo.
+**13. Flujos reproducibles y depuración.** Un análisis que funciona una vez no basta: tiene que funcionar el mes siguiente, en otro equipo y con datos nuevos. Aprenderás a organizar el análisis como una tubería de pasos con nombre, a ejecutarlo en una sesión limpia, a rehacer solo lo que cambió y a registrar versiones. La segunda mitad enseña un método de cinco pasos para depurar errores, a partir de un archivo que llega con sorpresas, y cómo programar el flujo para que se ejecute solo.
 
-**Parte V. Comunicar y mantener**
+### Parte V. Comunicar y mantener
 
-14. **Comunicar I: gráficos que explican**  
-    Del gráfico de trabajo al gráfico que sostiene un argumento: gramática de los gráficos, destacado, anotaciones, tipografía, composición, accesibilidad y gráficos interactivos.
+**14. Comunicar I: gráficos que explican.** Un gráfico para otros no es un gráfico de trabajo con mejores colores: es un argumento. Aprenderás seis decisiones que convierten uno en el otro (destacar lo importante, etiquetar directamente, anotar, apartar lo que tiene pocos datos), la gramática de los gráficos, la tipografía, la composición de varios gráficos, la accesibilidad del color y los gráficos interactivos.
 
-15. **Comunicar II: reportes con Quarto**  
-    Documentos que se generan desde el código, con números en el texto que se actualizan solos, y un reporte parametrizado por sucursal en HTML, PDF y Word.
+**15. Comunicar II: reportes con Quarto.** Un reporte que se genera desde el código no tiene que copiarse ni pegarse cuando cambian los datos. Aprenderás a escribir documentos donde los números del texto se calculan solos, a crear una plantilla con parámetros que produce un reporte por sucursal, y a generarlo en HTML, PDF y Word desde la misma fuente.
 
-16. **Comunicar III: Excel, presentaciones y tableros**  
-    Cómo elegir el formato según lo que hará quien lo recibe; Excel con formato, presentaciones y un tablero interactivo que no necesita servidor.
+**16. Comunicar III: Excel, presentaciones y tableros.** El formato se elige según lo que hará quien recibe el resultado: revisar cifras, escuchar una presentación o explorar por su cuenta. Aprenderás a producir un Excel con formato profesional desde R y Python, presentaciones generadas desde el código y un tablero interactivo que funciona sin servidor.
 
-17. **Probar, proteger, publicar y mantener**  
-    Pruebas automáticas del código, credenciales y datos sensibles, publicación y automatización en servidores, y el mantenimiento de un análisis a lo largo del tiempo.
+**17. Probar, proteger, publicar y mantener.** El último tramo del recorrido: escribir pruebas automáticas que avisen cuando un cambio rompe el código, proteger las claves y los datos de las personas (incluido lo que pide la ley colombiana de protección de datos), publicar el análisis y automatizarlo en un servidor, y mantenerlo a lo largo del tiempo. El libro cierra con una reflexión sobre el criterio.
 
 ## Objetivos de aprendizaje
 
@@ -91,8 +74,15 @@ Cada capítulo tiene la extensión que su tema necesita, y no es necesario compl
 6. Revisa alternativas y rendimiento cuando ya comprendas la solución básica.
 7. Anota dudas o errores que puedan ayudar a mejorar el libro; puedes compartirlos como *issues* en el [repositorio del libro en GitHub](https://github.com/romu545/codigo-datos-criterio/issues).
 
+## Dos tipos de sección para practicar el criterio
+
+Además de los ejemplos guiados y los ejercicios, el libro tiene dos tipos de sección pensados para entrenar el criterio, que es su tema central:
+
+- **Auditorías.** Los capítulos 3, 7, 8 y 11 cierran con un código del tipo que entrega un asistente de inteligencia artificial cuando se le pide una tarea en pocas palabras. El código se ejecuta sin errores; la tarea es encontrar por qué no se puede usar. La solución está plegada, para que intentes primero.
+- **Otra herramienta.** El código de R usa `dplyr` como sintaxis principal, pero no es la única opción. En estas secciones se resuelve el mismo problema con una alternativa, como `collapse` o `pointblank`, y se dice cuándo conviene cada una. El objetivo no es aprender más sintaxis, sino saber elegir.
+
 ## Uso de inteligencia artificial durante el aprendizaje
 
 La inteligencia artificial puede servir para aclarar conceptos, interpretar mensajes de error o comparar enfoques. Para fortalecer el aprendizaje, intenta primero resolver cada ejercicio por tu cuenta. Después, verifica las sugerencias ejecutando el código y explicando qué hace cada parte.
 
-No des por correcta una respuesta solo porque el código se ejecuta: comprueba que el resultado tenga sentido y responda la pregunta planteada.
+No des por correcta una respuesta solo porque el código se ejecuta: comprueba que el resultado tenga sentido y responda la pregunta planteada. Las auditorías del libro son práctica para eso.

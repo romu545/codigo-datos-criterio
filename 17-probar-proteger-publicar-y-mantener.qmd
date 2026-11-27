@@ -15,7 +15,7 @@ Cada uno de esos problemas apareció al **ejecutar** el código, y ninguno al le
 ## Antes de empezar
 
 1. Las pruebas del capítulo están en `tests/`: `tests/testthat/test-flujo.R` para R y `tests/test_flujo.py` para Python. Prueban las funciones del flujo del @sec-flujos.
-2. En R usamos `testthat` (`install.packages("testthat")`); en Python, `pytest` (`uv pip install pytest`).
+2. En R usamos `testthat`; en Python, `pytest`. Los dos quedaron instalados en la @sec-instalar-paquetes.
 3. Ningún paso del capítulo necesita una cuenta en un servicio externo. Los ejemplos de publicación muestran los archivos y los comandos, sin ejecutarlos.
 :::
 
@@ -82,7 +82,10 @@ armonizar_simplificada <- function(tablas) {
 }
 
 test_that("armonizar convierte los minutos a horas", {
-  abril <- data.frame(pedido = c("P1", "P2"), tiempo_entrega_min = c("600", "1800"))
+  abril <- data.frame(
+    pedido = c("P1", "P2"),
+    tiempo_entrega_min = c("600", "1800")
+  )
   resultado <- armonizar_simplificada(list(abril = abril))
   expect_equal(resultado$tiempo_entrega_h, c(10, 30))
 })
@@ -98,8 +101,11 @@ La versión simplificada ni siquiera tiene la columna de horas cuando el archivo
 import subprocess
 import sys
 
-resultado = subprocess.run([sys.executable, "-m", "pytest", "tests", "-q", "-p", "no:cacheprovider"],
-                           capture_output=True, text=True)
+resultado = subprocess.run(
+    [sys.executable, "-m", "pytest", "tests", "-q", "-p", "no:cacheprovider"],
+    capture_output=True,
+    text=True,
+)
 print(resultado.stdout.strip().splitlines()[-1])
 ```
 
@@ -115,10 +121,13 @@ En SQL, una prueba es una consulta que debe devolver cero filas: las que violan 
 
 ```{r}
 #| label: duckdb-prueba
-dbGetQuery(con, r"(
+dbGetQuery(
+  con,
+  r"(
   WITH casos(parte, total, esperado) AS (VALUES (1, 4, 25.0), (0, 10, 0.0), (3, 3, 100.0))
   SELECT * FROM casos WHERE round(100 * parte / total, 1) <> esperado
-)")
+)"
+)
 ```
 
 Cero filas: todos los casos se cumplen. Herramientas como `dbt`, muy usadas en equipos de ingeniería de datos, organizan este tipo de pruebas para proyectos completos en SQL.
@@ -144,8 +153,12 @@ El lugar de las claves son las **variables de entorno**, que el sistema operativ
 clave_api <- function(nombre = "CLAVE_API_TRM") {
   clave <- Sys.getenv(nombre)
   if (clave == "") {
-    stop("falta la variable de entorno ", nombre,
-         "; agrégala al archivo .Renviron del proyecto y reinicia R", call. = FALSE)
+    stop(
+      "falta la variable de entorno ",
+      nombre,
+      "; agrégala al archivo .Renviron del proyecto y reinicia R",
+      call. = FALSE
+    )
   }
   clave
 }
@@ -160,11 +173,15 @@ La función no muestra la clave ni la devuelve impresa; la entrega a quien la ne
 ```python
 import os
 
+
 def clave_api(nombre="CLAVE_API_TRM"):
     clave = os.environ.get(nombre)
     if not clave:
-        raise RuntimeError(f"falta la variable de entorno {nombre}; agrégala al archivo .env")
+        raise RuntimeError(
+            f"falta la variable de entorno {nombre}; agrégala al archivo .env"
+        )
     return clave
+
 
 try:
     clave_api()
@@ -194,12 +211,16 @@ Los datos de este libro son sintéticos, pero la cartera tiene NIT y razones soc
 
 ```{r}
 #| label: proteger-seudonimo
-Sys.setenv(SAL_SEUDONIMOS = "sal-de-ejemplo")       # en un proyecto real, en .Renviron
+Sys.setenv(SAL_SEUDONIMOS = "sal-de-ejemplo") # en un proyecto real, en .Renviron
 
-dbGetQuery(con, r"(
+dbGetQuery(
+  con,
+  r"(
   SELECT nit, left(sha256(concat(?, nit)), 12) AS seudonimo
   FROM (VALUES ('0726262541'), ('0971663263'), ('0726262541')) AS t(nit)
-)", params = list(Sys.getenv("SAL_SEUDONIMOS")))
+)",
+  params = list(Sys.getenv("SAL_SEUDONIMOS"))
+)
 ```
 
 `sha256()` es una **función de resumen** (*hash*): convierte cualquier texto en una cadena fija de la que no se puede volver al original, y el mismo texto produce siempre el mismo resultado. Por eso el primer y el tercer NIT, que son iguales, tienen el mismo seudónimo, y se pueden seguir uniendo y contando. La **sal** es un texto secreto que se agrega antes de calcular el resumen; sin ella, cualquiera podría calcular el resumen de todos los NIT posibles y descubrir cuál es cuál. Como es secreta, R la lee de una variable de entorno y se la pasa a la consulta como **parámetro**: el `?` del SQL se reemplaza por el valor de `params`, sin que la sal quede escrita en el código ni en la consulta. En el ejemplo la definimos con `Sys.setenv()` para que el capítulo se pueda ejecutar; en un proyecto real va en `.Renviron`. En Python, `hashlib.sha256()` hace lo mismo. Un detalle de criterio: seudonimizar no es anonimizar. Quien tenga la sal, o combine el seudónimo con la ciudad y la fecha, puede volver a identificar a una persona. Los datos seudonimizados siguen siendo datos personales y se tratan como tales.

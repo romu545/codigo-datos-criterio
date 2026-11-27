@@ -6,7 +6,7 @@ El @sec-tipos-calidad terminó con un reporte de calidad: sabemos qué está mal
 
 En R hay más de una forma de escribir cada operación: con los corchetes y el signo de dólar de R base, con funciones como `transform()` y `subset()`, o con los verbos de `dplyr`. En `pandas` pasa lo mismo: corchetes, `.loc`, la notación de punto, `assign()` y `query()`. Las veremos todas, porque las encontrarás en código ajeno, y diremos cuándo conviene cada una.
 
-Seguimos con la red regional de distribución. Los archivos están en `datos/cap07/` del repositorio de materiales, y el capítulo está pensado para una sesión de unas dos horas.
+Seguimos con la red regional de distribución. Los archivos están en `datos/cap07/` del repositorio de materiales.
 
 ::: {.callout-tip}
 ## Antes de empezar
@@ -21,12 +21,43 @@ Seguimos con la red regional de distribución. Los archivos están en `datos/cap
 #| message: false
 use("arrow", c("read_parquet", "open_dataset"))
 use("readr", "read_csv")
-use("dplyr", c("select", "filter", "arrange", "desc", "mutate", "rename", "if_else",
-               "case_when", "across", "starts_with", "summarise", "count", "n",
-               "group_by", "left_join", "inner_join", "semi_join", "anti_join",
-               "distinct", "slice_max", "collect"))
-use("tidyr", c("pivot_longer", "pivot_wider", "separate_wider_delim",
-               "separate_wider_regex", "separate_longer_delim", "unite"))
+use(
+  "dplyr",
+  c(
+    "select",
+    "filter",
+    "arrange",
+    "desc",
+    "mutate",
+    "rename",
+    "if_else",
+    "case_when",
+    "across",
+    "starts_with",
+    "summarise",
+    "count",
+    "n",
+    "group_by",
+    "left_join",
+    "inner_join",
+    "semi_join",
+    "anti_join",
+    "distinct",
+    "slice_max",
+    "collect"
+  )
+)
+use(
+  "tidyr",
+  c(
+    "pivot_longer",
+    "pivot_wider",
+    "separate_wider_delim",
+    "separate_wider_regex",
+    "separate_longer_delim",
+    "unite"
+  )
+)
 use("DBI", c("dbConnect", "dbGetQuery", "dbExecute", "dbDisconnect"))
 use("duckdb", "duckdb")
 
@@ -90,8 +121,11 @@ nrow(cali)
 
 ```{r}
 #| label: dplyr-filtrar
-subset(ventas, sucursal == "S03" & unidades > 30,
-       select = c(fecha, producto, unidades)) |>
+subset(
+  ventas,
+  sucursal == "S03" & unidades > 30,
+  select = c(fecha, producto, unidades)
+) |>
   nrow()
 
 ventas |>
@@ -114,8 +148,9 @@ ventas = pd.read_parquet("datos/cap07/ventas_2026_t1.parquet")
 ventas["fecha"] = pd.to_datetime(ventas["fecha"])
 
 filtro = (ventas["sucursal"] == "S03") & (ventas["unidades"] > 30)
-cali = (ventas.loc[filtro, ["fecha", "producto", "unidades"]]
-        .sort_values("unidades", ascending=False, kind="stable"))
+cali = ventas.loc[filtro, ["fecha", "producto", "unidades"]].sort_values(
+    "unidades", ascending=False, kind="stable"
+)
 print(cali.head(3))
 print(len(cali))
 ```
@@ -148,13 +183,16 @@ La notación de punto es cómoda para explorar, pero tiene límites: no funciona
 
 ```{r}
 #| label: duckdb-filtrar
-dbGetQuery(con, r"(
+dbGetQuery(
+  con,
+  r"(
   SELECT fecha, producto, unidades
   FROM 'datos/cap07/ventas_2026_t1.parquet'
   WHERE sucursal = 'S03' AND unidades > 30
   ORDER BY unidades DESC
   LIMIT 3
-)")
+)"
+)
 ```
 
 En SQL el orden de escritura (`SELECT`, `FROM`, `WHERE`, `ORDER BY`) no es el orden de ejecución: primero se lee la tabla, después se filtra, se eligen las columnas y al final se ordena.
@@ -190,9 +228,13 @@ En R base, una columna se crea asignándola con el **signo de dólar** o con **d
 #| label: base-crear
 ventas_base <- ventas
 ventas_base$valor_bruto <- ventas_base$unidades * ventas_base$precio_unitario
-ventas_base[["valor_neto"]] <- ventas_base$valor_bruto * (1 - ventas_base$descuento)
-ventas_base$tamano <- ifelse(ventas_base$unidades >= 30, "grande",
-                             ifelse(ventas_base$unidades >= 10, "mediano", "pequeño"))
+ventas_base[["valor_neto"]] <- ventas_base$valor_bruto *
+  (1 - ventas_base$descuento)
+ventas_base$tamano <- ifelse(
+  ventas_base$unidades >= 30,
+  "grande",
+  ifelse(ventas_base$unidades >= 10, "mediano", "pequeño")
+)
 table(ventas_base$tamano)
 ```
 
@@ -201,9 +243,11 @@ table(ventas_base$tamano)
 ```{r}
 #| label: base-transform
 #| error: true
-transform(ventas,
-          valor_bruto = unidades * precio_unitario,
-          valor_neto  = valor_bruto * (1 - descuento))
+transform(
+  ventas,
+  valor_bruto = unidades * precio_unitario,
+  valor_neto = valor_bruto * (1 - descuento)
+)
 ```
 
 `mutate()` no tiene esa limitación: cada columna puede usar las anteriores. Para condiciones con más de dos casos, `case_when()` es más clara que los `ifelse()` anidados; cada caso se escribe `condición ~ valor` y se evalúan en orden:
@@ -213,9 +257,9 @@ transform(ventas,
 ventas <- ventas |>
   mutate(
     valor_bruto = unidades * precio_unitario,
-    valor_neto  = valor_bruto * (1 - descuento),
-    mes         = as.integer(format(fecha, "%m")),
-    tamano      = case_when(
+    valor_neto = valor_bruto * (1 - descuento),
+    mes = as.integer(format(fecha, "%m")),
+    tamano = case_when(
       unidades >= 30 ~ "grande",
       unidades >= 10 ~ "mediano",
       .default = "pequeño"
@@ -241,10 +285,12 @@ ventas["valor_bruto"] = ventas["unidades"] * ventas["precio_unitario"]
 ventas = ventas.assign(
     valor_neto=lambda d: d["valor_bruto"] * (1 - d["descuento"]),
     mes=lambda d: d["fecha"].dt.month,
-    tamano=lambda d: pd.Series("pequeño", index=d.index).case_when([
-        (d["unidades"] >= 30, "grande"),
-        (d["unidades"] >= 10, "mediano"),
-    ]),
+    tamano=lambda d: pd.Series("pequeño", index=d.index).case_when(
+        [
+            (d["unidades"] >= 30, "grande"),
+            (d["unidades"] >= 10, "mediano"),
+        ]
+    ),
 )
 print(ventas["tamano"].value_counts())
 ```
@@ -261,7 +307,7 @@ Para modificar solo algunas filas de una columna se usa `.loc[filas, columna]`. 
 
 ```python
 copia = ventas.copy()
-copia[copia["sucursal"] == "S03"]["descuento"] = 0      # no cambia nada
+copia[copia["sucursal"] == "S03"]["descuento"] = 0  # no cambia nada
 copia.loc[copia["sucursal"] == "S03", "descuento"] = 0  # así sí
 ```
 
@@ -275,7 +321,9 @@ El primer corchete crea una tabla intermedia, y es a ella a la que se le asigna 
 
 ```{r}
 #| label: duckdb-crear
-dbGetQuery(con, r"(
+dbGetQuery(
+  con,
+  r"(
   SELECT tamano, count(*) AS ventas
   FROM (
     SELECT *,
@@ -289,7 +337,8 @@ dbGetQuery(con, r"(
   )
   GROUP BY tamano
   ORDER BY tamano
-)")
+)"
+)
 ```
 
 `SELECT *, ...` conserva todas las columnas y agrega las nuevas. DuckDB, a diferencia del SQL estándar, permite usar en el mismo `SELECT` una columna que se acaba de crear (`valor_bruto` en el cálculo de `valor_neto`). Para modificar columnas existentes sin repetir las demás está `SELECT * REPLACE (round(valor_neto) AS valor_neto)`, y para aplicar una función a varias columnas, el equivalente de `across()`: `SELECT round(COLUMNS('valor_.*'))`.
@@ -307,10 +356,12 @@ Hay dos operaciones que se parecen y conviene distinguir. **Resumir** reduce cad
 ```{r}
 #| label: dplyr-resumir
 por_mes <- ventas |>
-  summarise(ventas     = n(),
-            unidades   = sum(unidades),
-            valor_neto = sum(valor_neto),
-            .by = c(sucursal, mes)) |>
+  summarise(
+    ventas = n(),
+    unidades = sum(unidades),
+    valor_neto = sum(valor_neto),
+    .by = c(sucursal, mes)
+  ) |>
   arrange(sucursal, mes)
 head(por_mes, 4)
 ```
@@ -323,8 +374,10 @@ Para la participación, primero resumimos por sucursal y producto, y después ca
 #| label: dplyr-ventana
 participacion <- ventas |>
   summarise(valor_neto = sum(valor_neto), .by = c(sucursal, producto)) |>
-  mutate(participacion = round(100 * valor_neto / sum(valor_neto), 1),
-         .by = sucursal)
+  mutate(
+    participacion = round(100 * valor_neto / sum(valor_neto), 1),
+    .by = sucursal
+  )
 
 slice_max(participacion, participacion, n = 1, by = sucursal) |>
   arrange(sucursal) |>
@@ -336,11 +389,11 @@ La diferencia está en el verbo: `summarise(.by = )` deja una fila por grupo; `m
 ### Python
 
 ```python
-por_mes = (ventas
-           .groupby(["sucursal", "mes"], as_index=False)
-           .agg(ventas=("id_venta", "size"),
-                unidades=("unidades", "sum"),
-                valor_neto=("valor_neto", "sum")))
+por_mes = ventas.groupby(["sucursal", "mes"], as_index=False).agg(
+    ventas=("id_venta", "size"),
+    unidades=("unidades", "sum"),
+    valor_neto=("valor_neto", "sum"),
+)
 print(por_mes.head(4))
 ```
 
@@ -355,17 +408,22 @@ print(por_mes.head(4))
 Cada argumento de `agg()` es `nombre=(columna, función)`. `as_index=False` deja las columnas de agrupación como columnas normales, en lugar de convertirlas en el índice de la tabla.
 
 ```python
-participacion = (ventas
-                 .groupby(["sucursal", "producto"], as_index=False)
-                 .agg(valor_neto=("valor_neto", "sum")))
+participacion = ventas.groupby(["sucursal", "producto"], as_index=False).agg(
+    valor_neto=("valor_neto", "sum")
+)
 participacion["participacion"] = (
-    100 * participacion["valor_neto"]
+    100
+    * participacion["valor_neto"]
     / participacion.groupby("sucursal")["valor_neto"].transform("sum")
 ).round(1)
 
-print(participacion.sort_values("participacion", ascending=False)
-      .groupby("sucursal").head(1)
-      .sort_values("sucursal").head(4))
+print(
+    participacion.sort_values("participacion", ascending=False)
+    .groupby("sucursal")
+    .head(1)
+    .sort_values("sucursal")
+    .head(4)
+)
 ```
 
 ```text
@@ -382,7 +440,9 @@ print(participacion.sort_values("participacion", ascending=False)
 
 ```{r}
 #| label: duckdb-ventana
-dbGetQuery(con, r"(
+dbGetQuery(
+  con,
+  r"(
   SELECT sucursal, producto, valor_neto,
          round(100 * valor_neto / sum(valor_neto) OVER (PARTITION BY sucursal), 1)
            AS participacion
@@ -395,7 +455,8 @@ dbGetQuery(con, r"(
   QUALIFY row_number() OVER (PARTITION BY sucursal ORDER BY valor_neto DESC) = 1
   ORDER BY sucursal
   LIMIT 4
-)")
+)"
+)
 ```
 
 `GROUP BY ALL` agrupa por todas las columnas que no son resúmenes. `sum(...) OVER (PARTITION BY sucursal)` es la función de ventana: la suma de la sucursal, sin reducir las filas. `QUALIFY` filtra sobre el resultado de una ventana, igual que `WHERE` filtra filas: aquí se queda con la primera fila de cada sucursal.
@@ -416,7 +477,7 @@ La unión más común en análisis es la **izquierda**: conserva todas las filas
 
 ```{r}
 #| label: union-trampa
-productos  <- read_csv("datos/cap07/productos.csv", show_col_types = FALSE)
+productos <- read_csv("datos/cap07/productos.csv", show_col_types = FALSE)
 sucursales <- read_csv("datos/cap07/sucursales.csv", show_col_types = FALSE)
 
 nrow(ventas)
@@ -484,9 +545,9 @@ MergeError: Merge keys are not unique in right dataset; not a many-to-one merge
 ```python
 productos = productos.drop_duplicates()
 
-ventas_detalle = (ventas
-                  .merge(productos, on="producto", how="left", validate="m:1")
-                  .merge(sucursales, on="sucursal", how="left", validate="m:1"))
+ventas_detalle = ventas.merge(
+    productos, on="producto", how="left", validate="m:1"
+).merge(sucursales, on="sucursal", how="left", validate="m:1")
 print(len(ventas_detalle))
 ```
 
@@ -500,23 +561,32 @@ Para el equivalente de `anti_join()`, `merge()` tiene el argumento `indicator=Tr
 
 ```{r}
 #| label: duckdb-union
-dbExecute(con, r"(
+dbExecute(
+  con,
+  r"(
   CREATE VIEW productos AS FROM read_csv('datos/cap07/productos.csv')
-)")
+)"
+)
 
-dbGetQuery(con, r"(
+dbGetQuery(
+  con,
+  r"(
   SELECT (SELECT count(*) FROM 'datos/cap07/ventas_2026_t1.parquet') AS ventas,
          (SELECT count(*)
           FROM 'datos/cap07/ventas_2026_t1.parquet' AS v
           LEFT JOIN productos AS p USING (producto)) AS despues_de_unir
-)")
+)"
+)
 
-dbGetQuery(con, r"(
+dbGetQuery(
+  con,
+  r"(
   SELECT producto, count(*) AS veces
   FROM productos
   GROUP BY producto
   HAVING count(*) > 1
-)")
+)"
+)
 ```
 
 SQL tampoco tiene un control de relación: la forma de protegerse es contar. Con `SELECT DISTINCT * FROM productos` en lugar de `productos`, la unión vuelve a 6.000 filas. Las uniones semi y anti se escriben `SEMI JOIN` y `ANTI JOIN`, como en el @sec-tipos-calidad.
@@ -542,14 +612,28 @@ Vamos a pasar las metas a formato largo, unirlas con las ventas del trimestre pa
 ```{r}
 #| label: pivot-largo
 metas <- read_csv("datos/cap07/metas_2026_ancho.csv", show_col_types = FALSE)
-meses <- c("ene", "feb", "mar", "abr", "may", "jun",
-           "jul", "ago", "sep", "oct", "nov", "dic")
+meses <- c(
+  "ene",
+  "feb",
+  "mar",
+  "abr",
+  "may",
+  "jun",
+  "jul",
+  "ago",
+  "sep",
+  "oct",
+  "nov",
+  "dic"
+)
 
 metas_largo <- metas |>
-  pivot_longer(starts_with("meta_"),
-               names_to     = "mes_nombre",
-               names_prefix = "meta_",
-               values_to    = "meta_millones") |>
+  pivot_longer(
+    starts_with("meta_"),
+    names_to = "mes_nombre",
+    names_prefix = "meta_",
+    values_to = "meta_millones"
+  ) |>
   mutate(mes = match(mes_nombre, meses))
 
 metas_largo
@@ -560,14 +644,20 @@ metas_largo
 ```{r}
 #| label: pivot-ancho
 cumplimiento <- por_mes |>
-  inner_join(metas_largo, by = c("sucursal", "mes"),
-             relationship = "one-to-one") |>
+  inner_join(
+    metas_largo,
+    by = c("sucursal", "mes"),
+    relationship = "one-to-one"
+  ) |>
   mutate(cumplimiento = round(100 * valor_neto / (meta_millones * 1e6))) |>
   arrange(sucursal, mes)
 
 cumplimiento |>
-  pivot_wider(id_cols = sucursal, names_from = mes_nombre,
-              values_from = cumplimiento)
+  pivot_wider(
+    id_cols = sucursal,
+    names_from = mes_nombre,
+    values_from = cumplimiento
+  )
 ```
 
 `pivot_wider()` hace lo contrario: los valores de `mes_nombre` pasan a ser columnas y cada celda toma el valor de `cumplimiento`. `id_cols` dice qué columnas identifican cada fila de la tabla ancha. Así, la tabla se lee de un vistazo: febrero fue el mes más difícil, sin una sola sucursal en la meta; `S08` la cumplió en enero y en marzo, y `S05` quedó por debajo en los tres meses.
@@ -578,23 +668,45 @@ R base tiene `reshape()` para estas dos operaciones, pero su interfaz es difíci
 
 ```python
 metas = pd.read_csv("datos/cap07/metas_2026_ancho.csv")
-meses = ["ene", "feb", "mar", "abr", "may", "jun",
-         "jul", "ago", "sep", "oct", "nov", "dic"]
+meses = [
+    "ene",
+    "feb",
+    "mar",
+    "abr",
+    "may",
+    "jun",
+    "jul",
+    "ago",
+    "sep",
+    "oct",
+    "nov",
+    "dic",
+]
 
-metas_largo = metas.melt(id_vars=["sucursal", "ciudad_departamento"],
-                         var_name="mes_nombre", value_name="meta_millones")
+metas_largo = metas.melt(
+    id_vars=["sucursal", "ciudad_departamento"],
+    var_name="mes_nombre",
+    value_name="meta_millones",
+)
 metas_largo["mes_nombre"] = metas_largo["mes_nombre"].str.removeprefix("meta_")
 metas_largo["mes"] = metas_largo["mes_nombre"].map(
-    {nombre: i for i, nombre in enumerate(meses, start=1)})
+    {nombre: i for i, nombre in enumerate(meses, start=1)}
+)
 print(metas_largo.shape)
 
-cumplimiento = (por_mes
-                .merge(metas_largo, on=["sucursal", "mes"], validate="1:1")
-                .assign(cumplimiento=lambda d: (100 * d["valor_neto"]
-                                                / (d["meta_millones"] * 1e6)).round()))
+cumplimiento = por_mes.merge(
+    metas_largo, on=["sucursal", "mes"], validate="1:1"
+).assign(
+    cumplimiento=lambda d: (
+        100 * d["valor_neto"] / (d["meta_millones"] * 1e6)
+    ).round()
+)
 
-print(cumplimiento.pivot(index="sucursal", columns="mes_nombre",
-                         values="cumplimiento")[["ene", "feb", "mar"]])
+print(
+    cumplimiento.pivot(
+        index="sucursal", columns="mes_nombre", values="cumplimiento"
+    )[["ene", "feb", "mar"]]
+)
 ```
 
 ```text
@@ -617,18 +729,26 @@ S08         106.0  94.0  106.0
 
 ```{r}
 #| label: duckdb-pivot
-dbExecute(con, r"(
+dbExecute(
+  con,
+  r"(
   CREATE VIEW metas_largo AS
   UNPIVOT read_csv('datos/cap07/metas_2026_ancho.csv')
   ON COLUMNS('meta_.*')
   INTO NAME mes_nombre VALUE meta_millones
-)")
+)"
+)
 
-dbGetQuery(con, r"(
+dbGetQuery(
+  con,
+  r"(
   SELECT * FROM metas_largo LIMIT 3
-)")
+)"
+)
 
-dbGetQuery(con, r"(
+dbGetQuery(
+  con,
+  r"(
   PIVOT (
     SELECT v.sucursal, replace(m.mes_nombre, 'meta_', '') AS mes,
            round(100 * sum(v.unidades * v.precio_unitario * (1 - v.descuento))
@@ -642,7 +762,8 @@ dbGetQuery(con, r"(
   ON mes IN ('ene', 'feb', 'mar')
   USING first(cumplimiento)
   ORDER BY sucursal
-)")
+)"
+)
 ```
 
 `UNPIVOT ... ON COLUMNS('meta_.*')` derrite todas las columnas cuyo nombre empieza por `meta_`, y `PIVOT ... ON mes USING first(...)` construye una columna por cada valor de `mes`. `ON mes IN (...)` fija el orden de las columnas. La lista `['ene', 'feb', 'mar'][month(fecha)]` traduce el número del mes a su nombre: en DuckDB las listas se indexan desde 1, como en R.
@@ -691,10 +812,11 @@ pedidos |>
   separate_wider_regex(
     contacto,
     patterns = c(
-      nombre = ".*?", 
+      nombre = ".*?",
       " <",
-      correo = "[^>]+", ">"
-      )
+      correo = "[^>]+",
+      ">"
+    )
   ) |>
   head(2)
 ```
@@ -724,10 +846,12 @@ Los 250 pedidos tienen 525 líneas de producto. Con la tabla en este formato ya 
 ### Python
 
 ```python
-print(metas["ciudad_departamento"]
-      .str.split(" - ", expand=True)
-      .set_axis(["ciudad", "departamento"], axis=1)
-      .head(3))
+print(
+    metas["ciudad_departamento"]
+    .str.split(" - ", expand=True)
+    .set_axis(["ciudad", "departamento"], axis=1)
+    .head(3)
+)
 ```
 
 ```text
@@ -741,8 +865,11 @@ print(metas["ciudad_departamento"]
 
 ```python
 pedidos = pd.read_csv("datos/cap07/pedidos_web.csv", dtype={"nit": str})
-print(pedidos["contacto"]
-      .str.extract(r"(?P<nombre>.*?) <(?P<correo>[^>]+)>").head(2))
+print(
+    pedidos["contacto"]
+    .str.extract(r"(?P<nombre>.*?) <(?P<correo>[^>]+)>")
+    .head(2)
+)
 ```
 
 ```text
@@ -754,9 +881,11 @@ print(pedidos["contacto"]
 Para separar en filas, `str.split()` sin `expand` convierte cada celda en una lista, y `explode()` crea una fila por cada elemento de la lista:
 
 ```python
-items = (pedidos[["pedido", "items"]]
-         .assign(items=lambda d: d["items"].str.split("; "))
-         .explode("items", ignore_index=True))
+items = (
+    pedidos[["pedido", "items"]]
+    .assign(items=lambda d: d["items"].str.split("; "))
+    .explode("items", ignore_index=True)
+)
 items[["producto", "unidades"]] = items["items"].str.split(" x", expand=True)
 items = items.drop(columns="items").astype({"unidades": int})
 
@@ -779,15 +908,20 @@ print(len(items))
 
 ```{r}
 #| label: duckdb-separar
-dbGetQuery(con, r"(
+dbGetQuery(
+  con,
+  r"(
   SELECT sucursal,
          split_part(ciudad_departamento, ' - ', 1) AS ciudad,
          split_part(ciudad_departamento, ' - ', 2) AS departamento
   FROM read_csv('datos/cap07/metas_2026_ancho.csv')
   LIMIT 3
-)")
+)"
+)
 
-dbGetQuery(con, r"(
+dbGetQuery(
+  con,
+  r"(
   SELECT pedido,
          split_part(item, ' x', 1)               AS producto,
          split_part(item, ' x', 2)::INTEGER      AS unidades
@@ -796,7 +930,8 @@ dbGetQuery(con, r"(
     FROM read_csv('datos/cap07/pedidos_web.csv')
   )
   LIMIT 4
-)")
+)"
+)
 ```
 
 `split_part()` devuelve la parte número *n* de un texto. `string_split()` convierte el texto en una lista y `unnest()` crea una fila por elemento, como `explode()`. Para el contacto se usa `regexp_extract()` con una lista de nombres, como en el @sec-importacion.
@@ -840,13 +975,18 @@ format(object.size(grande), units = "MB")
 # 2. Resumir en memoria: dplyr y data.table
 t_dplyr <- segundos(
   r_dplyr <- grande |>
-    summarise(valor = sum(valor_venta), unidades = sum(unidades),
-              .by = c(sucursal, producto))
+    summarise(
+      valor = sum(valor_venta),
+      unidades = sum(unidades),
+      .by = c(sucursal, producto)
+    )
 )
 grande_dt <- as.data.table(grande)
 t_dt <- segundos(
-  r_dt <- grande_dt[, .(valor = sum(valor_venta), unidades = sum(unidades)),
-                    by = .(sucursal, producto)]
+  r_dt <- grande_dt[,
+    .(valor = sum(valor_venta), unidades = sum(unidades)),
+    by = .(sucursal, producto)
+  ]
 )
 t_collapse <- segundos(
   r_collapse <- grande |>
@@ -856,11 +996,14 @@ t_collapse <- segundos(
 
 # 3. Resumir sobre el archivo, sin cargarlo
 t_duckdb <- segundos(
-  r_duckdb <- dbGetQuery(con, r"(
+  r_duckdb <- dbGetQuery(
+    con,
+    r"(
     SELECT sucursal, producto, sum(valor_venta) AS valor, sum(unidades) AS unidades
     FROM 'datos/cap07/ventas_grande.parquet'
     GROUP BY ALL
-  )")
+  )"
+  )
 )
 t_arrow <- segundos(
   r_arrow <- open_dataset(ruta_grande) |>
@@ -870,9 +1013,14 @@ t_arrow <- segundos(
 )
 
 data.frame(
-  paso     = c("leer el archivo completo", "resumir con dplyr", "resumir con data.table",
-               "resumir con collapse",
-               "leer y resumir con DuckDB", "leer y resumir con arrow"),
+  paso = c(
+    "leer el archivo completo",
+    "resumir con dplyr",
+    "resumir con data.table",
+    "resumir con collapse",
+    "leer y resumir con DuckDB",
+    "leer y resumir con arrow"
+  ),
   segundos = c(t_leer, t_dplyr, t_dt, t_collapse, t_duckdb, t_arrow)
 )
 c(nrow(r_dplyr), nrow(r_dt), nrow(r_collapse), nrow(r_duckdb), nrow(r_arrow))
@@ -890,10 +1038,13 @@ La sintaxis de `data.table` es `tabla[filas, columnas, by = grupos]`: los corche
 install.packages("polars", repos = "https://community.r-multiverse.org")
 library(polars)
 
-pl$scan_parquet("datos/cap07/ventas_grande.parquet")$
-  group_by("sucursal", "producto")$
-  agg(pl$col("valor_venta")$sum()$alias("valor"), pl$col("unidades")$sum())$
-  collect()
+pl$scan_parquet("datos/cap07/ventas_grande.parquet")$group_by(
+  "sucursal",
+  "producto"
+)$agg(
+  pl$col("valor_venta")$sum()$alias("valor"),
+  pl$col("unidades")$sum()
+)$collect()
 ```
 
 La sintaxis encadena métodos con `$`, la misma lógica de la versión de Python. El paquete [tidypolars](https://tidypolars.etiennebacher.com/) permite escribir esas consultas con los verbos de `dplyr`.
@@ -916,20 +1067,30 @@ ruta_grande = "datos/cap07/ventas_grande.parquet"
 
 inicio = time.perf_counter()
 grande = pd.read_parquet(ruta_grande)
-print("leer con pandas:", round(time.perf_counter() - inicio, 2), "s,",
-      round(grande.memory_usage(deep=True).sum() / 1e6), "MB")
+print(
+    "leer con pandas:",
+    round(time.perf_counter() - inicio, 2),
+    "s,",
+    round(grande.memory_usage(deep=True).sum() / 1e6),
+    "MB",
+)
 
 inicio = time.perf_counter()
-r_pandas = (grande.groupby(["sucursal", "producto"], as_index=False)
-            .agg(valor=("valor_venta", "sum"), unidades=("unidades", "sum")))
+r_pandas = grande.groupby(["sucursal", "producto"], as_index=False).agg(
+    valor=("valor_venta", "sum"), unidades=("unidades", "sum")
+)
 print("resumir con pandas:", round(time.perf_counter() - inicio, 2), "s")
 
 inicio = time.perf_counter()
-r_polars = (pl.scan_parquet(ruta_grande)
-            .group_by("sucursal", "producto")
-            .agg(pl.col("valor_venta").sum().alias("valor"), pl.col("unidades").sum())
-            .collect())
-print("leer y resumir con polars:", round(time.perf_counter() - inicio, 2), "s")
+r_polars = (
+    pl.scan_parquet(ruta_grande)
+    .group_by("sucursal", "producto")
+    .agg(pl.col("valor_venta").sum().alias("valor"), pl.col("unidades").sum())
+    .collect()
+)
+print(
+    "leer y resumir con polars:", round(time.perf_counter() - inicio, 2), "s"
+)
 
 inicio = time.perf_counter()
 r_duckdb = duckdb.sql(f"""
@@ -937,7 +1098,9 @@ r_duckdb = duckdb.sql(f"""
     FROM '{ruta_grande}'
     GROUP BY ALL
 """).df()
-print("leer y resumir con DuckDB:", round(time.perf_counter() - inicio, 2), "s")
+print(
+    "leer y resumir con DuckDB:", round(time.perf_counter() - inicio, 2), "s"
+)
 ```
 
 ```text
@@ -955,14 +1118,23 @@ DuckDB ya apareció en las otras dos pestañas, porque es la misma consulta desd
 
 ```{r}
 #| label: duckdb-explain
-plan <- dbGetQuery(con, r"(
+plan <- dbGetQuery(
+  con,
+  r"(
   EXPLAIN ANALYZE
   SELECT sucursal, producto, sum(valor_venta) AS valor
   FROM 'datos/cap07/ventas_grande.parquet'
   GROUP BY ALL
-)")
-cat(grep("Projections|sucursal|producto|valor_venta|Total Time",
-         strsplit(plan[[2]], "\n")[[1]], value = TRUE), sep = "\n")
+)"
+)
+cat(
+  grep(
+    "Projections|sucursal|producto|valor_venta|Total Time",
+    strsplit(plan[[2]], "\n")[[1]],
+    value = TRUE
+  ),
+  sep = "\n"
+)
 ```
 
 :::
@@ -977,14 +1149,20 @@ En `dplyr` y en `pandas` el orden lo decides tú: ejecutan cada paso tal como es
 
 ```{r}
 #| label: duckdb-filtro-temprano
-plan <- dbGetQuery(con, r"(
+plan <- dbGetQuery(
+  con,
+  r"(
   EXPLAIN
   SELECT *
   FROM (SELECT *, valor_venta * 1.19 AS valor_con_iva
         FROM 'datos/cap07/ventas_grande.parquet')
   WHERE sucursal = 'S03'
-)")
-cat(grep("PARQUET_SCAN|Filters", strsplit(plan[[2]], "\n")[[1]], value = TRUE), sep = "\n")
+)"
+)
+cat(
+  grep("PARQUET_SCAN|Filters", strsplit(plan[[2]], "\n")[[1]], value = TRUE),
+  sep = "\n"
+)
 ```
 
 La regla tiene una excepción importante: **no se puede filtrar primero cuando el cálculo necesita las filas que se van a quitar**. Es el caso de los cálculos dentro del grupo (participaciones, rankings, diferencias con el mes anterior, cualquier función de ventana). En el Ejemplo 7.3, la participación del producto `P05` en su sucursal se calculó sobre todos los productos; si se filtra `P05` antes de calcular, cada sucursal solo tiene ese producto y su participación es, trivialmente, el 100 %:
@@ -998,7 +1176,10 @@ participacion |> filter(producto == "P05") |> head(3)
 ventas |>
   filter(producto == "P05") |>
   summarise(valor_neto = sum(valor_neto), .by = c(sucursal, producto)) |>
-  mutate(participacion = round(100 * valor_neto / sum(valor_neto), 1), .by = sucursal) |>
+  mutate(
+    participacion = round(100 * valor_neto / sum(valor_neto), 1),
+    .by = sucursal
+  ) |>
   head(3)
 ```
 
@@ -1022,27 +1203,31 @@ Con `pedidos_web.csv`, `productos.csv` y lo que aprendiste en el capítulo:
 #| label: ejercicio-7-1
 #| eval: false
 lineas <- pedidos |>
-  separate_wider_delim(pedido, delim = "-", ...,       # TODO
-                       cols_remove = FALSE) |>
-  separate_longer_delim(...) |>                         # TODO
-  separate_wider_delim(...)                             # TODO
+  separate_wider_delim(
+    pedido,
+    delim = "-",
+    ..., # TODO
+    cols_remove = FALSE
+  ) |>
+  separate_longer_delim(...) |> # TODO
+  separate_wider_delim(...) # TODO
 
 lineas_detalle <- lineas |>
-  left_join(...)                                        # TODO
+  left_join(...) # TODO
 
-valor_pedido <- ...                                     # TODO
-unidades_ciudad <- ... |> pivot_wider(...)              # TODO
+valor_pedido <- ... # TODO
+unidades_ciudad <- ... |> pivot_wider(...) # TODO
 ```
 
 ### Python
 
 ```python
 lineas = pedidos.copy()
-lineas[["canal", "ciudad", "consecutivo"]] = ...        # TODO
-lineas = ...                                            # TODO: split + explode
-lineas_detalle = lineas.merge(..., validate="m:1")      # TODO
-valor_pedido = ...                                      # TODO
-unidades_ciudad = ....pivot_table(...)                  # TODO
+lineas[["canal", "ciudad", "consecutivo"]] = ...  # TODO
+lineas = ...  # TODO: split + explode
+lineas_detalle = lineas.merge(..., validate="m:1")  # TODO
+valor_pedido = ...  # TODO
+unidades_ciudad = ....pivot_table(...)  # TODO
 ```
 
 :::

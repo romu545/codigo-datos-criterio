@@ -17,7 +17,9 @@ set.seed(2033)
 dir.create("datos/cap13/entregas", showWarnings = FALSE, recursive = TRUE)
 dir.create("datos/cap13/abril", showWarnings = FALSE, recursive = TRUE)
 
-entregas <- as.data.frame(arrow::read_parquet("datos/cap11/entregas_2026_t1.parquet"))
+entregas <- as.data.frame(arrow::read_parquet(
+  "datos/cap11/entregas_2026_t1.parquet"
+))
 mes <- format(entregas$fecha, "%m")
 
 escribir <- function(df, ruta) {
@@ -25,7 +27,10 @@ escribir <- function(df, ruta) {
 }
 
 for (m in c("01", "02", "03")) {
-  escribir(entregas[mes == m, ], sprintf("datos/cap13/entregas/entregas_2026_%s.csv", m))
+  escribir(
+    entregas[mes == m, ],
+    sprintf("datos/cap13/entregas/entregas_2026_%s.csv", m)
+  )
 }
 
 # Abril: pedidos con la misma forma que los de marzo, en fechas de abril
@@ -38,9 +43,18 @@ abril$pedido <- sprintf("PD-%05d", 2400 + seq_len(nrow(abril)))
 # Los dos cambios que nadie avisó
 abril$tiempo_entrega_min <- round(abril$tiempo_entrega_h * 60)
 abril$tiempo_entrega_h <- NULL
-abril <- abril[, c("pedido", "fecha", "sucursal", "canal", "distancia_km",
-                   "tiempo_entrega_min", "unidades", "valor_pedido",
-                   "calificacion", "devuelto")]
+abril <- abril[, c(
+  "pedido",
+  "fecha",
+  "sucursal",
+  "canal",
+  "distancia_km",
+  "tiempo_entrega_min",
+  "unidades",
+  "valor_pedido",
+  "calificacion",
+  "devuelto"
+)]
 abril$fecha <- format(abril$fecha, "%d/%m/%Y")
 
 escribir(abril, "datos/cap13/abril/entregas_2026_04.csv")

@@ -10,7 +10,7 @@ La idea es sencilla: si el problema está en **cómo se escribió** el dato, se 
 
 ¿Por qué no dejarlo todo para después? Por tres razones. La primera es que cada análisis que parte del archivo tendría que repetir los mismos arreglos, y basta con que una persona olvide uno para que dos resultados dejen de coincidir. La segunda es que algunos errores de lectura no se pueden deshacer: una fecha leída con el orden equivocado ya es otra fecha, y nada en la tabla avisa del error. La tercera es la memoria: una columna de `TRUE` y `FALSE` ocupa menos que una de textos, y una columna vacía que no se lee no ocupa nada.
 
-Seguimos con la misma red regional de distribución. Los archivos de este capítulo están en la carpeta `datos/cap05/` del repositorio de materiales. El capítulo está pensado, como los anteriores, para una sesión de estudio de unas dos horas.
+Seguimos con la misma red regional de distribución. Los archivos de este capítulo están en la carpeta `datos/cap05/` del repositorio de materiales.
 
 ::: {.callout-tip}
 ## Antes de empezar
@@ -25,8 +25,21 @@ Como en los capítulos anteriores, declaramos al inicio las funciones de R que u
 ```{r}
 #| label: paquetes-cap05
 #| message: false
-use("readr", c("read_delim", "cols", "col_character", "col_date", "col_datetime",
-               "col_number", "col_integer", "locale", "spec", "parse_number"))
+use(
+  "readr",
+  c(
+    "read_delim",
+    "cols",
+    "col_character",
+    "col_date",
+    "col_datetime",
+    "col_number",
+    "col_integer",
+    "locale",
+    "spec",
+    "parse_number"
+  )
+)
 use("readxl", "read_excel")
 use("dplyr", c("mutate", "na_if", "count", "if_else", "across"))
 use("arrow", "write_parquet")
@@ -68,7 +81,7 @@ ingenua <- read_delim(
   ruta_cartera,
   delim = ";",
   show_col_types = FALSE
-  )
+)
 
 spec(ingenua)
 ```
@@ -108,9 +121,12 @@ dtype: object
 
 ```{r}
 #| label: duckdb-ingenua
-dbGetQuery(con, r"(
+dbGetQuery(
+  con,
+  r"(
   DESCRIBE SELECT * FROM read_csv('datos/cap05/cartera_clientes_2026_02.csv')
-)")[, c("column_name", "column_type")]
+)"
+)[, c("column_name", "column_type")]
 ```
 
 :::
@@ -142,8 +158,8 @@ Hay dos maneras de llegar a esos nombres. La **automática** aplica las reglas 1
 limpiar_nombres <- function(nombres) {
   nombres <- tolower(nombres)
   nombres <- chartr("áéíóúüñ", "aeiouun", nombres)
-  nombres <- gsub("[^a-z0-9]+", "_", nombres)   # todo lo demás, a guion bajo
-  gsub("^_+|_+$", "", nombres)                  # sin guiones al inicio o al final
+  nombres <- gsub("[^a-z0-9]+", "_", nombres) # todo lo demás, a guion bajo
+  gsub("^_+|_+$", "", nombres) # sin guiones al inicio o al final
 }
 
 limpiar_nombres(names(ingenua))
@@ -160,10 +176,10 @@ cartera_nombres <- read_delim(
   delim = ";",
   col_types = cols(.default = col_character()),
   col_select = c(
-    factura       = `N° Factura`,
-    nit           = `NIT Cliente`,
+    factura = `N° Factura`,
+    nit = `NIT Cliente`,
     fecha_emision = `Fecha Emisión`,
-    pagada        = `¿Pagó?`
+    pagada = `¿Pagó?`
   ),
   name_repair = "unique_quiet"
 )
@@ -179,10 +195,15 @@ Las columnas que no aparecen en `col_select` no se leen. `name_repair = "unique_
 import re
 import unicodedata
 
+
 def limpiar_nombre(nombre):
-    sin_tildes = (unicodedata.normalize("NFKD", nombre)
-                  .encode("ascii", "ignore").decode())
+    sin_tildes = (
+        unicodedata.normalize("NFKD", nombre)
+        .encode("ascii", "ignore")
+        .decode()
+    )
     return re.sub(r"[^a-z0-9]+", "_", sin_tildes.lower()).strip("_")
+
 
 print([limpiar_nombre(c) for c in ingenua.columns])
 ```
@@ -201,10 +222,9 @@ nombres = {
     "¿Pagó?": "pagada",
 }
 
-cartera_nombres = (
-    pd.read_csv(ruta_cartera, sep=";", usecols=list(nombres), dtype=str)
-    .rename(columns=nombres)
-)
+cartera_nombres = pd.read_csv(
+    ruta_cartera, sep=";", usecols=list(nombres), dtype=str
+).rename(columns=nombres)
 print(cartera_nombres.head(3))
 ```
 
@@ -221,20 +241,26 @@ El diccionario cumple dos funciones a la vez: sus llaves dicen qué columnas lee
 
 ```{r}
 #| label: duckdb-nombres
-dbGetQuery(con, r"(
+dbGetQuery(
+  con,
+  r"(
   DESCRIBE SELECT *
   FROM read_csv('datos/cap05/cartera_clientes_2026_02.csv',
                 normalize_names = true)
-)")$column_name
+)"
+)$column_name
 
-dbGetQuery(con, r"(
+dbGetQuery(
+  con,
+  r"(
   SELECT "N° Factura"    AS factura,
          "NIT Cliente"   AS nit,
          "Fecha Emisión" AS fecha_emision,
          "¿Pagó?"        AS pagada
   FROM read_csv('datos/cap05/cartera_clientes_2026_02.csv', all_varchar = true)
   LIMIT 3
-)")
+)"
+)
 ```
 
 `normalize_names = true` es la versión automática que trae DuckDB. La explícita es SQL de toda la vida: `AS` da el nombre nuevo. Como la consulta va en texto crudo, las comillas dobles del nombre original se escriben tal cual, igual que en la terminal de DuckDB.
@@ -296,14 +322,16 @@ cartera_na <- read_delim(
   ruta_cartera,
   delim = ";",
   na = c("", "N/A", "SIN DATO"),
-  col_types = cols(`Calificación Riesgo` = col_integer(),
-                   .default = col_character()),
+  col_types = cols(
+    `Calificación Riesgo` = col_integer(),
+    .default = col_character()
+  ),
   col_select = c(
-    factura      = `N° Factura`,
-    fecha_pago   = `Fecha Pago`,
+    factura = `N° Factura`,
+    fecha_pago = `Fecha Pago`,
     calificacion = `Calificación Riesgo`,
-    ciudad       = Ciudad,
-    saldo        = `Saldo Pendiente`
+    ciudad = Ciudad,
+    saldo = `Saldo Pendiente`
   ),
   name_repair = "unique_quiet"
 ) |>
@@ -327,11 +355,17 @@ def a_pesos(texto):
         return 0.0
     return float(texto.replace(".", "").replace(",", "."))
 
+
 cartera_na = pd.read_csv(
     ruta_cartera,
     sep=";",
-    usecols=["N° Factura", "Fecha Pago", "Calificación Riesgo", "Ciudad",
-             "Saldo Pendiente"],
+    usecols=[
+        "N° Factura",
+        "Fecha Pago",
+        "Calificación Riesgo",
+        "Ciudad",
+        "Saldo Pendiente",
+    ],
     na_values={
         "Fecha Pago": ["N/A"],
         "Ciudad": ["SIN DATO"],
@@ -369,7 +403,9 @@ En `pandas`, `na_values` acepta un diccionario con las marcas **de cada columna*
 
 ```{r}
 #| label: duckdb-faltantes
-cartera_na_duck <- dbGetQuery(con, r"(
+cartera_na_duck <- dbGetQuery(
+  con,
+  r"(
   SELECT
     "N° Factura"                                   AS factura,
     nullif("Fecha Pago", 'N/A')                    AS fecha_pago,
@@ -379,7 +415,8 @@ cartera_na_duck <- dbGetQuery(con, r"(
          ELSE replace(replace("Saldo Pendiente", '.', ''), ',', '.')::DECIMAL(15, 2)
     END                                              AS saldo
   FROM read_csv('datos/cap05/cartera_clientes_2026_02.csv', all_varchar = true)
-)")
+)"
+)
 
 colSums(is.na(cartera_na_duck))
 ```
@@ -424,13 +461,16 @@ cartera_bool <- read_delim(
   ruta_cartera,
   delim = ";",
   col_types = cols(.default = col_character()),
-  col_select = c(factura = `N° Factura`, pagada = `¿Pagó?`,
-                 cliente_activo = `Cliente Activo`),
+  col_select = c(
+    factura = `N° Factura`,
+    pagada = `¿Pagó?`,
+    cliente_activo = `Cliente Activo`
+  ),
   name_repair = "unique_quiet"
 ) |>
   mutate(
     across(c("pagada", "cliente_activo"), a_logico)
-    )
+  )
 
 count(cartera_bool, pagada)
 mean(cartera_bool$pagada)
@@ -469,14 +509,18 @@ Name: count, dtype: int64
 `true_values` y `false_values` hacen la conversión durante la lectura, pero tienen dos condiciones que conviene conocer. La primera: se aplican a **todas** las columnas, no a una sola. La segunda, más delicada: solo convierten una columna si **todos** sus valores están en alguna de las dos listas. Si aparece una variante no prevista, como `sí` en minúscula con tilde, la columna entera se queda como texto, sin aviso. Por eso, después de leer, revisa siempre que el tipo sea `bool`:
 
 ```python
-assert cartera_bool["¿Pagó?"].dtype == "bool", "Hay variantes de sí/no sin declarar"
+assert cartera_bool["¿Pagó?"].dtype == "bool", (
+    "Hay variantes de sí/no sin declarar"
+)
 ```
 
 ### DuckDB
 
 ```{r}
 #| label: duckdb-booleanos
-dbGetQuery(con, r"(
+dbGetQuery(
+  con,
+  r"(
   SELECT pagada, count(*) AS facturas
   FROM (
     SELECT
@@ -489,7 +533,8 @@ dbGetQuery(con, r"(
     FROM read_csv('datos/cap05/cartera_clientes_2026_02.csv', all_varchar = true)
   )
   GROUP BY pagada
-)")
+)"
+)
 ```
 
 `strip_accents()` quita la tilde de `Sí`, `upper()` unifica las mayúsculas y `CASE` aplica la tabla de equivalencias. Un valor que no coincide con ningún `WHEN` queda como `NULL`, igual que en la versión de R.
@@ -536,9 +581,9 @@ Podemos comprobar los números de la @fig-fechas-por-lenguaje directamente:
 
 ```{r}
 #| label: fechas-como-numeros
-unclass(as.Date("2026-02-03"))                       # días desde 1970-01-01
-as.numeric(as.POSIXct("2026-02-03", tz = "UTC"))     # segundos desde 1970-01-01
-as.Date(46056, origin = "1899-12-30")                # número de serie de Excel
+unclass(as.Date("2026-02-03")) # días desde 1970-01-01
+as.numeric(as.POSIXct("2026-02-03", tz = "UTC")) # segundos desde 1970-01-01
+as.Date(46056, origin = "1899-12-30") # número de serie de Excel
 ```
 
 ### Zonas horarias
@@ -556,10 +601,10 @@ La regla para importar marcas de tiempo es: **leer el instante con su zona y mos
 ```{r}
 #| label: fechas-readr
 colombia <- locale(
-  decimal_mark  = ",",
+  decimal_mark = ",",
   grouping_mark = ".",
-  date_format   = "%d/%m/%Y",
-  tz            = "America/Bogota"
+  date_format = "%d/%m/%Y",
+  tz = "America/Bogota"
 )
 
 cartera_fechas <- read_delim(
@@ -568,18 +613,18 @@ cartera_fechas <- read_delim(
   locale = colombia,
   na = c("", "N/A"),
   col_types = cols(
-    `Fecha Emisión`     = col_date(),
+    `Fecha Emisión` = col_date(),
     `Fecha Vencimiento` = col_date(),
-    `Fecha Pago`        = col_date(),
-    `Registrado En`     = col_datetime(),
-    .default            = col_character()
+    `Fecha Pago` = col_date(),
+    `Registrado En` = col_datetime(),
+    .default = col_character()
   ),
   col_select = c(
-    factura           = `N° Factura`,
-    fecha_emision     = `Fecha Emisión`,
+    factura = `N° Factura`,
+    fecha_emision = `Fecha Emisión`,
     fecha_vencimiento = `Fecha Vencimiento`,
-    fecha_pago        = `Fecha Pago`,
-    registrado_en     = `Registrado En`
+    fecha_pago = `Fecha Pago`,
+    registrado_en = `Registrado En`
   ),
   name_repair = "unique_quiet"
 )
@@ -595,17 +640,21 @@ El `locale` reúne las convenciones regionales del archivo: separadores numéric
 cartera_fechas = pd.read_csv(
     ruta_cartera,
     sep=";",
-    usecols=["N° Factura", "Fecha Emisión", "Fecha Vencimiento", "Fecha Pago",
-             "Registrado En"],
+    usecols=[
+        "N° Factura",
+        "Fecha Emisión",
+        "Fecha Vencimiento",
+        "Fecha Pago",
+        "Registrado En",
+    ],
     na_values={"Fecha Pago": ["N/A"]},
     parse_dates=["Fecha Emisión", "Fecha Vencimiento", "Fecha Pago"],
     date_format="%d/%m/%Y",
 )
 
-cartera_fechas["Registrado En"] = (
-    pd.to_datetime(cartera_fechas["Registrado En"], utc=True)
-    .dt.tz_convert("America/Bogota")
-)
+cartera_fechas["Registrado En"] = pd.to_datetime(
+    cartera_fechas["Registrado En"], utc=True
+).dt.tz_convert("America/Bogota")
 
 print(cartera_fechas.dtypes)
 print(cartera_fechas.head(3))
@@ -628,7 +677,7 @@ dtype: object
 
 ```python
 fechas = pd.Series(["01/02/2026", "03/02/2026", "12/02/2026"])
-print(pd.to_datetime(fechas).tolist())                     # adivina mes/día
+print(pd.to_datetime(fechas).tolist())  # adivina mes/día
 print(pd.to_datetime(fechas, format="%d/%m/%Y").tolist())  # formato declarado
 ```
 
@@ -643,7 +692,9 @@ Las tres fechas eran de febrero. Sin el formato, `pandas` las repartió entre en
 
 ```{r}
 #| label: duckdb-fechas
-dbGetQuery(con, r"(
+dbGetQuery(
+  con,
+  r"(
   SELECT
     "N° Factura"                                       AS factura,
     strptime("Fecha Emisión", '%d/%m/%Y')::DATE        AS fecha_emision,
@@ -651,7 +702,8 @@ dbGetQuery(con, r"(
     timezone('America/Bogota', "Registrado En"::TIMESTAMPTZ) AS registrado_bogota
   FROM read_csv('datos/cap05/cartera_clientes_2026_02.csv', all_varchar = true)
   LIMIT 3
-)")
+)"
+)
 ```
 
 `strptime()` convierte texto en fecha con el formato indicado y falla si encuentra un valor que no lo cumple; `try_strptime()` devuelve `NULL` en ese caso, útil para la fecha de pago, que trae `N/A`. `timezone('America/Bogota', ...)` expresa el instante en hora de Bogotá. Si se lee el archivo sin `all_varchar`, `read_csv()` acepta también `dateformat = '%d/%m/%Y'` para declarar el formato de todas las fechas a la vez.
@@ -734,20 +786,26 @@ print(cartera_sin_vacias.shape)
 
 ```{r}
 #| label: duckdb-summarize
-dbGetQuery(con, r"(
+dbGetQuery(
+  con,
+  r"(
   SELECT column_name, null_percentage
   FROM (SUMMARIZE SELECT *
         FROM read_csv('datos/cap05/cartera_clientes_2026_02.csv',
                       all_varchar = true))
   WHERE null_percentage = 100
-)")
+)"
+)
 
-dbGetQuery(con, r"(
+dbGetQuery(
+  con,
+  r"(
   SELECT count(*) AS columnas
   FROM (DESCRIBE SELECT * EXCLUDE (Observaciones, Columna1, Columna2, column15)
         FROM read_csv('datos/cap05/cartera_clientes_2026_02.csv',
                       all_varchar = true))
-)")
+)"
+)
 ```
 
 `SUMMARIZE` resume cada columna del archivo **completo**, no de una muestra, y entre otras cosas informa el porcentaje de faltantes. `SELECT * EXCLUDE (...)` lee todas las columnas menos las indicadas.
@@ -764,8 +822,12 @@ Ahora reunimos todo en una sola lectura: nombres explícitos, columnas vacías f
 
 ```{r}
 #| label: contrato-completo-r
-colombia <- locale(decimal_mark = ",", grouping_mark = ".",
-                   date_format = "%d/%m/%Y", tz = "America/Bogota")
+colombia <- locale(
+  decimal_mark = ",",
+  grouping_mark = ".",
+  date_format = "%d/%m/%Y",
+  tz = "America/Bogota"
+)
 
 cartera <- read_delim(
   ruta_cartera,
@@ -773,36 +835,35 @@ cartera <- read_delim(
   locale = colombia,
   na = c("", "N/A", "SIN DATO"),
   col_select = c(
-    factura           = `N° Factura`,
-    nit               = `NIT Cliente`,
-    fecha_emision     = `Fecha Emisión`,
+    factura = `N° Factura`,
+    nit = `NIT Cliente`,
+    fecha_emision = `Fecha Emisión`,
     fecha_vencimiento = `Fecha Vencimiento`,
-    fecha_pago        = `Fecha Pago`,
-    valor_factura     = `Valor Factura ($)`,
-    pagada            = `¿Pagó?`,
-    cliente_activo    = `Cliente Activo`,
-    calificacion      = `Calificación Riesgo`,
-    ciudad            = Ciudad,
-    saldo             = `Saldo Pendiente`,
-    registrado_en     = `Registrado En`
+    fecha_pago = `Fecha Pago`,
+    valor_factura = `Valor Factura ($)`,
+    pagada = `¿Pagó?`,
+    cliente_activo = `Cliente Activo`,
+    calificacion = `Calificación Riesgo`,
+    ciudad = Ciudad,
+    saldo = `Saldo Pendiente`,
+    registrado_en = `Registrado En`
   ),
   col_types = cols(
-    `Fecha Emisión`       = col_date(),
-    `Fecha Vencimiento`   = col_date(),
-    `Fecha Pago`          = col_date(),
-    `Valor Factura ($)`   = col_number(),
+    `Fecha Emisión` = col_date(),
+    `Fecha Vencimiento` = col_date(),
+    `Fecha Pago` = col_date(),
+    `Valor Factura ($)` = col_number(),
     `Calificación Riesgo` = col_integer(),
-    `Registrado En`       = col_datetime(),
-    .default              = col_character()
+    `Registrado En` = col_datetime(),
+    .default = col_character()
   ),
   name_repair = "unique_quiet"
 ) |>
   mutate(
-    pagada         = a_logico(pagada),
+    pagada = a_logico(pagada),
     cliente_activo = a_logico(cliente_activo),
-    calificacion   = na_if(calificacion, 999L),
-    saldo          = parse_number(if_else(saldo == "-", "0", saldo),
-                                  locale = colombia)
+    calificacion = na_if(calificacion, 999L),
+    saldo = parse_number(if_else(saldo == "-", "0", saldo), locale = colombia)
   )
 
 cartera
@@ -842,8 +903,11 @@ cartera = pd.read_csv(
     dtype={"NIT Cliente": str, "Calificación Riesgo": "Int64"},
     decimal=",",
     thousands=".",
-    na_values={"Fecha Pago": ["N/A"], "Ciudad": ["SIN DATO"],
-               "Calificación Riesgo": ["999"]},
+    na_values={
+        "Fecha Pago": ["N/A"],
+        "Ciudad": ["SIN DATO"],
+        "Calificación Riesgo": ["999"],
+    },
     true_values=["SI", "Sí", "si", "S"],
     false_values=["NO", "No", "no", "N"],
     converters={"Saldo Pendiente": a_pesos},
@@ -851,10 +915,9 @@ cartera = pd.read_csv(
     date_format="%d/%m/%Y",
 ).rename(columns=columnas)
 
-cartera["registrado_en"] = (
-    pd.to_datetime(cartera["registrado_en"], utc=True)
-    .dt.tz_convert("America/Bogota")
-)
+cartera["registrado_en"] = pd.to_datetime(
+    cartera["registrado_en"], utc=True
+).dt.tz_convert("America/Bogota")
 
 assert cartera["pagada"].dtype == "bool"
 assert cartera["cliente_activo"].dtype == "bool"
@@ -891,7 +954,9 @@ True           34     0
 
 ```{r}
 #| label: contrato-completo-duckdb
-dbExecute(con, r"-(
+dbExecute(
+  con,
+  r"-(
   COPY (
     SELECT
       "N° Factura"                                          AS factura,
@@ -916,14 +981,18 @@ dbExecute(con, r"-(
       "Registrado En"::TIMESTAMPTZ                          AS registrado_en
     FROM read_csv('datos/cap05/cartera_clientes_2026_02.csv', all_varchar = true)
   ) TO 'datos/cap05/cartera_2026_02_duckdb.parquet' (FORMAT parquet)
-)-")
+)-"
+)
 
-dbGetQuery(con, r"(
+dbGetQuery(
+  con,
+  r"(
   SELECT pagada, fecha_pago IS NULL AS sin_fecha_pago, count(*) AS facturas
   FROM 'datos/cap05/cartera_2026_02_duckdb.parquet'
   GROUP BY ALL
   ORDER BY ALL
-)")
+)"
+)
 ```
 
 En DuckDB el contrato completo es una sola consulta: se lee todo como texto y cada columna se convierte con su regla. Fíjate en que el texto crudo empieza con `r"-(` y termina con `)-"`: el nombre `"Valor Factura ($)"` contiene `)"`, que cerraría un `r"(...)"` antes de tiempo, y los guiones evitan la confusión. Las columnas vacías ni siquiera se mencionan, así que no llegan al resultado. La marca de tiempo se guarda como `TIMESTAMPTZ`, un instante absoluto: la zona horaria se aplica al mostrarla.
@@ -970,7 +1039,7 @@ ruta_visitas <- "datos/cap05/visitas_comerciales.xlsx"
 visitas_texto <- read_excel(ruta_visitas, sheet = "Visitas", col_types = "text")
 
 # 2. Columnas vacías
-vacias <- ...          # TODO
+vacias <- ... # TODO
 
 # 3. Fechas: número de serie de Excel o texto día/mes/año
 serie <- suppressWarnings(as.numeric(visitas_texto$`Fecha Visita`))
@@ -981,7 +1050,7 @@ fecha <- if_else(
 )
 
 # 4. Nombres, booleano y faltantes
-visitas <- ...         # TODO
+visitas <- ... # TODO
 
 # 5. Comprobar y guardar
 write_parquet(visitas, "datos/cap05/visitas_comerciales.parquet")
@@ -996,16 +1065,16 @@ ruta_visitas = "datos/cap05/visitas_comerciales.xlsx"
 visitas_texto = pd.read_excel(ruta_visitas, sheet_name="Visitas", dtype=str)
 
 # 2. Columnas vacías
-vacias = ...           # TODO
+vacias = ...  # TODO
 
 # 3. Fechas: fecha de Excel convertida a texto, o texto día/mes/año
 texto = visitas_texto["Fecha Visita"]
-fecha = pd.to_datetime(texto, format="%Y-%m-%d %H:%M:%S", errors="coerce").fillna(
-    pd.to_datetime(texto, format="%d/%m/%Y", errors="coerce")
-)
+fecha = pd.to_datetime(
+    texto, format="%Y-%m-%d %H:%M:%S", errors="coerce"
+).fillna(pd.to_datetime(texto, format="%d/%m/%Y", errors="coerce"))
 
 # 4. Nombres, booleano y faltantes
-visitas = ...          # TODO
+visitas = ...  # TODO
 
 # 5. Comprobar y guardar
 visitas.to_parquet("datos/cap05/visitas_comerciales.parquet", index=False)

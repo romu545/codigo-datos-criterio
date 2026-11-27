@@ -3,7 +3,7 @@
 
 Hasta aquí preparamos el entorno. Ahora empezamos a trabajar con datos reales, y el primer paso de cualquier análisis es el más subestimado: traerlos al entorno de trabajo. La forma en que importamos condiciona todo lo que viene después. Una importación descuidada produce tildes dañadas, identificadores sin ceros iniciales, memoria agotada y resultados que cambian de un mes a otro sin que nadie sepa por qué.
 
-La importación ocupa tres capítulos (@fig-mapa-importacion). En este construimos el método: por qué importar exige criterio, qué herramientas usar y cómo definir un **contrato de lectura** que funcione igual con un archivo que con cien. En el siguiente (@sec-importacion-fuentes) aplicamos ese mismo método a Excel, Parquet, JSON, APIs y bases de datos. En el tercero (@sec-limpieza-temprana) completamos el contrato con la limpieza temprana: nombres de columnas, valores faltantes, booleanos, fechas y columnas vacías. Cada capítulo está pensado para una sesión de estudio de unas dos horas.
+La importación ocupa tres capítulos (@fig-mapa-importacion). En este construimos el método: por qué importar exige criterio, qué herramientas usar y cómo definir un **contrato de lectura** que funcione igual con un archivo que con cien. En el siguiente (@sec-importacion-fuentes) aplicamos ese mismo método a Excel, Parquet, JSON, APIs y bases de datos. En el tercero (@sec-limpieza-temprana) completamos el contrato con la limpieza temprana: nombres de columnas, valores faltantes, booleanos, fechas y columnas vacías.
 
 ![La importación en tres capítulos: el método con archivos de texto, el mismo método aplicado a otras fuentes y la limpieza temprana que completa el contrato.](imagenes/importacion/mapa-importacion.svg){#fig-mapa-importacion fig-alt="Tres paneles. Capítulo 3, el contrato de lectura: importar no es un trámite, el ecosistema de herramientas, la heurística de importación y múltiples archivos. Capítulo 4, formatos y fuentes: Excel y Parquet, JSON y APIs, bases de datos, y elegir formato con un proyecto integrador. Capítulo 5, limpieza temprana: nombres de columnas, faltantes y booleanos, fechas, y columnas vacías con el contrato completo. Una flecha final apunta al capítulo 6, Tipos de datos y calidad."}
 
@@ -13,37 +13,7 @@ Todos los ejemplos giran en torno a un mismo caso: las **operaciones comerciales
 ## Antes de empezar
 
 1. Abre la carpeta de materiales en Positron (**File → Open Folder…**) para que las rutas relativas `datos/cap03/...` funcionen.
-2. Instala los paquetes de R que usaremos en los dos capítulos de importación, desde la consola de R:
-
-   ```{r}
-   #| eval: false
-   #| code-line-numbers: true
-    install.packages(
-        c(
-            "tidyverse", 
-            "readxl", 
-            "jsonlite", 
-            "httr2", 
-            "arrow", 
-            "DBI", 
-            "duckdb",
-            "data.table",
-            "rematch2",
-            "openxlsx2",
-            "bench",
-            "pak"
-        )
-    )
-   ```
-
-3. Prepara el entorno de Python con `uv`, desde la terminal y dentro de la carpeta de materiales:
-
-   ```bash
-   uv init --bare
-   uv add pandas polars duckdb openpyxl pyarrow requests
-   ```
-
-   `uv init --bare` crea solo el archivo `pyproject.toml`, sin tocar los archivos que ya existen en la carpeta.
+2. Comprueba que instalaste los paquetes de R y Python de la @sec-instalar-paquetes. En la importación usamos sobre todo `readr`, `readxl`, `arrow`, `DBI` y `duckdb` en R, y `pandas`, `polars`, `pyarrow` y `duckdb` en Python.
 :::
 
 ## Importar no es un trámite: criterio, memoria y fluidez {#sec-criterio-importacion}
@@ -117,8 +87,8 @@ En todo el libro, las consultas de SQL que enviamos desde R van entre `r"(` y `)
 
 ```{r}
 #| label: texto-crudo
-cat("Ruta: C:\\datos\\cap03 y una columna \"N° Factura\"")   # texto normal
-cat(r"(Ruta: C:\datos\cap03 y una columna "N° Factura")")     # texto crudo
+cat("Ruta: C:\\datos\\cap03 y una columna \"N° Factura\"") # texto normal
+cat(r"(Ruta: C:\datos\cap03 y una columna "N° Factura")") # texto crudo
 ```
 
 En R, los delimitadores pueden ser paréntesis, corchetes o llaves: `r"(...)"`, `r"[...]"` o `r"{...}"`. Si el texto contiene `)"`, se agregan guiones a ambos lados: `r"-(...)-"`.
@@ -207,8 +177,20 @@ Trabajamos con `ventas_2026_01.csv`, un archivo de unas 5.000 filas con punto y 
 ```{r}
 #| label: paquetes-cap03
 #| message: false
-use("readr", c("read_csv", "read_csv2", "read_delim", "locale", "problems",
-               "cols", "col_character", "col_date", "col_double"))
+use(
+  "readr",
+  c(
+    "read_csv",
+    "read_csv2",
+    "read_delim",
+    "locale",
+    "problems",
+    "cols",
+    "col_character",
+    "col_date",
+    "col_double"
+  )
+)
 use("dplyr", c("glimpse", "rename", "mutate", "count", "bind_rows", "any_of"))
 use("purrr", c("map", "list_rbind"))
 use("DBI", c("dbConnect", "dbGetQuery", "dbDisconnect"))
@@ -326,9 +308,12 @@ La lectura "funciona", pero mal. Estos son los problemas:
 ```{r}
 #| label: duckdb-ingenua
 #| error: true
-dbGetQuery(con, r"(
+dbGetQuery(
+  con,
+  r"(
   SELECT * FROM read_csv('datos/cap03/ventas_2026_01.csv', delim = ';')
-)")
+)"
+)
 ```
 
 DuckDB también asume `UTF-8` por defecto. A diferencia de lo que ocurría con `readr`, que mostraba las tildes dañadas, aquí la lectura **falla** con un error que indica la línea problemática.
@@ -337,11 +322,14 @@ Fíjate en las sugerencias que ofrece el mensaje. Una propone probar `encoding='
 
 ```{r}
 #| label: duckdb-describe
-dbGetQuery(con, r"(
+dbGetQuery(
+  con,
+  r"(
   DESCRIBE
   SELECT * FROM read_csv('datos/cap03/ventas_2026_01.csv',
                          delim = ';', encoding = 'latin-1')
-)")[, c("column_name", "column_type")]
+)"
+)[, c("column_name", "column_type")]
 ```
 
 Con `encoding = 'latin-1'` la lectura funciona. DuckDB detectó bien el delimitador (siete columnas) y reconoció `fecha` como `DATE`, pero quedan dos problemas:
@@ -373,10 +361,10 @@ ventas <- read_delim(
   locale = locale(decimal_mark = ",", encoding = "latin1"),
   col_select = c(fecha, codigo_dane, nit_cliente, ciudad, valor_venta),
   col_types = cols(
-    fecha       = col_date(format = "%Y-%m-%d"),
+    fecha = col_date(format = "%Y-%m-%d"),
     codigo_dane = col_character(),
     nit_cliente = col_character(),
-    ciudad      = col_character(),
+    ciudad = col_character(),
     valor_venta = col_double()
   )
 )
@@ -431,7 +419,9 @@ memory usage: 195.4+ KB
 
 ```{r}
 #| label: duckdb-controlada
-ventas_duck <- dbGetQuery(con, r"(
+ventas_duck <- dbGetQuery(
+  con,
+  r"(
   SELECT fecha, codigo_dane, nit_cliente, ciudad, valor_venta
   FROM read_csv(
     'datos/cap03/ventas_2026_01.csv',
@@ -441,7 +431,8 @@ ventas_duck <- dbGetQuery(con, r"(
     dateformat = '%Y-%m-%d',
     types = {'codigo_dane': 'VARCHAR', 'nit_cliente': 'VARCHAR'}
   )
-)")
+)"
+)
 
 glimpse(ventas_duck)
 ```
@@ -477,7 +468,9 @@ glimpse(ventas_texto)
 ```python
 ventas_texto = pd.read_csv(
     "datos/cap03/ventas_2026_01.csv",
-    sep=";", encoding="latin-1", dtype=str,
+    sep=";",
+    encoding="latin-1",
+    dtype=str,
 )
 ventas_texto.info()
 ```
@@ -503,12 +496,15 @@ memory usage: 273.6+ KB
 
 ```{r}
 #| label: duckdb-reconocimiento
-dbGetQuery(con, r"(
+dbGetQuery(
+  con,
+  r"(
   DESCRIBE
   SELECT * FROM read_csv('datos/cap03/ventas_2026_01.csv',
                          delim = ';', encoding = 'latin-1',
                          all_varchar = true)
-)")[, c("column_name", "column_type")]
+)"
+)[, c("column_name", "column_type")]
 ```
 
 :::
@@ -522,10 +518,16 @@ dbGetQuery(con, r"(
 #| label: fread-controlada
 ventas_dt <- data.table::fread(
   ruta_ventas,
-  sep = ";", dec = ",", encoding = "Latin-1",
-  select = c(fecha = "Date", codigo_dane = "character",
-             nit_cliente = "character", ciudad = "character",
-             valor_venta = "numeric")
+  sep = ";",
+  dec = ",",
+  encoding = "Latin-1",
+  select = c(
+    fecha = "Date",
+    codigo_dane = "character",
+    nit_cliente = "character",
+    ciudad = "character",
+    valor_venta = "numeric"
+  )
 )
 
 str(ventas_dt)
@@ -590,8 +592,11 @@ archivos <- list.files(
 basename(archivos)
 
 # Apilar directamente: readr compara los encabezados de todos los archivos
-read_csv(archivos, id = "archivo_origen",
-         col_types = cols(.default = col_character()))
+read_csv(
+  archivos,
+  id = "archivo_origen",
+  col_types = cols(.default = col_character())
+)
 ```
 
 `readr` es estricto y se detiene con un mensaje claro: los archivos tienen nombres de columna distintos. Es preferible un error a un resultado incompleto. Si en cambio hubiéramos leído cada archivo por separado y apilado con `bind_rows()`, no habría error: habría aparecido una columna `vlr_total` con 300 vacíos (las filas de 2026) y otra `valor_total` con 900 (las de 2025).
@@ -605,14 +610,16 @@ import pandas as pd
 
 carpeta = Path("datos/cap03/lotes_mensuales")
 archivos = sorted(
-    p for p in carpeta.glob("recaudos_*.csv")
+    p
+    for p in carpeta.glob("recaudos_*.csv")
     if re.fullmatch(r"recaudos_\d{4}_\d{2}\.csv", p.name)
 )
 print([a.name for a in archivos])
 
 # Apilar sin homologar: pandas no avisa, solo llena de vacíos
-sin_cuidado = pd.concat((pd.read_csv(a, dtype=str) for a in archivos),
-                        ignore_index=True)
+sin_cuidado = pd.concat(
+    (pd.read_csv(a, dtype=str) for a in archivos), ignore_index=True
+)
 print(sin_cuidado.isna().sum())
 ```
 
@@ -632,13 +639,16 @@ dtype: int64
 
 ```{r}
 #| label: duckdb-sin-cuidado
-dbGetQuery(con, r"(
+dbGetQuery(
+  con,
+  r"(
   SELECT count(*)                      AS filas,
          count(*) - count(vlr_total)   AS vacios_vlr_total,
          count(*) - count(valor_total) AS vacios_valor_total
   FROM read_csv('datos/cap03/lotes_mensuales/recaudos_*.csv',
                 union_by_name = true, all_varchar = true)
-)")
+)"
+)
 ```
 
 El *glob* `recaudos_*.csv` ya excluye el archivo `borrador_notas.csv`. Con `union_by_name = true`, DuckDB alinea las columnas por nombre y deja ambas, `vlr_total` y `valor_total`, con vacíos donde no aplican. Sin esa opción, alinearía por posición, lo que sería peor.
@@ -657,8 +667,7 @@ El mapa responde tres preguntas: qué archivo no se parece a los demás, qué co
 #| label: mapa-columnas
 # Lee solo la primera línea de cada archivo: los nombres de columna
 leer_encabezado <- function(ruta) {
-  names(read_csv(ruta, n_max = 0,
-                 col_types = cols(.default = col_character())))
+  names(read_csv(ruta, n_max = 0, col_types = cols(.default = col_character())))
 }
 
 # Una fila por archivo y una columna por nombre encontrado: TRUE si está presente
@@ -666,30 +675,46 @@ mapa_columnas <- function(rutas) {
   encabezados <- map(rutas, leer_encabezado)
   names(encabezados) <- basename(rutas)
   columnas <- unique(unlist(encabezados))
-  presencia <- t(vapply(encabezados, \(enc) columnas %in% enc,
-                        logical(length(columnas))))
+  presencia <- t(vapply(
+    encabezados,
+    \(enc) columnas %in% enc,
+    logical(length(columnas))
+  ))
   colnames(presencia) <- columnas
-  data.frame(archivo = rownames(presencia), presencia,
-             row.names = NULL, check.names = FALSE)
+  data.frame(
+    archivo = rownames(presencia),
+    presencia,
+    row.names = NULL,
+    check.names = FALSE
+  )
 }
 
 # Una fila por columna y una columna por archivo
 transponer_mapa <- function(mapa) {
   presencia <- t(as.matrix(mapa[-1]))
   colnames(presencia) <- mapa$archivo
-  data.frame(columna = rownames(presencia), presencia,
-             row.names = NULL, check.names = FALSE)
+  data.frame(
+    columna = rownames(presencia),
+    presencia,
+    row.names = NULL,
+    check.names = FALSE
+  )
 }
 
-todos <- list.files("datos/cap03/lotes_mensuales", pattern = "\\.csv$",
-                    full.names = TRUE)
+todos <- list.files(
+  "datos/cap03/lotes_mensuales",
+  pattern = "\\.csv$",
+  full.names = TRUE
+)
 mapa <- mapa_columnas(todos)
 
 # En cuántos archivos aparece cada columna
 colSums(mapa[-1])
 
 # Si hay más columnas que archivos, se lee mejor transpuesto
-if (ncol(mapa) - 1 > nrow(mapa)) mapa <- transponer_mapa(mapa)
+if (ncol(mapa) - 1 > nrow(mapa)) {
+  mapa <- transponer_mapa(mapa)
+}
 mapa
 ```
 
@@ -701,22 +726,28 @@ mapa
 from pathlib import Path
 import pandas as pd
 
+
 def mapa_columnas(rutas):
     """Una fila por archivo y una columna por nombre encontrado: True si está presente."""
-    encabezados = {r.name: pd.read_csv(r, nrows=0).columns.tolist() for r in rutas}
-    columnas = list(dict.fromkeys(c for enc in encabezados.values() for c in enc))
+    encabezados = {
+        r.name: pd.read_csv(r, nrows=0).columns.tolist() for r in rutas
+    }
+    columnas = list(
+        dict.fromkeys(c for enc in encabezados.values() for c in enc)
+    )
     return pd.DataFrame(
         [[c in enc for c in columnas] for enc in encabezados.values()],
         index=pd.Index(list(encabezados), name="archivo"),
         columns=columnas,
     )
 
+
 todos = sorted(Path("datos/cap03/lotes_mensuales").glob("*.csv"))
 mapa = mapa_columnas(todos)
 
-print(mapa.sum())   # en cuántos archivos aparece cada columna
+print(mapa.sum())  # en cuántos archivos aparece cada columna
 
-if mapa.shape[1] > mapa.shape[0]:   # más columnas que archivos: transponer
+if mapa.shape[1] > mapa.shape[0]:  # más columnas que archivos: transponer
     mapa = mapa.T
     mapa.index.name = "columna"
 print(mapa.to_string())
@@ -748,7 +779,9 @@ valor_total               False                 False                 False     
 
 ```{r}
 #| label: duckdb-mapa-columnas
-dbGetQuery(con, r"(
+dbGetQuery(
+  con,
+  r"(
   WITH encabezados AS (
     SELECT
       parse_filename(filename) AS archivo,
@@ -762,7 +795,8 @@ dbGetQuery(con, r"(
   USING count(*)
   GROUP BY columna
   ORDER BY columna
-)")
+)"
+)
 ```
 
 `read_text()` lee cada archivo como un solo texto. De ahí tomamos la primera línea (quitando antes los retornos de carro que dejan los archivos creados en Windows) y la partimos por comas, con lo que obtenemos una fila por cada par archivo y columna. `PIVOT` convierte esa lista en la matriz: `1` si la columna está en el archivo y `0` si no. Esta versión ya está transpuesta; para tener una fila por archivo basta con cambiar `ON archivo` por `ON columna` y `GROUP BY columna` por `GROUP BY archivo`. Ten en cuenta que la consulta supone que el delimitador es la coma y que los nombres no van entre comillas.
@@ -809,6 +843,7 @@ def leer_lote(ruta):
         .assign(archivo_origen=ruta.name)
     )
 
+
 recaudos = pd.concat((leer_lote(a) for a in archivos), ignore_index=True)
 recaudos["fecha"] = pd.to_datetime(recaudos["fecha"])
 recaudos["valor_total"] = pd.to_numeric(recaudos["valor_total"])
@@ -836,7 +871,9 @@ dtype: int64
 
 ```{r}
 #| label: duckdb-con-cuidado
-recaudos_duck <- dbGetQuery(con, r"(
+recaudos_duck <- dbGetQuery(
+  con,
+  r"(
   SELECT
     id_recaudo,
     CAST(fecha AS DATE) AS fecha,
@@ -849,7 +886,8 @@ recaudos_duck <- dbGetQuery(con, r"(
     filename = true,
     all_varchar = true
   )
-)")
+)"
+)
 
 count(recaudos_duck, archivo_origen)
 ```
@@ -872,28 +910,28 @@ Importa **únicamente** los recaudos de 2025 que están en `datos/cap03/lotes_me
 # 1. Descubrir los archivos de 2025 con un patrón
 archivos_2025 <- list.files(
   "datos/cap03/lotes_mensuales",
-  pattern = "...",          # TODO: expresión regular para recaudos_2025_xx.csv
+  pattern = "...", # TODO: expresión regular para recaudos_2025_xx.csv
   full.names = TRUE
 )
 
 # 2. Leer, homologar nombres y apilar
-recaudos_2025 <- ...        # TODO
+recaudos_2025 <- ... # TODO
 
 # 3. Verificar nulos inesperados
-...                         # TODO
+... # TODO
 ```
 
 ### Python
 
 ```python
 # 1. Descubrir los archivos de 2025 con un patrón
-archivos_2025 = ...         # TODO
+archivos_2025 = ...  # TODO
 
 # 2. Leer, homologar nombres y apilar
-recaudos_2025 = ...         # TODO
+recaudos_2025 = ...  # TODO
 
 # 3. Verificar nulos inesperados
-...                         # TODO
+...  # TODO
 ```
 
 ### DuckDB
@@ -901,10 +939,13 @@ recaudos_2025 = ...         # TODO
 ```{r}
 #| label: ejercicio-3-1-duckdb
 #| eval: false
-recaudos_2025 <- dbGetQuery(con, r"(
+recaudos_2025 <- dbGetQuery(
+  con,
+  r"(
   -- TODO: leer solo recaudos_2025_*.csv, homologar columnas
   --       y agregar archivo_origen
-)")
+)"
+)
 ```
 
 :::
@@ -927,8 +968,10 @@ El patrón describe esa estructura. `(?<fecha>...)` captura la fecha, `(?<hora>.
 
 ```{r}
 #| label: chat-rematch2
-lineas <- readLines("datos/cap03/chat_soporte_sucursales.txt",
-                    encoding = "UTF-8")
+lineas <- readLines(
+  "datos/cap03/chat_soporte_sucursales.txt",
+  encoding = "UTF-8"
+)
 
 patron <- paste0(
   "^(?<fecha>\\d{1,2}/\\d{2}/\\d{2}), ",
@@ -950,12 +993,17 @@ sum(is.na(chat$autor))
 from pathlib import Path
 import pandas as pd
 
-lineas = (Path("datos/cap03/chat_soporte_sucursales.txt")
-          .read_text(encoding="utf-8").splitlines())
+lineas = (
+    Path("datos/cap03/chat_soporte_sucursales.txt")
+    .read_text(encoding="utf-8")
+    .splitlines()
+)
 
-patron = (r"^(?P<fecha>\d{1,2}/\d{2}/\d{2}), "
-          r"(?P<hora>\d{1,2}:\d{2} [ap]\. m\.) - "
-          r"(?P<autor>[^:]+): (?P<mensaje>.*)$")
+patron = (
+    r"^(?P<fecha>\d{1,2}/\d{2}/\d{2}), "
+    r"(?P<hora>\d{1,2}:\d{2} [ap]\. m\.) - "
+    r"(?P<autor>[^:]+): (?P<mensaje>.*)$"
+)
 
 chat = pd.Series(lineas).str.extract(patron)
 print(chat[["fecha", "hora", "autor"]].head(4))
@@ -977,7 +1025,9 @@ En Python los grupos con nombre se escriben `(?P<nombre>...)`, con una `P`. `str
 
 ```{r}
 #| label: chat-duckdb
-chat_duck <- dbGetQuery(con, r"(
+chat_duck <- dbGetQuery(
+  con,
+  r"(
   WITH lineas AS (
     SELECT unnest(string_split(content, chr(10))) AS linea
     FROM read_text('datos/cap03/chat_soporte_sucursales.txt')
@@ -991,7 +1041,8 @@ chat_duck <- dbGetQuery(con, r"(
     ) AS m
     FROM lineas
   )
-)")
+)"
+)
 
 head(chat_duck, 4)
 sum(chat_duck$autor == "")

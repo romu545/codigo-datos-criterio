@@ -1,4 +1,4 @@
-# Fundamentos y preparación del entorno
+# Fundamentos y preparación del entorno {#sec-entorno}
 
 ## Propósito del capítulo
 
@@ -11,6 +11,7 @@ Al terminar este capítulo tendrás:
 - Positron, R y `uv` instalados y comprobados;
 - Python disponible a través de `uv`;
 - los materiales del libro descargados en una carpeta de trabajo;
+- los paquetes de R y Python que usa el libro instalados;
 - una idea clara de qué hace cada herramienta y cómo se relacionan.
 
 ## ¿Qué es un entorno de trabajo?
@@ -147,7 +148,7 @@ Este comando descarga una versión reciente de Python y la deja disponible para 
 uv python list --only-installed
 ```
 
-Más adelante veremos cómo `uv` crea un entorno de Python para cada proyecto y registra sus dependencias.
+Al final del capítulo, en la @sec-instalar-paquetes, `uv` creará el entorno de Python de la carpeta de materiales y registrará sus dependencias.
 
 ### Git: herramienta opcional
 
@@ -167,8 +168,8 @@ DuckDB puede trabajar como una base local dentro del proyecto y también consult
 
 DuckDB puede instalarse de distintas formas según el uso:
 
-- **Desde R:** instalaremos el paquete duckdb cuando preparemos el entorno de R.
-- **Desde Python:** instalaremos el paquete duckdb en el entorno del proyecto con uv.
+- **Desde R:** con el paquete `duckdb`, que instalaremos junto con los demás paquetes de R al final del capítulo.
+- **Desde Python:** con el paquete `duckdb`, que instalaremos con `uv` en el entorno del proyecto.
 - **Desde la terminal:** instalaremos la CLI de DuckDB solo para los capítulos o ejercicios que la necesiten.
 
 Así evitamos instalar una herramienta global que quizá no se use. Más adelante se explicará cómo las interfaces de R y Python permiten ejecutar consultas sobre una base DuckDB.
@@ -261,12 +262,19 @@ Ejecuta este código en la consola de R de Positron, con la carpeta de trabajo a
 zip <- tempfile(fileext = ".zip")
 download.file(
   "https://github.com/romu545/codigo-datos-criterio-material/archive/refs/heads/main.zip",
-  zip, mode = "wb"
+  zip,
+  mode = "wb"
 )
 unzip(zip, exdir = ".")
 file.copy(
-  list.files("codigo-datos-criterio-material-main", full.names = TRUE, all.files = TRUE, no.. = TRUE),
-  ".", recursive = TRUE
+  list.files(
+    "codigo-datos-criterio-material-main",
+    full.names = TRUE,
+    all.files = TRUE,
+    no.. = TRUE
+  ),
+  ".",
+  recursive = TRUE
 )
 unlink(c("codigo-datos-criterio-material-main", zip), recursive = TRUE)
 ```
@@ -301,3 +309,76 @@ print("Material descargado en:", Path.cwd())
 :::
 
 Para una primera descarga, el navegador es la opción más sencilla. Los ejemplos con código permiten practicar cómo automatizarla.
+
+## Instalar los paquetes {#sec-instalar-paquetes}
+
+R y Python traen lo básico. El resto del trabajo lo hacen los **paquetes**: leer Excel, conectarse a DuckDB, hacer gráficos o probar el código. Los instalamos todos ahora, una sola vez, para que los capítulos siguientes se dediquen a usarlos. Los dos pasos se hacen con la carpeta de materiales abierta en Positron.
+
+### Paquetes de R
+
+En la consola de R de Positron, ejecuta:
+
+```{r}
+#| eval: false
+install.packages(c(
+  # Leer, transformar y graficar
+  "tidyverse", # incluye dplyr, tidyr, readr, purrr, stringr, forcats y ggplot2
+  "readxl",
+  "openxlsx2",
+  "jsonlite",
+  "httr2",
+  "arrow",
+  # Bases de datos
+  "DBI",
+  "duckdb",
+  # Alternativas para mucho volumen
+  "data.table",
+  "collapse",
+  # Utilidades de capítulos concretos
+  "rematch2", # capítulo 3
+  "bench", # capítulo 4
+  "patchwork", # capítulo 14
+  "cowplot", # capítulo 14
+  "testthat" # capítulo 17
+))
+```
+
+`install.packages()` descarga cada paquete de CRAN, el repositorio oficial de R, junto con los paquetes de los que depende. La primera vez puede tardar varios minutos. Si termina con advertencias del tipo `package 'x' is not available`, revisa la versión de R: algunos paquetes nuevos exigen la más reciente.
+
+Para comprobar que quedaron instalados, carga dos de ellos:
+
+```{r}
+#| eval: false
+library(dplyr)
+library(duckdb)
+```
+
+Si no aparece ningún error, el entorno de R está listo. Los mensajes que informan qué funciones se enmascaran (*masked*) son normales.
+
+### Paquetes de Python
+
+En Python, cada proyecto tiene su propio entorno, una carpeta `.venv` con un intérprete y sus paquetes. Así un proyecto no rompe a otro cuando cambia una versión. `uv` crea ese entorno y anota en dos archivos lo que instalamos: `pyproject.toml` (qué paquetes pedimos) y `uv.lock` (la versión exacta de cada uno).
+
+En la terminal de Positron, dentro de la carpeta de materiales, ejecuta:
+
+```bash
+uv init --bare
+uv add pandas polars pyarrow duckdb openpyxl requests
+uv add seaborn plotly xlsxwriter
+uv add pytest jupyter papermill tabulate
+```
+
+`uv init --bare` crea solo el archivo `pyproject.toml`, sin tocar los archivos que ya existen en la carpeta. Cada `uv add` instala los paquetes en `.venv` y los registra. La primera línea reúne lo que se usa en todo el libro; la segunda, los gráficos y el Excel con formato (capítulos 11, 14 y 16); la tercera, las pruebas y los reportes (capítulos 15 y 17).
+
+Para que Positron use ese entorno, abre el selector de intérpretes y elige el Python que está en `.venv`. Para comprobarlo, ejecuta en la consola de Python:
+
+```python
+import duckdb
+import pandas as pd
+
+print(pd.__version__, duckdb.__version__)
+```
+
+### Paquetes opcionales
+
+Algunos capítulos mencionan herramientas que no hace falta instalar para seguir el libro. Se instalan solo si quieres probarlas: `duckplyr` (capítulo 3), `polars` para R (capítulo 7, desde `https://community.r-multiverse.org`), `targets` y `renv` (capítulo 13), `usethis` y `devtools` (capítulo 12), y `taskscheduleR` o `cronR` (capítulo 13). Cada capítulo indica cómo instalarlas cuando aparecen.

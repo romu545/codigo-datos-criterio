@@ -2,10 +2,17 @@
 
 ## Estructura del libro
 
-El libro avanza desde la preparación del entorno hasta la publicación y el mantenimiento de los análisis. Los capítulos se agrupan en cinco partes que siguen el recorrido de un análisis: **Punto de partida** (capítulos 1 y 2), **Obtener los datos** (3 y 4), **Preparar y guardar los datos** (5 a 8), **Analizar y programar** (9 a 11) y **Automatizar, comunicar y mantener** (12 a 14). Los conceptos se explican de forma general; R será el lenguaje principal y Python aparecerá en pestañas para comparar implementaciones. SQL se usará para consultas y vistas, y PowerShell para automatizar tareas.
+El libro sigue el recorrido de un análisis, desde preparar el entorno hasta publicar y mantener los resultados. Los 17 capítulos se agrupan en cinco partes. R es el lenguaje principal y Python aparece en pestañas para comparar implementaciones; SQL, con DuckDB, se usa para consultar datos sin cargarlos en memoria, y la terminal, para instalar y automatizar.
+
+**Parte I. Punto de partida**
+
+1. **Introducción**  
+   Este capítulo: cómo está organizado el libro y cómo aprovecharlo.
 
 2. **Fundamentos y preparación del entorno**  
-   Uso de la terminal, archivos y carpetas; instalación y manejo de paquetes; entornos de trabajo, versiones y organización de proyectos.
+   Qué hace cada herramienta (Positron, R, Python, `uv` y DuckDB), cómo instalarlas en Windows y macOS, cómo descargar los materiales e instalar los paquetes que usa el libro.
+
+**Parte II. Obtener los datos**
 
 3. **Importación de datos I: el contrato de lectura**  
    Por qué la importación condiciona la memoria, la velocidad y la reproducibilidad del análisis; herramientas en R, Python y DuckDB; codificación, delimitadores, tipos de columna y selección temprana de columnas; lectura de múltiples archivos con patrones y control de la deriva de esquema.
@@ -16,44 +23,53 @@ El libro avanza desde la preparación del entorno hasta la publicación y el man
 5. **Importación de datos III: limpieza temprana**  
    Cómo resolver desde la lectura lo que depende de cómo se escribió el dato: nombres de columnas, marcas de faltante por columna, sí y no como booleanos, fechas en cada lenguaje y zonas horarias, separadores numéricos y columnas vacías.
 
+**Parte III. Preparar y guardar los datos**
+
 6. **Tipos de datos y calidad**  
    Qué consecuencias tiene el tipo de cada columna (coerción, decimales, identificadores y categorías) y cómo medir la calidad de una tabla: perfil, dimensiones de calidad, reglas de validación escritas como datos y un reporte que marca cada fila con sus problemas.
 
 7. **Transformación y limpieza I: transformar y ordenar**  
-   Las operaciones básicas en sus distintas escrituras (corchetes, signo de dólar, `transform()` y `dplyr` en R; corchetes, `.loc`, `assign()` y `query()` en `pandas`; SQL en DuckDB), resúmenes por grupo y funciones de ventana, uniones sin multiplicar filas, formato largo y ancho, separación de valores en columnas y filas, y herramientas para cuando el volumen supera la memoria (`data.table`, `polars`, DuckDB).
+   Las operaciones básicas en sus distintas escrituras (corchetes, signo de dólar, `transform()` y `dplyr` en R; corchetes, `.loc`, `assign()` y `query()` en `pandas`; SQL en DuckDB), resúmenes por grupo y funciones de ventana, uniones sin multiplicar filas, formato largo y ancho, separación de valores en columnas y filas, y herramientas para cuando el volumen crece (`data.table`, `collapse`, `polars`, DuckDB).
 
 8. **Transformación y limpieza II: limpiar**  
    Principios de una limpieza reproducible, texto y expresiones regulares, estandarización de categorías con ayuda de los datos, consolidación de duplicados, faltantes, valores imposibles y atípicos, y una limpieza completa con cuarentena, bitácora y una nueva auditoría de calidad.
 
-9. **Estructuras, formatos y almacenamiento**  
-   Uso de listas, diccionarios, data frames y tablas de bases de datos, incluyendo datos anidados. Se compararán CSV, Excel, JSON, Parquet y bases de datos para elegir dónde almacenar la información según el caso.
+9. **Transformación y limpieza III: transformar a escala**  
+   Cómo dejar de copiar y pegar: la misma operación sobre muchas columnas y muchas tablas, uniones por rangos y por la fecha más cercana, completar combinaciones que faltan, tablas anidadas y cuándo conviene un bucle.
 
-10. **Exportación de datos**  
-   Escritura de resultados en archivos (CSV, Excel, JSON, Parquet), bases de datos y servicios de almacenamiento en la nube, teniendo en cuenta el volumen, el formato y el destino.
+10. **Guardar y compartir los datos**  
+    Guardar según quién va a leer los datos: capas cruda, limpia y analítica; formatos que conservan los tipos; metadatos y diccionario de datos; procesos que se pueden repetir sin duplicar filas; un archivo por destinatario y archivos con contrato para otros sistemas.
 
-11. **Estadística descriptiva, exploración y gráficos**  
-   Exploración de distribuciones, medidas resumen y correlaciones; elección y diseño de gráficos; uso de escalas, colores y etiquetas; reconocimiento de errores comunes de interpretación.
+**Parte IV. Analizar y programar**
 
-12. **Funciones personalizadas**  
-    Creación de funciones reutilizables, documentación de sus entradas y salidas, y comparación de alternativas en R y Python.
+11. **Explorar los datos**  
+    Preguntas para recorrer una tabla nueva: qué es una fila, dónde faltan datos, centro, dispersión y forma de las distribuciones, comparación entre grupos, categorías y relaciones, con gráficos de trabajo hechos para entender, no para presentar.
+
+12. **Funciones propias**  
+    Anatomía de una función, argumentos, funciones anónimas y de orden superior, alcance y clausuras, validación de entradas, clases pequeñas y el camino hacia los paquetes.
 
 13. **Flujos reproducibles y depuración**  
-    Organización de análisis que puedan repetirse; lectura de mensajes de error, registro de eventos y diseño de procesos que puedan recuperarse ante fallos.
+    Un análisis como una tubería de pasos con nombre, ejecutado en una sesión limpia; rehacer solo lo que cambió; un método para depurar errores y programar tareas para que el flujo corra solo.
 
-14. **Automatización y programación de tareas**  
-    Automatización de análisis y tareas recurrentes, como la consulta periódica de APIs, con R, Python y PowerShell. Se considerará cuándo priorizar la claridad y cuándo el rendimiento.
+**Parte V. Comunicar y mantener**
 
-15. **Reportes reproducibles y comunicación**  
-    Generación de documentos y presentaciones desde código, mostrando con claridad los resultados, las fuentes y los supuestos del análisis.
+14. **Comunicar I: gráficos que explican**  
+    Del gráfico de trabajo al gráfico que sostiene un argumento: gramática de los gráficos, destacado, anotaciones, tipografía, composición, accesibilidad y gráficos interactivos.
 
-16. **Pruebas, seguridad, publicación y mantenimiento**  
-    Verificación de resultados y casos límite; protección de credenciales, claves de API y datos sensibles; uso responsable del web scraping; publicación de los análisis y mantenimiento de los procesos a lo largo del tiempo.
+15. **Comunicar II: reportes con Quarto**  
+    Documentos que se generan desde el código, con números en el texto que se actualizan solos, y un reporte parametrizado por sucursal en HTML, PDF y Word.
+
+16. **Comunicar III: Excel, presentaciones y tableros**  
+    Cómo elegir el formato según lo que hará quien lo recibe; Excel con formato, presentaciones y un tablero interactivo que no necesita servidor.
+
+17. **Probar, proteger, publicar y mantener**  
+    Pruebas automáticas del código, credenciales y datos sensibles, publicación y automatización en servidores, y el mantenimiento de un análisis a lo largo del tiempo.
 
 ## Objetivos de aprendizaje
 
 Al avanzar por el libro, aprenderás a:
 
-- importar y exportar datos en formatos y volúmenes distintos, incluidos archivos, páginas web y APIs;
+- importar y exportar datos en formatos y volúmenes distintos, incluidos archivos, bases de datos y APIs;
 - elegir estructuras adecuadas para representar y almacenar datos;
 - limpiar, transformar y explorar conjuntos de datos;
 - crear gráficos que comuniquen los resultados con claridad;
@@ -63,9 +79,7 @@ Al avanzar por el libro, aprenderás a:
 
 ## Ritmo de estudio
 
-El libro está pensado para avanzar en sesiones de aproximadamente dos horas. Puedes dedicar una parte de cada sesión a estudiar los conceptos y seguir los ejemplos, y otra parte a practicar modificando el código o resolviendo ejercicios.
-
-No es necesario completar un capítulo en una sola sesión. Es más útil avanzar a un ritmo que permita explicar con tus propias palabras qué hace cada paso y por qué.
+Cada capítulo tiene la extensión que su tema necesita, y no es necesario completarlo de una vez. Puedes dedicar una parte del tiempo a estudiar los conceptos y seguir los ejemplos, y otra a practicar modificando el código o resolviendo ejercicios. Es más útil avanzar a un ritmo que permita explicar con tus propias palabras qué hace cada paso y por qué.
 
 ## Ruta de trabajo sugerida
 

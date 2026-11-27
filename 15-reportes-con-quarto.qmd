@@ -11,7 +11,7 @@ Este libro está escrito así. Cada número de sus capítulos sale de un bloque 
 
 1. Quarto viene con Positron. Para comprobar que está disponible desde la terminal: `quarto --version`.
 2. Las plantillas del capítulo están en la carpeta `reportes/`, que tiene su propio `_quarto.yml`: es un proyecto de Quarto aparte, para que los reportes no hereden la configuración de este libro. Los reportes generados quedan en `reportes/salida/`.
-3. Para reportes en Python, Quarto usa Jupyter, y para pasarles parámetros necesita `papermill`: `uv pip install jupyter papermill`. Si Quarto no encuentra el Python del proyecto, se le indica con la variable de entorno `QUARTO_PYTHON`.
+3. Para reportes en Python, Quarto usa Jupyter, y para pasarles parámetros necesita `papermill`; los dos quedaron instalados en la @sec-instalar-paquetes. Si Quarto no encuentra el Python del proyecto, se le indica con la variable de entorno `QUARTO_PYTHON`.
 :::
 
 ```{r}
@@ -83,19 +83,35 @@ generar_reporte <- function(sucursal, mes = "2026-04", formato = "html") {
   salida <- sprintf("reporte_%s_%s.%s", sucursal, mes, extension)
   anterior <- setwd("reportes")
   on.exit(setwd(anterior))
-  estado <- system2(quarto, c("render", "reporte_entregas.qmd",
-                              "-P", paste0("sucursal:", sucursal),
-                              "-P", paste0("mes:", mes),
-                              "--to", formato, "--output", salida),
-                    stdout = FALSE, stderr = FALSE)
-  if (estado != 0) stop("no se pudo generar el reporte de ", sucursal, call. = FALSE)
+  estado <- system2(
+    quarto,
+    c(
+      "render",
+      "reporte_entregas.qmd",
+      "-P",
+      paste0("sucursal:", sucursal),
+      "-P",
+      paste0("mes:", mes),
+      "--to",
+      formato,
+      "--output",
+      salida
+    ),
+    stdout = FALSE,
+    stderr = FALSE
+  )
+  if (estado != 0) {
+    stop("no se pudo generar el reporte de ", sucursal, call. = FALSE)
+  }
   file.path("reportes", "salida", salida)
 }
 
 generados <- map_chr(c("S01", "S03", "S07"), generar_reporte)
 generados
 round(file.size(generados) / 1e6, 2)
-map_lgl(generados, \(archivo) any(grepl("Atención", readLines(archivo, warn = FALSE))))
+map_lgl(generados, \(archivo) {
+  any(grepl("Atención", readLines(archivo, warn = FALSE)))
+})
 ```
 
 `generar_reporte()` arma el comando de Quarto con los parámetros y lo ejecuta con `system2()`, como el flujo del @sec-flujos. Antes entra a la carpeta `reportes/`, porque Quarto debe ejecutarse desde la carpeta del proyecto del reporte: desde otra carpeta, con `embed-resources`, busca los archivos de apoyo en el lugar equivocado y falla. `setwd()` cambia la carpeta de trabajo y devuelve la anterior, y `on.exit()` la restablece al salir de la función, aunque haya un error: una función no debería dejar cambiado el estado de la sesión. Con `stdout = FALSE`, `system2()` devuelve el código de salida, y la función se detiene si el reporte no se generó: el mismo principio del código de salida que dice la verdad. `map_chr()` la aplica a cada sucursal y devuelve las rutas de los archivos generados. Aquí son tres para no alargar el capítulo; para todas, basta con `sort(unique(pedidos$sucursal))`.
@@ -111,15 +127,29 @@ import sys
 
 os.environ["QUARTO_PYTHON"] = sys.executable
 
+
 def generar_reporte(sucursal, mes="2026-04"):
     salida = f"reporte_py_{sucursal}_{mes}.html"
     resultado = subprocess.run(
-        ["quarto", "render", "reporte_entregas_py.qmd",
-         "-P", f"sucursal:{sucursal}", "-P", f"mes:{mes}", "--output", salida],
-        capture_output=True, text=True, cwd="reportes")
+        [
+            "quarto",
+            "render",
+            "reporte_entregas_py.qmd",
+            "-P",
+            f"sucursal:{sucursal}",
+            "-P",
+            f"mes:{mes}",
+            "--output",
+            salida,
+        ],
+        capture_output=True,
+        text=True,
+        cwd="reportes",
+    )
     if resultado.returncode != 0:
         raise RuntimeError(f"no se pudo generar el reporte de {sucursal}")
     return os.path.join("reportes", "salida", salida)
+
 
 generados = [generar_reporte(s) for s in ["S01", "S03"]]
 print(generados)
@@ -167,8 +197,10 @@ Para PDF, Quarto tiene dos caminos. El clásico usa LaTeX, un sistema de composi
 
 ```{r}
 #| label: reportes-formatos
-otros <- c(generar_reporte("S03", formato = "typst"),
-           generar_reporte("S03", formato = "docx"))
+otros <- c(
+  generar_reporte("S03", formato = "typst"),
+  generar_reporte("S03", formato = "docx")
+)
 data.frame(archivo = basename(otros), kb = round(file.size(otros) / 1e3))
 ```
 

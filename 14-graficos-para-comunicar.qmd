@@ -12,39 +12,81 @@ Este capítulo abre la última parte del libro, sobre comunicar. Retoma los grá
 ## Antes de empezar
 
 1. Este capítulo usa los pedidos de enero a abril y las funciones del flujo del @sec-flujos (`scripts/flujo_entregas.R` y `.py`), que leen, armonizan, validan y resumen los datos.
-2. En R usamos `ggplot2` y `scales`, y para combinar varios gráficos, `patchwork` y `cowplot`: `install.packages(c("patchwork", "cowplot"))`. En Python, `matplotlib` y `seaborn`, y `plotly` para el ejemplo interactivo: `uv pip install plotly`.
+2. En R usamos `ggplot2` y `scales`, y para combinar varios gráficos, `patchwork` y `cowplot`. En Python, `matplotlib` y `seaborn`, y `plotly` para el ejemplo interactivo. Todos quedaron instalados en la @sec-instalar-paquetes.
 3. DuckDB no tiene pestaña en este capítulo. Su papel, si los datos son grandes, es el de siempre: calcular la tabla pequeña que se va a graficar.
 :::
 
 ```{r}
 #| label: paquetes-cap14
 #| message: false
-use("dplyr", c("filter", "mutate", "summarise", "count", "n", "if_else", "tibble",
-               "arrange", "desc", "bind_rows"))
-use("ggplot2", c("ggplot", "aes", "geom_line", "geom_point", "geom_text", "geom_tile",
-                 "geom_segment", "annotate", "facet_wrap", "scale_x_date",
-                 "scale_y_continuous", "scale_size_area", "scale_fill_manual",
-                 "scale_color_manual", "labs", "theme_minimal", "theme", "theme_set",
-                 "element_blank", "element_text", "expansion", "coord_equal",
-                 "guides", "geom_col", "geom_histogram", "scale_x_continuous"))
+use(
+  "dplyr",
+  c(
+    "filter",
+    "mutate",
+    "summarise",
+    "count",
+    "n",
+    "if_else",
+    "tibble",
+    "arrange",
+    "desc",
+    "bind_rows"
+  )
+)
+use(
+  "ggplot2",
+  c(
+    "ggplot",
+    "aes",
+    "geom_line",
+    "geom_point",
+    "geom_text",
+    "geom_tile",
+    "geom_segment",
+    "annotate",
+    "facet_wrap",
+    "scale_x_date",
+    "scale_y_continuous",
+    "scale_size_area",
+    "scale_fill_manual",
+    "scale_color_manual",
+    "labs",
+    "theme_minimal",
+    "theme",
+    "theme_set",
+    "element_blank",
+    "element_text",
+    "expansion",
+    "coord_equal",
+    "guides",
+    "geom_col",
+    "geom_histogram",
+    "scale_x_continuous"
+  )
+)
 use("scales", "label_percent")
 use("patchwork", "plot_annotation")
 use("cowplot", "plot_grid")
 
 source("scripts/flujo_entregas.R")
-rutas <- c(list.files("datos/cap13/entregas", pattern = "\\.csv$", full.names = TRUE),
-           "datos/cap13/abril/entregas_2026_04.csv")
+rutas <- c(
+  list.files("datos/cap13/entregas", pattern = "\\.csv$", full.names = TRUE),
+  "datos/cap13/abril/entregas_2026_04.csv"
+)
 pedidos <- leer_crudo(rutas) |> armonizar() |> validar()
 a_domicilio <- filter(pedidos, canal != "retiro")
 indicadores <- resumir(pedidos) |> mutate(mes = as.Date(paste0(mes, "-01")))
 
 theme_set(
   theme_minimal(base_size = 12) +
-    theme(panel.grid.minor = element_blank(),
-          plot.title = element_text(face = "bold"),
-          plot.title.position = "plot",
-          plot.caption = element_text(hjust = 0, color = "grey40"),
-          plot.caption.position = "plot")
+    theme(
+      panel.grid.minor = element_blank(),
+      plot.title = element_text(face = "bold"),
+      plot.title.position = "plot",
+      plot.caption = element_text(hjust = 0, color = "grey40"),
+      plot.caption.position = "plot"
+    )
 )
 nrow(a_domicilio)
 ```
@@ -88,32 +130,69 @@ Ahora el gráfico que explica. Cada capa del código corresponde a una de las de
 #| fig-height: 4.2
 #| warning: false
 meses <- sort(unique(indicadores$mes))
-cali  <- filter(indicadores, sucursal == "S03")
+cali <- filter(indicadores, sucursal == "S03")
 resto <- filter(indicadores, sucursal != "S03")
 pocos <- filter(indicadores, pedidos < 10)
 
 ggplot(indicadores, aes(mes, pct_tardias, group = sucursal)) +
   geom_line(data = resto, color = "grey80") +
-  geom_point(data = pocos, shape = 21, fill = "white", color = "grey55", size = 2) +
+  geom_point(
+    data = pocos,
+    shape = 21,
+    fill = "white",
+    color = "grey55",
+    size = 2
+  ) +
   geom_line(data = cali, color = "black", linewidth = 1.3) +
   geom_point(data = cali, color = "black", size = 2) +
-  geom_text(data = filter(cali, mes == max(mes)), aes(label = "Cali (S03)"),
-            hjust = -0.15, fontface = "bold") +
-  geom_text(data = filter(resto, mes == max(mes), sucursal == "S01"),
-            aes(label = "las otras\nsiete sucursales"), hjust = -0.15, color = "grey45",
-            size = 3.3, lineheight = 0.9) +
-  annotate("text", x = meses[2] + 3, y = 51, hjust = 0, size = 3.2, color = "grey25",
-           label = "Dos clases de entrega: moto el mismo día\ny transportadora al día siguiente") +
-  annotate("text", x = meses[2] + 3, y = 25, hjust = 0, size = 3.2, color = "grey45",
-           label = "S07: 1 de 4 pedidos") +
-  scale_x_date(breaks = meses, labels = c("enero", "febrero", "marzo", "abril"),
-               expand = expansion(mult = c(0.03, 0.22))) +
+  geom_text(
+    data = filter(cali, mes == max(mes)),
+    aes(label = "Cali (S03)"),
+    hjust = -0.15,
+    fontface = "bold"
+  ) +
+  geom_text(
+    data = filter(resto, mes == max(mes), sucursal == "S01"),
+    aes(label = "las otras\nsiete sucursales"),
+    hjust = -0.15,
+    color = "grey45",
+    size = 3.3,
+    lineheight = 0.9
+  ) +
+  annotate(
+    "text",
+    x = meses[2] + 3,
+    y = 51,
+    hjust = 0,
+    size = 3.2,
+    color = "grey25",
+    label = "Dos clases de entrega: moto el mismo día\ny transportadora al día siguiente"
+  ) +
+  annotate(
+    "text",
+    x = meses[2] + 3,
+    y = 25,
+    hjust = 0,
+    size = 3.2,
+    color = "grey45",
+    label = "S07: 1 de 4 pedidos"
+  ) +
+  scale_x_date(
+    breaks = meses,
+    labels = c("enero", "febrero", "marzo", "abril"),
+    expand = expansion(mult = c(0.03, 0.22))
+  ) +
   scale_y_continuous(labels = label_percent(scale = 1), limits = c(0, 55)) +
-  labs(title = "Cali concentra las entregas tardías de la red",
-       subtitle = "% de entregas a domicilio que tardaron más de 20 horas",
-       x = NULL, y = NULL,
-       caption = sprintf("Fuente: flujo de entregas, enero a abril de 2026; %s pedidos a domicilio.",
-                         format(nrow(a_domicilio), big.mark = ".")))
+  labs(
+    title = "Cali concentra las entregas tardías de la red",
+    subtitle = "% de entregas a domicilio que tardaron más de 20 horas",
+    x = NULL,
+    y = NULL,
+    caption = sprintf(
+      "Fuente: flujo de entregas, enero a abril de 2026; %s pedidos a domicilio.",
+      format(nrow(a_domicilio), big.mark = ".")
+    )
+  )
 ```
 
 Lo que cambió, capa por capa:
@@ -136,7 +215,8 @@ import pandas as pd
 from scripts.flujo_entregas import leer_crudo, armonizar, validar, resumir
 
 rutas = sorted(str(p) for p in Path("datos/cap13/entregas").glob("*.csv")) + [
-    "datos/cap13/abril/entregas_2026_04.csv"]
+    "datos/cap13/abril/entregas_2026_04.csv"
+]
 pedidos = validar(armonizar(leer_crudo(rutas)))
 a_domicilio = pedidos[pedidos["canal"] != "retiro"]
 indicadores = resumir(pedidos)
@@ -148,20 +228,44 @@ for sucursal, d in indicadores.groupby("sucursal"):
         continue
     ax.plot(d["mes"], d["pct_tardias"], color="0.8", lw=1)
 pocos = indicadores[indicadores["pedidos"] < 10]
-ax.scatter(pocos["mes"], pocos["pct_tardias"], facecolor="white", edgecolor="0.55", zorder=3)
+ax.scatter(
+    pocos["mes"],
+    pocos["pct_tardias"],
+    facecolor="white",
+    edgecolor="0.55",
+    zorder=3,
+)
 cali = indicadores[indicadores["sucursal"] == "S03"]
 ax.plot(cali["mes"], cali["pct_tardias"], color="black", lw=2.5, marker="o")
-ax.annotate("Cali (S03)", (meses[-1], cali["pct_tardias"].iloc[-1]),
-            xytext=(8, 0), textcoords="offset points", va="center", weight="bold")
-ax.annotate("Dos clases de entrega: moto el mismo día\ny transportadora al día siguiente",
-            (1.1, 51), fontsize=9, color="0.25")
+ax.annotate(
+    "Cali (S03)",
+    (meses[-1], cali["pct_tardias"].iloc[-1]),
+    xytext=(8, 0),
+    textcoords="offset points",
+    va="center",
+    weight="bold",
+)
+ax.annotate(
+    "Dos clases de entrega: moto el mismo día\ny transportadora al día siguiente",
+    (1.1, 51),
+    fontsize=9,
+    color="0.25",
+)
 ax.set_xticks(range(4), ["enero", "febrero", "marzo", "abril"])
 ax.set_ylim(0, 55)
 ax.yaxis.set_major_formatter(lambda v, _: f"{v:.0f} %")
 ax.spines[["top", "right"]].set_visible(False)
-ax.set_title("Cali concentra las entregas tardías de la red", loc="left", weight="bold")
-fig.text(0.01, 0.01, f"Fuente: flujo de entregas, enero a abril de 2026; "
-         f"{len(a_domicilio):,} pedidos a domicilio.".replace(",", "."), color="0.4", fontsize=9)
+ax.set_title(
+    "Cali concentra las entregas tardías de la red", loc="left", weight="bold"
+)
+fig.text(
+    0.01,
+    0.01,
+    f"Fuente: flujo de entregas, enero a abril de 2026; "
+    f"{len(a_domicilio):,} pedidos a domicilio.".replace(",", "."),
+    color="0.4",
+    fontsize=9,
+)
 plt.show()
 print(len(a_domicilio), cali["pct_tardias"].tolist())
 ```
@@ -203,29 +307,54 @@ En el @sec-explorar descubrimos que Cali tiene dos clases de entrega. Para quien
 #| fig-alt: "Ocho puntos, uno por sucursal, con la mediana de horas en el eje horizontal y el porcentaje de entregas tardías en el vertical. Seis sucursales forman un grupo sin etiquetas individuales, entre 9 y 11 horas de mediana y entre 1 y 5 % de tardías, con la nota las otras seis sucursales. S07 está a la derecha, con 13 horas, y es un punto pequeño porque tiene pocos pedidos. Cali, S03, está sola en la esquina superior izquierda: unas 5 horas de mediana y 37 % de tardías. Una anotación explica que la mitad de sus pedidos llega en menos de 5 horas y más de un tercio después de 20."
 #| fig-height: 4.2
 por_sucursal <- a_domicilio |>
-  summarise(pedidos     = n(),
-            mediana     = median(tiempo_entrega_h),
-            pct_tardias = 100 * mean(tiempo_entrega_h > 20),
-            .by = sucursal) |>
+  summarise(
+    pedidos = n(),
+    mediana = median(tiempo_entrega_h),
+    pct_tardias = 100 * mean(tiempo_entrega_h > 20),
+    .by = sucursal
+  ) |>
   mutate(es_cali = sucursal == "S03")
 
 ggplot(por_sucursal, aes(mediana, pct_tardias)) +
   geom_point(aes(size = pedidos, color = es_cali)) +
-  geom_text(data = filter(por_sucursal, sucursal %in% c("S03", "S07")),
-            aes(label = sucursal, color = es_cali), vjust = -1.2, size = 3.3) +
-  annotate("text", x = 10, y = 10, size = 3.2, color = "grey45",
-           label = "las otras seis sucursales") +
-  annotate("text", x = 6.2, y = 33, hjust = 0, size = 3.2, color = "grey25",
-           label = paste("La mitad de sus pedidos llega en menos de 5 horas,",
-                         "pero más de un tercio tarda más de 20:",
-                         "la mediana no ve la segunda mitad.", sep = "\n")) +
+  geom_text(
+    data = filter(por_sucursal, sucursal %in% c("S03", "S07")),
+    aes(label = sucursal, color = es_cali),
+    vjust = -1.2,
+    size = 3.3
+  ) +
+  annotate(
+    "text",
+    x = 10,
+    y = 10,
+    size = 3.2,
+    color = "grey45",
+    label = "las otras seis sucursales"
+  ) +
+  annotate(
+    "text",
+    x = 6.2,
+    y = 33,
+    hjust = 0,
+    size = 3.2,
+    color = "grey25",
+    label = paste(
+      "La mitad de sus pedidos llega en menos de 5 horas,",
+      "pero más de un tercio tarda más de 20:",
+      "la mediana no ve la segunda mitad.",
+      sep = "\n"
+    )
+  ) +
   scale_color_manual(values = c("grey60", "black"), guide = "none") +
   scale_size_area(max_size = 6, guide = "none") +
   scale_y_continuous(labels = label_percent(scale = 1), limits = c(0, 45)) +
-  labs(title = "La sucursal más rápida es también la más tardía",
-       subtitle = "Mediana de horas de entrega y % de entregas de más de 20 horas, por sucursal",
-       x = "mediana de horas de entrega", y = NULL,
-       caption = "El tamaño de cada punto es proporcional al número de pedidos. Enero a abril de 2026.")
+  labs(
+    title = "La sucursal más rápida es también la más tardía",
+    subtitle = "Mediana de horas de entrega y % de entregas de más de 20 horas, por sucursal",
+    x = "mediana de horas de entrega",
+    y = NULL,
+    caption = "El tamaño de cada punto es proporcional al número de pedidos. Enero a abril de 2026."
+  )
 ```
 
 Solo dos puntos llevan etiqueta: Cali, que es el mensaje, y `S07`, que es la excepción que el lector preguntaría; las otras seis van juntas, con un solo nombre. Etiquetar todo habría montado los nombres unos sobre otros y le habría dado a cada sucursal la misma importancia. El diagrama de dispersión deja ver la paradoja sin explicarla: Cali está sola, en la esquina donde no debería estar nadie. La anotación da la explicación en una frase, sin las palabras "bimodal" ni "distribución": la mitad de los pedidos llega rápido y otra buena parte llega muy tarde, y la mediana, que es el valor del medio, no ve lo que pasa en la segunda mitad. Es el mismo hallazgo del violín del @sec-explorar, traducido para un lector que no lo necesita ver.
@@ -235,23 +364,43 @@ El tamaño de los puntos dice cuántos pedidos tiene cada sucursal, y por eso `S
 ### Python
 
 ```python
-por_sucursal = (a_domicilio.groupby("sucursal", as_index=False)
-                .agg(pedidos=("pedido", "size"),
-                     mediana=("tiempo_entrega_h", "median"),
-                     pct_tardias=("tiempo_entrega_h", lambda x: 100 * (x > 20).mean())))
+por_sucursal = a_domicilio.groupby("sucursal", as_index=False).agg(
+    pedidos=("pedido", "size"),
+    mediana=("tiempo_entrega_h", "median"),
+    pct_tardias=("tiempo_entrega_h", lambda x: 100 * (x > 20).mean()),
+)
 colores = ["black" if s == "S03" else "0.6" for s in por_sucursal["sucursal"]]
 
 fig, ax = plt.subplots(figsize=(8, 4.2))
-ax.scatter(por_sucursal["mediana"], por_sucursal["pct_tardias"],
-           s=por_sucursal["pedidos"] / 2, c=colores)
+ax.scatter(
+    por_sucursal["mediana"],
+    por_sucursal["pct_tardias"],
+    s=por_sucursal["pedidos"] / 2,
+    c=colores,
+)
 for _, fila in por_sucursal.iterrows():
-    ax.annotate(fila["sucursal"], (fila["mediana"], fila["pct_tardias"]),
-                xytext=(0, 8), textcoords="offset points", ha="center", fontsize=9)
-ax.set_title("La sucursal más rápida es también la más tardía", loc="left", weight="bold")
+    ax.annotate(
+        fila["sucursal"],
+        (fila["mediana"], fila["pct_tardias"]),
+        xytext=(0, 8),
+        textcoords="offset points",
+        ha="center",
+        fontsize=9,
+    )
+ax.set_title(
+    "La sucursal más rápida es también la más tardía",
+    loc="left",
+    weight="bold",
+)
 ax.set_xlabel("mediana de horas de entrega")
 ax.spines[["top", "right"]].set_visible(False)
 plt.show()
-print(por_sucursal.round(1).sort_values("pct_tardias", ascending=False).head(3).to_string(index=False))
+print(
+    por_sucursal.round(1)
+    .sort_values("pct_tardias", ascending=False)
+    .head(3)
+    .to_string(index=False)
+)
 ```
 
 ```text
@@ -280,28 +429,42 @@ El tercer mensaje es una proporción: de todas las entregas tardías de la red, 
 #| fig-height: 3.8
 cuadricula <- function(proporcion_cali, panel) {
   negros <- round(100 * proporcion_cali)
-  tibble(panel = panel, i = 1:100,
-         x = (i - 1) %% 10, y = (i - 1) %/% 10,
-         grupo = rep(c("Cali", "resto"), c(negros, 100 - negros)))
+  tibble(
+    panel = panel,
+    i = 1:100,
+    x = (i - 1) %% 10,
+    y = (i - 1) %/% 10,
+    grupo = rep(c("Cali", "resto"), c(negros, 100 - negros))
+  )
 }
 
 tardias <- filter(a_domicilio, tiempo_entrega_h > 20)
-proporciones <- c(pedidos = mean(a_domicilio$sucursal == "S03"),
-                  tardias = mean(tardias$sucursal == "S03"))
+proporciones <- c(
+  pedidos = mean(a_domicilio$sucursal == "S03"),
+  tardias = mean(tardias$sucursal == "S03")
+)
 round(100 * proporciones)
 
 paneles <- c("De los pedidos a domicilio", "De las entregas tardías")
-bind_rows(cuadricula(proporciones[["pedidos"]], paneles[1]),
-          cuadricula(proporciones[["tardias"]], paneles[2])) |>
+bind_rows(
+  cuadricula(proporciones[["pedidos"]], paneles[1]),
+  cuadricula(proporciones[["tardias"]], paneles[2])
+) |>
   mutate(panel = factor(panel, levels = paneles)) |>
   ggplot(aes(x, y, fill = grupo)) +
   geom_tile(color = "white", linewidth = 1.2) +
-  facet_wrap(~ panel) +
+  facet_wrap(~panel) +
   coord_equal() +
-  scale_fill_manual(values = c(Cali = "black", resto = "grey85"), guide = "none") +
-  labs(title = "Cali hace uno de cada siete pedidos,\npero dos de cada tres entregas tardías",
-       subtitle = "Cada cuadro es el 1 %; en negro, la parte de Cali (S03)",
-       x = NULL, y = NULL) +
+  scale_fill_manual(
+    values = c(Cali = "black", resto = "grey85"),
+    guide = "none"
+  ) +
+  labs(
+    title = "Cali hace uno de cada siete pedidos,\npero dos de cada tres entregas tardías",
+    subtitle = "Cada cuadro es el 1 %; en negro, la parte de Cali (S03)",
+    x = NULL,
+    y = NULL
+  ) +
   theme(axis.text = element_blank(), panel.grid = element_blank())
 ```
 
@@ -313,19 +476,32 @@ La cuadrícula es una función de diez líneas: cien filas con su posición (`x`
 import numpy as np
 
 tardias = a_domicilio[a_domicilio["tiempo_entrega_h"] > 20]
-proporciones = {"De los pedidos a domicilio": (a_domicilio["sucursal"] == "S03").mean(),
-                "De las entregas tardías": (tardias["sucursal"] == "S03").mean()}
+proporciones = {
+    "De los pedidos a domicilio": (a_domicilio["sucursal"] == "S03").mean(),
+    "De las entregas tardías": (tardias["sucursal"] == "S03").mean(),
+}
 
 fig, ejes = plt.subplots(1, 2, figsize=(8, 3.8))
 for ax, (titulo, p) in zip(ejes, proporciones.items()):
     negros = round(100 * p)
     cuadros = np.array([1] * negros + [0] * (100 - negros)).reshape(10, 10)
-    ax.pcolormesh(cuadros, cmap="Greys", vmin=-0.2, vmax=1, edgecolors="white", linewidth=2)
+    ax.pcolormesh(
+        cuadros,
+        cmap="Greys",
+        vmin=-0.2,
+        vmax=1,
+        edgecolors="white",
+        linewidth=2,
+    )
     ax.set_aspect("equal")
     ax.set_axis_off()
     ax.set_title(titulo, fontsize=10)
-fig.suptitle("Cali hace uno de cada siete pedidos,\npero dos de cada tres entregas tardías",
-             x=0.02, ha="left", weight="bold")
+fig.suptitle(
+    "Cali hace uno de cada siete pedidos,\npero dos de cada tres entregas tardías",
+    x=0.02,
+    ha="left",
+    weight="bold",
+)
 plt.show()
 print({k: round(100 * v) for k, v in proporciones.items()})
 ```
@@ -410,13 +586,21 @@ Con esa regla se combinan las estéticas. En este gráfico de barras, el relleno
 porcentaje <- \(x) paste0(format(round(x, 1), decimal.mark = ","), " %")
 
 ggplot(por_sucursal, aes(x = pct_tardias, y = reorder(sucursal, pct_tardias))) +
-  geom_col(aes(fill = es_cali), colour = "black", linewidth = 0.3, width = 0.7,
-           alpha = 0.9) +
+  geom_col(
+    aes(fill = es_cali),
+    colour = "black",
+    linewidth = 0.3,
+    width = 0.7,
+    alpha = 0.9
+  ) +
   geom_text(aes(label = porcentaje(pct_tardias)), hjust = -0.15, size = 3.3) +
   scale_fill_manual(values = c("grey85", "black"), guide = "none") +
   scale_x_continuous(expand = expansion(mult = c(0, 0.15))) +
-  labs(title = "Cali tiene siete veces más entregas tardías que S01, la sucursal más grande",
-       x = "% de entregas de más de 20 horas", y = NULL)
+  labs(
+    title = "Cali tiene siete veces más entregas tardías que S01, la sucursal más grande",
+    x = "% de entregas de más de 20 horas",
+    y = NULL
+  )
 ```
 
 El título compara a Cali con `S01` y no con la sucursal que le sigue en la lista, `S07`, porque el 10 % de `S07` sale de 10 pedidos: compararse con una cifra frágil sería el error del @sec-de-trabajo-a-explicativo, repetido en el título. `porcentaje()` escribe los valores con coma decimal, como el resto del libro.
@@ -427,13 +611,25 @@ El título compara a Cali con `S01` y no con la sucursal que le sigue en la list
 
 ```python
 fig, ejes = plt.subplots(1, 2, figsize=(9, 3))
-ejes[0].scatter(por_sucursal["mediana"], por_sucursal["pct_tardias"],
-                c=["black" if s == "S03" else "0.7" for s in por_sucursal["sucursal"]],
-                s=60, alpha=0.8, marker="o", edgecolors="black", linewidths=0.5)
+ejes[0].scatter(
+    por_sucursal["mediana"],
+    por_sucursal["pct_tardias"],
+    c=["black" if s == "S03" else "0.7" for s in por_sucursal["sucursal"]],
+    s=60,
+    alpha=0.8,
+    marker="o",
+    edgecolors="black",
+    linewidths=0.5,
+)
 orden = por_sucursal.sort_values("pct_tardias")
-ejes[1].barh(orden["sucursal"], orden["pct_tardias"],
-             color=["black" if s == "S03" else "0.85" for s in orden["sucursal"]],
-             edgecolor="black", linewidth=0.3, height=0.7)
+ejes[1].barh(
+    orden["sucursal"],
+    orden["pct_tardias"],
+    color=["black" if s == "S03" else "0.85" for s in orden["sucursal"]],
+    edgecolor="black",
+    linewidth=0.3,
+    height=0.7,
+)
 plt.show()
 pct = orden.set_index("sucursal")["pct_tardias"]
 print(round(pct["S03"] / pct["S01"], 1))
@@ -460,7 +656,12 @@ La tipografía es parte del tema, y se cambia con `theme(text = element_text(fam
 muestra <- function(fuente) {
   ggplot(por_sucursal, aes(pct_tardias, reorder(sucursal, pct_tardias))) +
     geom_col(fill = "grey60", width = 0.6) +
-    labs(title = fuente, subtitle = "% de entregas tardías", x = NULL, y = NULL) +
+    labs(
+      title = fuente,
+      subtitle = "% de entregas tardías",
+      x = NULL,
+      y = NULL
+    ) +
     theme(text = element_text(family = fuente), axis.text.y = element_blank())
 }
 muestra("Segoe UI") | muestra("Bahnschrift") | muestra("Georgia")
@@ -499,24 +700,40 @@ Armamos en una sola figura el resumen de este capítulo: la evolución de las en
 p_tiempo <- ggplot(indicadores, aes(mes, pct_tardias, group = sucursal)) +
   geom_line(data = resto, color = "grey80") +
   geom_line(data = cali, linewidth = 1.2) +
-  scale_x_date(breaks = meses, labels = c("enero", "febrero", "marzo", "abril")) +
-  labs(subtitle = "% de entregas tardías por mes; Cali en negro", x = NULL, y = NULL)
+  scale_x_date(
+    breaks = meses,
+    labels = c("enero", "febrero", "marzo", "abril")
+  ) +
+  labs(
+    subtitle = "% de entregas tardías por mes; Cali en negro",
+    x = NULL,
+    y = NULL
+  )
 
 p_paradoja <- ggplot(por_sucursal, aes(mediana, pct_tardias, color = es_cali)) +
   geom_point(aes(size = pedidos)) +
   scale_color_manual(values = c("grey60", "black"), guide = "none") +
   scale_size_area(max_size = 5, guide = "none") +
-  labs(subtitle = "Mediana de horas y % de tardías", x = "mediana (horas)", y = NULL)
+  labs(
+    subtitle = "Mediana de horas y % de tardías",
+    x = "mediana (horas)",
+    y = NULL
+  )
 
-p_cali <- ggplot(filter(a_domicilio, sucursal == "S03"), aes(tiempo_entrega_h)) +
+p_cali <- ggplot(
+  filter(a_domicilio, sucursal == "S03"),
+  aes(tiempo_entrega_h)
+) +
   geom_histogram(binwidth = 2, boundary = 0, fill = "grey30") +
   labs(subtitle = "Tiempos de entrega de Cali", x = "horas", y = NULL)
 
-p_tiempo / (p_paradoja | p_cali) +
+p_tiempo /
+  (p_paradoja | p_cali) +
   plot_annotation(
     title = "Cali concentra las entregas tardías porque tiene dos clases de entrega",
     caption = "Fuente: flujo de entregas, enero a abril de 2026.",
-    tag_levels = "A")
+    tag_levels = "A"
+  )
 ```
 
 `/` pone un gráfico encima de otro y `|` uno al lado del otro, y los paréntesis agrupan, como en una operación aritmética: la figura es "el gráfico del tiempo, encima de (la paradoja al lado de la distribución)". `plot_annotation()` agrega un título y una fuente para toda la lámina, y `tag_levels = "A"` etiqueta cada gráfico con una letra, para poder decir "como muestra el panel C". `patchwork` alinea los ejes y los márgenes de los gráficos por su cuenta.
@@ -526,9 +743,12 @@ Con `cowplot`, la misma lámina se arma con `plot_grid()`, que recibe los gráfi
 ```{r}
 #| label: lamina-cowplot
 #| eval: false
-plot_grid(p_tiempo,
-          plot_grid(p_paradoja, p_cali, ncol = 2, labels = c("B", "C")),
-          ncol = 1, labels = c("A", ""))
+plot_grid(
+  p_tiempo,
+  plot_grid(p_paradoja, p_cali, ncol = 2, labels = c("B", "C")),
+  ncol = 1,
+  labels = c("A", "")
+)
 ```
 
 `lattice` es otra cosa: un sistema de gráficos distinto de `ggplot2`, más antiguo, que viene instalado con R. Su idea central son los **gráficos enrejados** (*trellis*): un gráfico por grupo, declarado con una fórmula. Vale la pena conocerlo porque aparece en código de muchos años y porque, para ciertos gráficos por grupos, es muy breve:
@@ -538,8 +758,15 @@ plot_grid(p_tiempo,
 #| fig-cap: "Un gráfico enrejado de lattice: una fórmula, un panel por sucursal."
 #| fig-alt: "Ocho paneles pequeños, uno por sucursal, con el porcentaje de entregas tardías de enero a abril como puntos unidos por líneas. El panel de S03 está muy por encima de los demás."
 #| fig-height: 3.6
-lattice::xyplot(pct_tardias ~ mes | sucursal, data = indicadores, type = "b",
-                layout = c(4, 2), col = "black", xlab = NULL, ylab = "% tardías")
+lattice::xyplot(
+  pct_tardias ~ mes | sucursal,
+  data = indicadores,
+  type = "b",
+  layout = c(4, 2),
+  col = "black",
+  xlab = NULL,
+  ylab = "% tardías"
+)
 ```
 
 La fórmula `pct_tardias ~ mes | sucursal` se lee "el porcentaje según el mes, para cada sucursal": la barra vertical `|` hace lo mismo que `facet_wrap()`. `type = "b"` dibuja puntos y líneas (*both*). Para gráficos nuevos, `ggplot2` es la opción más completa; `lattice` sigue siendo útil para entender código antiguo y para gráficos rápidos por grupos.
@@ -547,19 +774,32 @@ La fórmula `pct_tardias ~ mes | sucursal` se lee "el porcentaje según el mes, 
 ### Python
 
 ```python
-tardias_cali = a_domicilio.loc[a_domicilio["sucursal"] == "S03", "tiempo_entrega_h"]
+tardias_cali = a_domicilio.loc[
+    a_domicilio["sucursal"] == "S03", "tiempo_entrega_h"
+]
 
 fig, ejes = plt.subplot_mosaic("AA;BC", figsize=(9, 6.5), layout="constrained")
 for s, d in indicadores.groupby("sucursal"):
-    ejes["A"].plot(d["mes"], d["pct_tardias"], color="black" if s == "S03" else "0.8",
-                   lw=2.5 if s == "S03" else 1)
-ejes["B"].scatter(por_sucursal["mediana"], por_sucursal["pct_tardias"],
-                  c=["black" if s == "S03" else "0.6" for s in por_sucursal["sucursal"]])
+    ejes["A"].plot(
+        d["mes"],
+        d["pct_tardias"],
+        color="black" if s == "S03" else "0.8",
+        lw=2.5 if s == "S03" else 1,
+    )
+ejes["B"].scatter(
+    por_sucursal["mediana"],
+    por_sucursal["pct_tardias"],
+    c=["black" if s == "S03" else "0.6" for s in por_sucursal["sucursal"]],
+)
 ejes["C"].hist(tardias_cali, bins=range(0, 36, 2), color="0.3")
 for letra, ax in ejes.items():
     ax.set_title(letra, loc="left", weight="bold")
-fig.suptitle("Cali concentra las entregas tardías porque tiene dos clases de entrega",
-             x=0.01, ha="left", weight="bold")
+fig.suptitle(
+    "Cali concentra las entregas tardías porque tiene dos clases de entrega",
+    x=0.01,
+    ha="left",
+    weight="bold",
+)
 plt.show()
 print(sorted(ejes))
 ```
@@ -642,15 +882,25 @@ En Python, la biblioteca más usada para gráficos interactivos es `plotly`:
 ```python
 import plotly.express as px
 
-figura = px.line(indicadores, x="mes", y="pct_tardias", color="sucursal",
-                 markers=True, hover_data=["pedidos"],
-                 color_discrete_map={s: "black" if s == "S03" else "lightgray"
-                                     for s in indicadores["sucursal"].unique()},
-                 labels={"pct_tardias": "% de entregas tardías", "mes": ""},
-                 title="Cali concentra las entregas tardías de la red")
+figura = px.line(
+    indicadores,
+    x="mes",
+    y="pct_tardias",
+    color="sucursal",
+    markers=True,
+    hover_data=["pedidos"],
+    color_discrete_map={
+        s: "black" if s == "S03" else "lightgray"
+        for s in indicadores["sucursal"].unique()
+    },
+    labels={"pct_tardias": "% de entregas tardías", "mes": ""},
+    title="Cali concentra las entregas tardías de la red",
+)
 figura.update_layout(template="simple_white", showlegend=True)
 Path("datos/cap13/salida").mkdir(parents=True, exist_ok=True)
-figura.write_html("datos/cap13/salida/tardias_interactivo.html", include_plotlyjs="cdn")
+figura.write_html(
+    "datos/cap13/salida/tardias_interactivo.html", include_plotlyjs="cdn"
+)
 print(len(figura.data), "series")
 ```
 
@@ -682,22 +932,31 @@ En el @sec-explorar vimos que las entregas tardías reciben peor calificación. 
 calificaciones <- a_domicilio |>
   filter(!is.na(calificacion)) |>
   mutate(entrega = if_else(tiempo_entrega_h > 20, "tardía", "a tiempo")) |>
-  summarise(calificacion = mean(calificacion), respuestas = n(),
-            .by = c(sucursal, entrega))
+  summarise(
+    calificacion = mean(calificacion),
+    respuestas = n(),
+    .by = c(sucursal, entrega)
+  )
 
-ggplot(calificaciones, aes(...)) +                       # TODO
-  geom_segment(...) +                                    # TODO
-  geom_point(...) +                                      # TODO
-  labs(title = "...")                                    # TODO: el mensaje
+ggplot(calificaciones, aes(...)) + # TODO
+  geom_segment(...) + # TODO
+  geom_point(...) + # TODO
+  labs(title = "...") # TODO: el mensaje
 ```
 
 ### Python
 
 ```python
-calificaciones = (a_domicilio.dropna(subset=["calificacion"])
-                  .assign(entrega=lambda d: np.where(d["tiempo_entrega_h"] > 20, "tardía", "a tiempo"))
-                  .groupby(["sucursal", "entrega"], as_index=False)
-                  .agg(calificacion=("calificacion", "mean"), respuestas=("pedido", "size")))
+calificaciones = (
+    a_domicilio.dropna(subset=["calificacion"])
+    .assign(
+        entrega=lambda d: np.where(
+            d["tiempo_entrega_h"] > 20, "tardía", "a tiempo"
+        )
+    )
+    .groupby(["sucursal", "entrega"], as_index=False)
+    .agg(calificacion=("calificacion", "mean"), respuestas=("pedido", "size"))
+)
 # TODO: fig, ax = plt.subplots(); ax.hlines(...); ax.scatter(...)
 ```
 

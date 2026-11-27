@@ -6,7 +6,7 @@ Lo haremos con dos preguntas. La primera es **qué clase de valor guarda cada co
 
 La regla del capítulo es **medir antes de corregir**. Aquí vamos a perfilar la tabla, escribir reglas de calidad, contar cuántas filas falla cada una y marcar cada fila con sus problemas. Corregir es el tema del @sec-limpiar, después de reunir en el @sec-transformar las herramientas para hacerlo, y se hace mejor cuando se sabe exactamente qué está mal, cuántas veces y con qué gravedad.
 
-Seguimos con la misma red regional de distribución, ahora con la cartera completa del primer trimestre de 2026. Los archivos están en la carpeta `datos/cap06/` del repositorio de materiales. Como los anteriores, el capítulo está pensado para una sesión de unas dos horas.
+Seguimos con la misma red regional de distribución, ahora con la cartera completa del primer trimestre de 2026. Los archivos están en la carpeta `datos/cap06/` del repositorio de materiales.
 
 ::: {.callout-tip}
 ## Antes de empezar
@@ -22,8 +22,22 @@ Declaramos las funciones de R que usaremos y abrimos una conexión a DuckDB.
 #| label: paquetes-cap06
 #| message: false
 use("arrow", c("read_parquet", "write_parquet"))
-use("dplyr", c("mutate", "filter", "select", "count", "distinct", "anti_join",
-               "left_join", "group_by", "summarise", "na_if", "tribble"))
+use(
+  "dplyr",
+  c(
+    "mutate",
+    "filter",
+    "select",
+    "count",
+    "distinct",
+    "anti_join",
+    "left_join",
+    "group_by",
+    "summarise",
+    "na_if",
+    "tribble"
+  )
+)
 use("DBI", c("dbConnect", "dbGetQuery", "dbExecute", "dbDisconnect"))
 use("duckdb", "duckdb")
 
@@ -134,9 +148,12 @@ Otra opción es leer con `pd.read_parquet(ruta_cartera, dtype_backend="pyarrow")
 
 ```{r}
 #| label: tipos-duckdb
-dbGetQuery(con, r"(
+dbGetQuery(
+  con,
+  r"(
   DESCRIBE SELECT * FROM 'datos/cap06/cartera_2026_t1.parquet'
-)")[, c("column_name", "column_type")]
+)"
+)[, c("column_name", "column_type")]
 ```
 
 DuckDB lee los tipos tal como están en el archivo: `DATE`, `INTEGER` con sus `NULL` y `TIMESTAMP WITH TIME ZONE`, el nombre largo de `TIMESTAMPTZ`.
@@ -172,7 +189,7 @@ as.integer("3.7")
 texto <- c("12", "3,5", "1.200", "", NA)
 numeros <- suppressWarnings(as.numeric(texto))
 numeros
-sum(is.na(numeros)) - sum(is.na(texto))   # faltantes nuevos
+sum(is.na(numeros)) - sum(is.na(texto)) # faltantes nuevos
 ```
 
 La cuenta detecta dos valores que no se pudieron convertir: `"3,5"`, por la coma decimal, y el texto vacío. Pero no detecta el caso más grave: `"1.200"`, que alguien escribió como mil doscientos, se convirtió en `1.2` sin error y sin faltante. Contar los faltantes es necesario, pero no suficiente; para atrapar valores que se convierten mal hacen falta reglas de rango, como las que veremos en la parte de calidad. Y, desde luego, el remedio de fondo es el del @sec-limpieza-temprana: declarar el formato numérico al leer.
@@ -213,11 +230,14 @@ Faltantes nuevos: 2
 
 ```{r}
 #| label: coercion-duckdb
-dbGetQuery(con, r"(
+dbGetQuery(
+  con,
+  r"(
   SELECT CAST('3.7' AS INTEGER)       AS redondea,
          TRY_CAST('12a' AS INTEGER)   AS sin_error,
          typeof([1, 2.5])             AS lista_mixta
-)")
+)"
+)
 ```
 
 DuckDB, a diferencia de R, **redondea** `'3.7'` a 4. Ante una mezcla de entero y decimal busca un tipo común (aquí, una lista de `DECIMAL`). Y cuando la conversión no es posible, prefiere fallar:
@@ -271,11 +291,14 @@ True
 
 ```{r}
 #| label: numeros-duckdb
-dbGetQuery(con, r"(
+dbGetQuery(
+  con,
+  r"(
   SELECT 0.1 + 0.2 = 0.3                               AS como_decimal,
          0.1::DOUBLE + 0.2::DOUBLE = 0.3::DOUBLE       AS como_doble,
          typeof(0.1)                                   AS tipo_del_literal
-)")
+)"
+)
 ```
 
 Una curiosidad: en DuckDB, `0.1 + 0.2 = 0.3` es **verdadero**, porque un número escrito con decimales en la consulta se interpreta como `DECIMAL`, un tipo exacto. Con `DOUBLE` aparece el mismo error de las otras herramientas.
@@ -321,7 +344,11 @@ Primero, la memoria. Comparamos un millón de ciudades como texto y como factor:
 
 ```{r}
 #| label: factor-memoria
-ciudades <- sample(c("Bogotá", "Cali", "Medellín", "Pasto"), 1e6, replace = TRUE)
+ciudades <- sample(
+  c("Bogotá", "Cali", "Medellín", "Pasto"),
+  1e6,
+  replace = TRUE
+)
 format(object.size(ciudades), units = "Mb")
 format(object.size(factor(ciudades)), units = "Mb")
 ```
@@ -345,7 +372,9 @@ count(cartera[fuera, ], ciudad)
 
 ```python
 rng = np.random.default_rng(2026)
-ciudades = pd.Series(rng.choice(["Bogotá", "Cali", "Medellín", "Pasto"], 1_000_000))
+ciudades = pd.Series(
+    rng.choice(["Bogotá", "Cali", "Medellín", "Pasto"], 1_000_000)
+)
 print(round(ciudades.memory_usage(deep=True) / 1e6, 1))
 print(round(ciudades.astype("category").memory_usage(deep=True) / 1e6, 1))
 ```
@@ -379,20 +408,26 @@ En versiones anteriores, `astype(pd.CategoricalDtype(catalogo))` convertía en s
 
 ```{r}
 #| label: enum-duckdb
-dbExecute(con, r"(
+dbExecute(
+  con,
+  r"(
   CREATE TYPE ciudad_valida AS ENUM (
     SELECT DISTINCT ciudad FROM 'datos/cap06/clientes.parquet' ORDER BY ciudad
   )
-)")
+)"
+)
 
-dbGetQuery(con, r"(
+dbGetQuery(
+  con,
+  r"(
   SELECT ciudad, count(*) AS facturas
   FROM 'datos/cap06/cartera_2026_t1.parquet'
   WHERE ciudad IS NOT NULL
     AND TRY_CAST(ciudad AS ciudad_valida) IS NULL
   GROUP BY ciudad
   ORDER BY facturas DESC
-)")
+)"
+)
 ```
 
 `CREATE TYPE ... AS ENUM` crea un tipo nuevo cuyos valores salen de una consulta. Convertir `'BOGOTA'` a ese tipo con `CAST` da un error; con `TRY_CAST`, un `NULL` que nos permite encontrar las filas fuera del catálogo.
@@ -466,13 +501,19 @@ dtype: int64
 
 ```{r}
 #| label: perfil-duckdb
-dbExecute(con, r"(CREATE VIEW cartera AS FROM 'datos/cap06/cartera_2026_t1.parquet')")
+dbExecute(
+  con,
+  r"(CREATE VIEW cartera AS FROM 'datos/cap06/cartera_2026_t1.parquet')"
+)
 dbExecute(con, r"(CREATE VIEW clientes AS FROM 'datos/cap06/clientes.parquet')")
 
-dbGetQuery(con, r"(
+dbGetQuery(
+  con,
+  r"(
   SELECT column_name, min, max, approx_unique, null_percentage
   FROM (SUMMARIZE cartera)
-)")
+)"
+)
 ```
 
 Una **vista** (`CREATE VIEW`) le da un nombre a una consulta, sin copiar los datos: desde aquí, `cartera` y `clientes` leen los archivos Parquet cada vez que se usan. DuckDB permite empezar una consulta por `FROM` cuando se quieren todas las columnas. `SUMMARIZE` ya lo conocíamos de la @sec-columnas-vacias; `approx_unique` es una estimación rápida del número de valores distintos, no un conteo exacto.
@@ -505,8 +546,8 @@ La unicidad tiene dos niveles. Una **fila repetida** es idéntica a otra en toda
 #| label: unicidad-r
 colSums(is.na(cartera))
 
-sum(duplicated(cartera))            # filas idénticas a una anterior
-sum(duplicated(cartera$factura))    # facturas que ya habían aparecido
+sum(duplicated(cartera)) # filas idénticas a una anterior
+sum(duplicated(cartera$factura)) # facturas que ya habían aparecido
 
 versiones <- cartera |>
   distinct() |>
@@ -549,14 +590,19 @@ Facturas repetidas: 6
 
 ```{r}
 #| label: unicidad-duckdb
-dbGetQuery(con, r"(
+dbGetQuery(
+  con,
+  r"(
   SELECT count(*)                           AS filas,
          count(DISTINCT factura)            AS facturas,
          count(*) - count(DISTINCT factura) AS sobrantes
   FROM cartera
-)")
+)"
+)
 
-dbGetQuery(con, r"(
+dbGetQuery(
+  con,
+  r"(
   SELECT factura,
          count(*)                      AS filas,
          count(DISTINCT valor_factura) AS valores_distintos
@@ -564,7 +610,8 @@ dbGetQuery(con, r"(
   GROUP BY factura
   HAVING count(*) > 1
   ORDER BY valores_distintos DESC, factura
-)")
+)"
+)
 ```
 
 Las facturas con un solo valor distinto son filas copiadas; las que tienen dos son versiones en conflicto.
@@ -582,15 +629,18 @@ Una regla de calidad es una **condición que cada fila debe cumplir**, escrita c
 ```{r}
 #| label: validez-r
 inicio <- as.Date("2026-01-01")
-corte  <- as.Date("2026-03-31")
+corte <- as.Date("2026-03-31")
 
-validez <- with(cartera, data.frame(
-  valor_positivo     = valor_factura > 0,
-  calificacion_1_a_5 = is.na(calificacion) | calificacion %in% 1:5,
-  emision_en_periodo = fecha_emision >= inicio & fecha_emision <= corte,
-  nit_10_digitos     = is.na(nit) | grepl("^[0-9]{10}$", nit),
-  ciudad_en_catalogo = is.na(ciudad) | ciudad %in% ciudades_validas
-))
+validez <- with(
+  cartera,
+  data.frame(
+    valor_positivo = valor_factura > 0,
+    calificacion_1_a_5 = is.na(calificacion) | calificacion %in% 1:5,
+    emision_en_periodo = fecha_emision >= inicio & fecha_emision <= corte,
+    nit_10_digitos = is.na(nit) | grepl("^[0-9]{10}$", nit),
+    ciudad_en_catalogo = is.na(ciudad) | ciudad %in% ciudades_validas
+  )
+)
 colSums(!validez)
 ```
 
@@ -600,12 +650,15 @@ Las reglas de **consistencia** comparan columnas de la misma fila:
 
 ```{r}
 #| label: consistencia-r
-consistencia <- with(cartera, data.frame(
-  pago_despues_emision = is.na(fecha_pago) | fecha_pago >= fecha_emision,
-  pagada_con_fecha     = pagada == !is.na(fecha_pago),
-  pagada_sin_saldo     = !pagada | saldo == 0,
-  saldo_hasta_valor    = saldo <= valor_factura
-))
+consistencia <- with(
+  cartera,
+  data.frame(
+    pago_despues_emision = is.na(fecha_pago) | fecha_pago >= fecha_emision,
+    pagada_con_fecha = pagada == !is.na(fecha_pago),
+    pagada_sin_saldo = !pagada | saldo == 0,
+    saldo_hasta_valor = saldo <= valor_factura
+  )
+)
 colSums(!consistencia)
 ```
 
@@ -637,16 +690,18 @@ Los cuatro aparecen al recuperar el cero. El problema de calidad tiene una causa
 ```python
 inicio, corte = pd.Timestamp("2026-01-01"), pd.Timestamp("2026-03-31")
 
-validez = pd.DataFrame({
-    "valor_positivo":     cartera["valor_factura"] > 0,
-    "calificacion_1_a_5": cartera["calificacion"].isna()
-                          | cartera["calificacion"].between(1, 5),
-    "emision_en_periodo": cartera["fecha_emision"].between(inicio, corte),
-    "nit_10_digitos":     cartera["nit"].isna()
-                          | cartera["nit"].str.fullmatch(r"\d{10}"),
-    "ciudad_en_catalogo": cartera["ciudad"].isna()
-                          | cartera["ciudad"].isin(catalogo),
-})
+validez = pd.DataFrame(
+    {
+        "valor_positivo": cartera["valor_factura"] > 0,
+        "calificacion_1_a_5": cartera["calificacion"].isna()
+        | cartera["calificacion"].between(1, 5),
+        "emision_en_periodo": cartera["fecha_emision"].between(inicio, corte),
+        "nit_10_digitos": cartera["nit"].isna()
+        | cartera["nit"].str.fullmatch(r"\d{10}"),
+        "ciudad_en_catalogo": cartera["ciudad"].isna()
+        | cartera["ciudad"].isin(catalogo),
+    }
+)
 print((~validez).sum())
 ```
 
@@ -662,16 +717,20 @@ dtype: Int64
 `~` es la negación en `pandas` y `|` es el "o". Cada condición va entre paréntesis o en su propia línea, porque `|` tiene más precedencia que las comparaciones. `str.fullmatch(r"\d{10}")` exige que todo el texto sean diez dígitos.
 
 ```python
-consistencia = pd.DataFrame({
-    "pago_despues_emision": cartera["fecha_pago"].isna()
-                            | (cartera["fecha_pago"] >= cartera["fecha_emision"]),
-    "pagada_con_fecha":     cartera["pagada"] == cartera["fecha_pago"].notna(),
-    "pagada_sin_saldo":     ~cartera["pagada"] | (cartera["saldo"] == 0),
-    "saldo_hasta_valor":    cartera["saldo"] <= cartera["valor_factura"],
-})
+consistencia = pd.DataFrame(
+    {
+        "pago_despues_emision": cartera["fecha_pago"].isna()
+        | (cartera["fecha_pago"] >= cartera["fecha_emision"]),
+        "pagada_con_fecha": cartera["pagada"] == cartera["fecha_pago"].notna(),
+        "pagada_sin_saldo": ~cartera["pagada"] | (cartera["saldo"] == 0),
+        "saldo_hasta_valor": cartera["saldo"] <= cartera["valor_factura"],
+    }
+)
 print((~consistencia).sum())
 
-huerfanas = cartera[cartera["nit"].notna() & ~cartera["nit"].isin(clientes["nit"])]
+huerfanas = cartera[
+    cartera["nit"].notna() & ~cartera["nit"].isin(clientes["nit"])
+]
 print(huerfanas["nit"].value_counts())
 ```
 
@@ -697,7 +756,9 @@ Name: count, dtype: int64
 
 ```{r}
 #| label: reglas-duckdb
-dbGetQuery(con, r"(
+dbGetQuery(
+  con,
+  r"(
   SELECT
     count_if(NOT valor_factura > 0)                                AS valor_positivo,
     count_if(NOT calificacion BETWEEN 1 AND 5)                     AS calificacion_1_a_5,
@@ -709,15 +770,19 @@ dbGetQuery(con, r"(
     count_if(pagada AND saldo <> 0)                                AS pagada_sin_saldo,
     count_if(saldo > valor_factura)                                AS saldo_hasta_valor
   FROM cartera
-)")
+)"
+)
 
-dbGetQuery(con, r"(
+dbGetQuery(
+  con,
+  r"(
   SELECT nit, length(nit) AS digitos, count(*) AS facturas
   FROM cartera ANTI JOIN clientes USING (nit)
   WHERE nit IS NOT NULL
   GROUP BY ALL
   ORDER BY digitos, nit
-)")
+)"
+)
 ```
 
 `count_if()` cuenta las filas donde la condición es verdadera. En SQL, una comparación con `NULL` da `NULL`, y `count_if()` no la cuenta: la convención de no juzgar los faltantes viene incluida. `ANTI JOIN` devuelve las filas de la izquierda que no tienen pareja en la derecha, igual que `anti_join()`.
@@ -740,28 +805,21 @@ La severidad separa lo urgente de lo que puede esperar. Una regla que **bloquea*
 ```{r}
 #| label: reporte-r
 reglas <- tribble(
-  ~regla,                 ~dimension,      ~severidad, ~cumple,
-  "nit_presente",         "Completitud",   "bloquea",  \(d) !is.na(d$nit),
-  "ciudad_presente",      "Completitud",   "advierte", \(d) !is.na(d$ciudad),
-  "factura_unica",        "Unicidad",      "bloquea",  \(d) !(duplicated(d$factura) |
-                                                           duplicated(d$factura, fromLast = TRUE)),
-  "valor_positivo",       "Validez",       "bloquea",  \(d) d$valor_factura > 0,
-  "calificacion_1_a_5",   "Validez",       "advierte", \(d) is.na(d$calificacion) |
-                                                           d$calificacion %in% 1:5,
-  "emision_en_periodo",   "Validez",       "bloquea",  \(d) d$fecha_emision >= inicio &
-                                                           d$fecha_emision <= corte,
-  "nit_10_digitos",       "Validez",       "bloquea",  \(d) is.na(d$nit) |
-                                                           grepl("^[0-9]{10}$", d$nit),
-  "ciudad_en_catalogo",   "Validez",       "advierte", \(d) is.na(d$ciudad) |
-                                                           d$ciudad %in% ciudades_validas,
-  "pago_despues_emision", "Consistencia",  "bloquea",  \(d) is.na(d$fecha_pago) |
-                                                           d$fecha_pago >= d$fecha_emision,
-  "pagada_con_fecha",     "Consistencia",  "bloquea",  \(d) d$pagada == !is.na(d$fecha_pago),
-  "pagada_sin_saldo",     "Consistencia",  "bloquea",  \(d) !d$pagada | d$saldo == 0,
-  "saldo_hasta_valor",    "Consistencia",  "bloquea",  \(d) d$saldo <= d$valor_factura,
-  "nit_en_clientes",      "Integridad",    "bloquea",  \(d) is.na(d$nit) |
-                                                           d$nit %in% clientes$nit,
-  "valor_plausible",      "Plausibilidad", "advierte", \(d) d$valor_factura <= 50e6
+  ~regla                 , ~dimension      , ~severidad , ~cumple                                                                ,
+  "nit_presente"         , "Completitud"   , "bloquea"  , \(d) !is.na(d$nit)                                                     ,
+  "ciudad_presente"      , "Completitud"   , "advierte" , \(d) !is.na(d$ciudad)                                                  ,
+  "factura_unica"        , "Unicidad"      , "bloquea"  , \(d) !(duplicated(d$factura) | duplicated(d$factura, fromLast = TRUE)) ,
+  "valor_positivo"       , "Validez"       , "bloquea"  , \(d) d$valor_factura > 0                                               ,
+  "calificacion_1_a_5"   , "Validez"       , "advierte" , \(d) is.na(d$calificacion) | d$calificacion %in% 1:5                   ,
+  "emision_en_periodo"   , "Validez"       , "bloquea"  , \(d) d$fecha_emision >= inicio & d$fecha_emision <= corte              ,
+  "nit_10_digitos"       , "Validez"       , "bloquea"  , \(d) is.na(d$nit) | grepl("^[0-9]{10}$", d$nit)                        ,
+  "ciudad_en_catalogo"   , "Validez"       , "advierte" , \(d) is.na(d$ciudad) | d$ciudad %in% ciudades_validas                  ,
+  "pago_despues_emision" , "Consistencia"  , "bloquea"  , \(d) is.na(d$fecha_pago) | d$fecha_pago >= d$fecha_emision             ,
+  "pagada_con_fecha"     , "Consistencia"  , "bloquea"  , \(d) d$pagada == !is.na(d$fecha_pago)                                  ,
+  "pagada_sin_saldo"     , "Consistencia"  , "bloquea"  , \(d) !d$pagada | d$saldo == 0                                          ,
+  "saldo_hasta_valor"    , "Consistencia"  , "bloquea"  , \(d) d$saldo <= d$valor_factura                                        ,
+  "nit_en_clientes"      , "Integridad"    , "bloquea"  , \(d) is.na(d$nit) | d$nit %in% clientes$nit                            ,
+  "valor_plausible"      , "Plausibilidad" , "advierte" , \(d) d$valor_factura <= 50e6
 )
 
 marcas <- sapply(reglas$cumple, \(cumple) !cumple(cartera))
@@ -770,8 +828,10 @@ stopifnot(!anyNA(marcas))
 
 reporte <- reglas |>
   select(-cumple) |>
-  mutate(filas      = colSums(marcas),
-         porcentaje = round(100 * filas / nrow(cartera), 1))
+  mutate(
+    filas = colSums(marcas),
+    porcentaje = round(100 * filas / nrow(cartera), 1)
+  )
 reporte
 ```
 
@@ -782,12 +842,18 @@ Con la matriz, marcar cada fila es una línea más:
 ```{r}
 #| label: cartera-auditada-r
 cartera_auditada <- cartera |>
-  mutate(problemas = apply(marcas, 1, \(fila) paste(names(which(fila)), collapse = ", ")),
-         problemas = na_if(problemas, ""))
+  mutate(
+    problemas = apply(marcas, 1, \(fila) {
+      paste(names(which(fila)), collapse = ", ")
+    }),
+    problemas = na_if(problemas, "")
+  )
 
 bloquean <- reglas$regla[reglas$severidad == "bloquea"]
-c(con_algun_problema = sum(!is.na(cartera_auditada$problemas)),
-  con_problema_que_bloquea = sum(rowSums(marcas[, bloquean]) > 0))
+c(
+  con_algun_problema = sum(!is.na(cartera_auditada$problemas)),
+  con_problema_que_bloquea = sum(rowSums(marcas[, bloquean]) > 0)
+)
 
 cartera_auditada |>
   filter(!is.na(problemas)) |>
@@ -803,34 +869,82 @@ write_parquet(cartera_auditada, "datos/cap06/cartera_2026_t1_auditada.parquet")
 ```python
 reglas = [
     # (regla, dimensión, severidad, función que dice qué filas cumplen)
-    ("nit_presente", "Completitud", "bloquea",
-     lambda d: d["nit"].notna()),
-    ("ciudad_presente", "Completitud", "advierte",
-     lambda d: d["ciudad"].notna()),
-    ("factura_unica", "Unicidad", "bloquea",
-     lambda d: ~d["factura"].duplicated(keep=False)),
-    ("valor_positivo", "Validez", "bloquea",
-     lambda d: d["valor_factura"] > 0),
-    ("calificacion_1_a_5", "Validez", "advierte",
-     lambda d: d["calificacion"].isna() | d["calificacion"].between(1, 5)),
-    ("emision_en_periodo", "Validez", "bloquea",
-     lambda d: d["fecha_emision"].between(inicio, corte)),
-    ("nit_10_digitos", "Validez", "bloquea",
-     lambda d: d["nit"].isna() | d["nit"].str.fullmatch(r"\d{10}")),
-    ("ciudad_en_catalogo", "Validez", "advierte",
-     lambda d: d["ciudad"].isna() | d["ciudad"].isin(catalogo)),
-    ("pago_despues_emision", "Consistencia", "bloquea",
-     lambda d: d["fecha_pago"].isna() | (d["fecha_pago"] >= d["fecha_emision"])),
-    ("pagada_con_fecha", "Consistencia", "bloquea",
-     lambda d: d["pagada"] == d["fecha_pago"].notna()),
-    ("pagada_sin_saldo", "Consistencia", "bloquea",
-     lambda d: ~d["pagada"] | (d["saldo"] == 0)),
-    ("saldo_hasta_valor", "Consistencia", "bloquea",
-     lambda d: d["saldo"] <= d["valor_factura"]),
-    ("nit_en_clientes", "Integridad", "bloquea",
-     lambda d: d["nit"].isna() | d["nit"].isin(clientes["nit"])),
-    ("valor_plausible", "Plausibilidad", "advierte",
-     lambda d: d["valor_factura"] <= 50_000_000),
+    ("nit_presente", "Completitud", "bloquea", lambda d: d["nit"].notna()),
+    (
+        "ciudad_presente",
+        "Completitud",
+        "advierte",
+        lambda d: d["ciudad"].notna(),
+    ),
+    (
+        "factura_unica",
+        "Unicidad",
+        "bloquea",
+        lambda d: ~d["factura"].duplicated(keep=False),
+    ),
+    ("valor_positivo", "Validez", "bloquea", lambda d: d["valor_factura"] > 0),
+    (
+        "calificacion_1_a_5",
+        "Validez",
+        "advierte",
+        lambda d: d["calificacion"].isna() | d["calificacion"].between(1, 5),
+    ),
+    (
+        "emision_en_periodo",
+        "Validez",
+        "bloquea",
+        lambda d: d["fecha_emision"].between(inicio, corte),
+    ),
+    (
+        "nit_10_digitos",
+        "Validez",
+        "bloquea",
+        lambda d: d["nit"].isna() | d["nit"].str.fullmatch(r"\d{10}"),
+    ),
+    (
+        "ciudad_en_catalogo",
+        "Validez",
+        "advierte",
+        lambda d: d["ciudad"].isna() | d["ciudad"].isin(catalogo),
+    ),
+    (
+        "pago_despues_emision",
+        "Consistencia",
+        "bloquea",
+        lambda d: (
+            d["fecha_pago"].isna() | (d["fecha_pago"] >= d["fecha_emision"])
+        ),
+    ),
+    (
+        "pagada_con_fecha",
+        "Consistencia",
+        "bloquea",
+        lambda d: d["pagada"] == d["fecha_pago"].notna(),
+    ),
+    (
+        "pagada_sin_saldo",
+        "Consistencia",
+        "bloquea",
+        lambda d: ~d["pagada"] | (d["saldo"] == 0),
+    ),
+    (
+        "saldo_hasta_valor",
+        "Consistencia",
+        "bloquea",
+        lambda d: d["saldo"] <= d["valor_factura"],
+    ),
+    (
+        "nit_en_clientes",
+        "Integridad",
+        "bloquea",
+        lambda d: d["nit"].isna() | d["nit"].isin(clientes["nit"]),
+    ),
+    (
+        "valor_plausible",
+        "Plausibilidad",
+        "advierte",
+        lambda d: d["valor_factura"] <= 50_000_000,
+    ),
 ]
 
 marcas = pd.DataFrame(
@@ -889,7 +1003,9 @@ Filas con un problema que bloquea: 36
 
 ```{r}
 #| label: reporte-duckdb
-dbGetQuery(con, r"(
+dbGetQuery(
+  con,
+  r"(
   UNPIVOT (
     SELECT
       count_if(nit IS NULL)                                         AS nit_presente,
@@ -909,7 +1025,8 @@ dbGetQuery(con, r"(
     FROM (SELECT *, count(*) OVER (PARTITION BY factura) AS veces FROM cartera)
   )
   ON COLUMNS(*) INTO NAME regla VALUE filas
-)")
+)"
+)
 ```
 
 La consulta interna calcula todas las reglas en una sola pasada y devuelve una fila con 14 columnas. `UNPIVOT` la gira: cada columna se convierte en una fila, con el nombre de la regla y su conteo. `count(*) OVER (PARTITION BY factura)` es una **función de ventana**: cuenta cuántas filas tiene cada factura sin agrupar la tabla, de modo que cada fila conserva su detalle y sabe cuántas veces aparece su factura. Las funciones de ventana se tratan con más detalle en el @sec-transformar.
@@ -963,18 +1080,20 @@ recaudos <- read_parquet("datos/cap06/recaudos_2026_t1.parquet")
 medios_validos <- c("Transferencia", "PSE", "Cheque", "Efectivo")
 
 # 1. Traer la fecha de emisión y el valor de cada factura
-facturas <- cartera |> distinct() |> select(factura, fecha_emision, valor_factura)
-recaudos_ext <- ...                     # TODO: left_join(recaudos, facturas, ...)
+facturas <- cartera |>
+  distinct() |>
+  select(factura, fecha_emision, valor_factura)
+recaudos_ext <- ... # TODO: left_join(recaudos, facturas, ...)
 
 # 2. Tabla de reglas
 reglas_recaudos <- tribble(
-  ~regla,            ~dimension,    ~severidad, ~cumple,
-  "medio_presente",  "Completitud", "advierte", \(d) !is.na(d$medio_pago),
-  ...                                   # TODO
+  ~regla           , ~dimension    , ~severidad , ~cumple                   ,
+  "medio_presente" , "Completitud" , "advierte" , \(d) !is.na(d$medio_pago) ,
+  ... # TODO
 )
 
 # 3. Regla agregada: total recaudado por factura frente a su valor
-sobrecobro <- ...                       # TODO
+sobrecobro <- ... # TODO
 
 # 4. Reporte
 ```
@@ -987,18 +1106,24 @@ recaudos["fecha_recaudo"] = pd.to_datetime(recaudos["fecha_recaudo"])
 medios_validos = ["Transferencia", "PSE", "Cheque", "Efectivo"]
 
 # 1. Traer la fecha de emisión y el valor de cada factura
-facturas = cartera.drop_duplicates()[["factura", "fecha_emision", "valor_factura"]]
-recaudos_ext = ...                      # TODO: recaudos.merge(facturas, ...)
+facturas = cartera.drop_duplicates()[
+    ["factura", "fecha_emision", "valor_factura"]
+]
+recaudos_ext = ...  # TODO: recaudos.merge(facturas, ...)
 
 # 2. Tabla de reglas
 reglas_recaudos = [
-    ("medio_presente", "Completitud", "advierte",
-     lambda d: d["medio_pago"].notna()),
-    ...                                 # TODO
+    (
+        "medio_presente",
+        "Completitud",
+        "advierte",
+        lambda d: d["medio_pago"].notna(),
+    ),
+    ...,  # TODO
 ]
 
 # 3. Regla agregada: total recaudado por factura frente a su valor
-sobrecobro = ...                        # TODO
+sobrecobro = ...  # TODO
 
 # 4. Reporte
 ```

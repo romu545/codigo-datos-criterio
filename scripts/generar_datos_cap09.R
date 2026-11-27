@@ -29,7 +29,9 @@ escribir <- function(df, ruta) {
 
 # 1. Indicadores mensuales por sucursal, un archivo por indicador ------------
 ventas$mes <- as.integer(format(ventas$fecha, "%m"))
-ventas$valor_neto <- ventas$unidades * ventas$precio_unitario * (1 - ventas$descuento)
+ventas$valor_neto <- ventas$unidades *
+  ventas$precio_unitario *
+  (1 - ventas$descuento)
 ventas_mes <- aggregate(valor_neto ~ sucursal + mes, data = ventas, FUN = sum)
 names(ventas_mes)[3] <- "valor_ventas"
 ventas_mes <- ventas_mes[order(ventas_mes$sucursal, ventas_mes$mes), ]
@@ -37,21 +39,32 @@ ventas_mes$valor_ventas <- round(ventas_mes$valor_ventas)
 escribir(ventas_mes, "datos/cap09/indicadores/ventas_mes.csv")
 
 recaudos_mes <- ventas_mes[c("sucursal", "mes")]
-recaudos_mes$valor_recaudado <- round(ventas_mes$valor_ventas *
-                                        runif(nrow(ventas_mes), 0.80, 0.98), -3)
+recaudos_mes$valor_recaudado <- round(
+  ventas_mes$valor_ventas *
+    runif(nrow(ventas_mes), 0.80, 0.98),
+  -3
+)
 escribir(recaudos_mes, "datos/cap09/indicadores/recaudos_mes.csv")
 
 visitas_mes <- ventas_mes[c("sucursal", "mes")]
 visitas_mes$visitas <- sample(35:90, nrow(visitas_mes), replace = TRUE)
 # Problema sembrado: S07 no reportó las visitas de marzo
-visitas_mes <- visitas_mes[!(visitas_mes$sucursal == "S07" & visitas_mes$mes == 3), ]
+visitas_mes <- visitas_mes[
+  !(visitas_mes$sucursal == "S07" & visitas_mes$mes == 3),
+]
 escribir(visitas_mes, "datos/cap09/indicadores/visitas_mes.csv")
 
 devoluciones_mes <- ventas_mes[c("sucursal", "mes")]
-devoluciones_mes$devoluciones <- sample(0:12, nrow(devoluciones_mes), replace = TRUE)
+devoluciones_mes$devoluciones <- sample(
+  0:12,
+  nrow(devoluciones_mes),
+  replace = TRUE
+)
 # Problema sembrado: la fila de S04 en febrero quedó dos veces
 fila <- which(devoluciones_mes$sucursal == "S04" & devoluciones_mes$mes == 2)
-devoluciones_mes <- devoluciones_mes[sort(c(seq_len(nrow(devoluciones_mes)), fila)), ]
+devoluciones_mes <- devoluciones_mes[
+  sort(c(seq_len(nrow(devoluciones_mes)), fila)),
+]
 escribir(devoluciones_mes, "datos/cap09/indicadores/devoluciones_mes.csv")
 
 # 2. Historial de precios ----------------------------------------------------
@@ -59,38 +72,51 @@ escribir(devoluciones_mes, "datos/cap09/indicadores/devoluciones_mes.csv")
 # trimestre que el sistema de ventas no aplicó: las ventas siguen al precio viejo.
 sube_feb <- c("P01", "P04", "P05", "P08", "P11")
 sube_mar <- c("P02", "P06", "P09")
-precios <- data.frame(producto = productos$producto,
-                      vigente_desde = as.Date("2025-07-01"),
-                      precio = productos$precio_lista)
+precios <- data.frame(
+  producto = productos$producto,
+  vigente_desde = as.Date("2025-07-01"),
+  precio = productos$precio_lista
+)
 ajuste <- function(cod, desde, factor) {
   base <- productos$precio_lista[match(cod, productos$producto)]
-  data.frame(producto = cod, vigente_desde = as.Date(desde),
-             precio = round(base * factor, -2))
+  data.frame(
+    producto = cod,
+    vigente_desde = as.Date(desde),
+    precio = round(base * factor, -2)
+  )
 }
-precios <- rbind(precios,
-                 ajuste(sube_feb, "2026-02-01", 1.06),
-                 ajuste(sube_mar, "2026-03-01", 1.04))
+precios <- rbind(
+  precios,
+  ajuste(sube_feb, "2026-02-01", 1.06),
+  ajuste(sube_mar, "2026-03-01", 1.04)
+)
 precios <- precios[order(precios$producto, precios$vigente_desde), ]
 escribir(precios, "datos/cap09/precios_historial.csv")
 
 # 3. Tramos de comisión según las ventas del mes -----------------------------
 tramos <- data.frame(
-  tramo  = c("A", "B", "C", "D"),
-  desde  = c(0, 45e6, 60e6, 72e6),
-  hasta  = c(45e6, 60e6, 72e6, NA),
+  tramo = c("A", "B", "C", "D"),
+  desde = c(0, 45e6, 60e6, 72e6),
+  hasta = c(45e6, 60e6, 72e6, NA),
   comision_pct = c(1, 1.5, 2, 2.5)
 )
 escribir(tramos, "datos/cap09/tramos_comision.csv")
 
 # 4. Conteos físicos de inventario, un archivo por sucursal -----------------
 for (s in sucursales) {
-  conteo <- data.frame(producto = productos$producto,
-                       unidades_contadas = sample(20:400, nrow(productos)),
-                       fecha_conteo = "2026-03-31")
+  conteo <- data.frame(
+    producto = productos$producto,
+    unidades_contadas = sample(20:400, nrow(productos)),
+    fecha_conteo = "2026-03-31"
+  )
   conteo$unidades_contadas <- as.character(conteo$unidades_contadas)
   # Problemas sembrados
-  if (s == "S04") conteo$unidades_contadas[9] <- "N/D"
-  if (s == "S07") names(conteo)[2] <- "cantidad"
+  if (s == "S04") {
+    conteo$unidades_contadas[9] <- "N/D"
+  }
+  if (s == "S07") {
+    names(conteo)[2] <- "cantidad"
+  }
   escribir(conteo, sprintf("datos/cap09/conteos/conteo_%s.csv", s))
 }
 

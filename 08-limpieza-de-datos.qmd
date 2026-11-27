@@ -4,7 +4,7 @@ En el @sec-tipos-calidad auditamos la cartera del trimestre y encontramos 55 fac
 
 Limpiar no es "arreglar lo que se vea raro". Es aplicar, en un orden conocido, reglas que se pueden explicar y repetir, y dejar constancia de lo que cambió. Por eso empezamos con unos principios, después vemos las técnicas una a una (texto, expresiones regulares, categorías, duplicados, faltantes, valores imposibles y atípicos) y al final las reunimos en una limpieza completa de la cartera que termina como empezó el @sec-tipos-calidad: con un reporte de calidad.
 
-Usaremos dos fuentes. Para las técnicas de texto, una exportación del sistema de gestión de clientes (CRM), `clientes_crm.csv`, con los problemas típicos de un registro hecho a mano por muchas personas. Para la limpieza completa, la cartera del @sec-tipos-calidad. El capítulo está pensado para una sesión de unas dos horas.
+Usaremos dos fuentes. Para las técnicas de texto, una exportación del sistema de gestión de clientes (CRM), `clientes_crm.csv`, con los problemas típicos de un registro hecho a mano por muchas personas. Para la limpieza completa, la cartera del @sec-tipos-calidad.
 
 ::: {.callout-tip}
 ## Antes de empezar
@@ -20,11 +20,40 @@ Usaremos dos fuentes. Para las técnicas de texto, una exportación del sistema 
 #| message: false
 use("arrow", c("read_parquet", "write_parquet"))
 use("readr", c("read_csv", "write_csv", "cols"))
-use("dplyr", c("select", "filter", "arrange", "desc", "mutate", "if_else", "case_when",
-               "coalesce", "across", "summarise", "count", "n", "left_join",
-               "distinct", "tribble"))
-use("stringr", c("str_squish", "str_trim", "str_to_title", "str_to_lower", "str_to_upper",
-                 "str_remove", "str_remove_all", "str_detect", "str_pad"))
+use(
+  "dplyr",
+  c(
+    "select",
+    "filter",
+    "arrange",
+    "desc",
+    "mutate",
+    "if_else",
+    "case_when",
+    "coalesce",
+    "across",
+    "summarise",
+    "count",
+    "n",
+    "left_join",
+    "distinct",
+    "tribble"
+  )
+)
+use(
+  "stringr",
+  c(
+    "str_squish",
+    "str_trim",
+    "str_to_title",
+    "str_to_lower",
+    "str_to_upper",
+    "str_remove",
+    "str_remove_all",
+    "str_detect",
+    "str_pad"
+  )
+)
 use("stringi", "stri_trans_general")
 use("DBI", c("dbConnect", "dbGetQuery", "dbExecute", "dbDisconnect"))
 use("duckdb", "duckdb")
@@ -69,9 +98,12 @@ Leemos el CRM todo como texto. Con `trim_ws = FALSE` le pedimos a `readr` que no
 
 ```{r}
 #| label: texto-r
-crm <- read_csv("datos/cap08/clientes_crm.csv",
-                col_types = cols(.default = "c", actualizado = "D"),
-                na = c("", "N/A"), trim_ws = FALSE)
+crm <- read_csv(
+  "datos/cap08/clientes_crm.csv",
+  col_types = cols(.default = "c", actualizado = "D"),
+  na = c("", "N/A"),
+  trim_ws = FALSE
+)
 nrow(crm)
 count(crm, contacto, sort = TRUE) |> head(8)
 ```
@@ -81,9 +113,11 @@ Diez personas aparecen escritas de varias formas. `str_squish()` quita los espac
 ```{r}
 #| label: texto-r-limpio
 crm <- crm |>
-  mutate(contacto     = str_to_title(str_squish(contacto)),
-         razon_social = str_squish(razon_social),
-         correo       = str_to_lower(str_trim(correo)))
+  mutate(
+    contacto = str_to_title(str_squish(contacto)),
+    razon_social = str_squish(razon_social),
+    correo = str_to_lower(str_trim(correo))
+  )
 
 count(crm, contacto, sort = TRUE)
 ```
@@ -95,8 +129,12 @@ Ahora son exactamente diez personas. A la razón social solo le quitamos espacio
 ```python
 import pandas as pd
 
-crm = pd.read_csv("datos/cap08/clientes_crm.csv", dtype=str,
-                  keep_default_na=False, na_values=["", "N/A"])
+crm = pd.read_csv(
+    "datos/cap08/clientes_crm.csv",
+    dtype=str,
+    keep_default_na=False,
+    na_values=["", "N/A"],
+)
 crm["actualizado"] = pd.to_datetime(crm["actualizado"])
 print(len(crm))
 print(crm["contacto"].value_counts().head(8))
@@ -147,13 +185,18 @@ Name: count, dtype: int64
 
 ```{r}
 #| label: texto-duckdb
-dbExecute(con, r"(
+dbExecute(
+  con,
+  r"(
   CREATE VIEW crm AS
   SELECT * FROM read_csv('datos/cap08/clientes_crm.csv',
                          all_varchar = true, nullstr = ['', 'N/A'])
-)")
+)"
+)
 
-dbGetQuery(con, r"(
+dbGetQuery(
+  con,
+  r"(
   SELECT array_to_string(
            list_transform(string_split(lower(trim(regexp_replace(contacto, '\s+', ' ', 'g'))), ' '),
                           lambda palabra: upper(palabra[1]) || palabra[2:]),
@@ -162,7 +205,8 @@ dbGetQuery(con, r"(
   FROM crm
   GROUP BY ALL
   ORDER BY registros DESC
-)")
+)"
+)
 ```
 
 DuckDB no tiene una función para poner mayúscula inicial en cada palabra, pero se puede construir: `string_split()` parte el texto en una lista de palabras, `list_transform()` aplica a cada una la función `lambda palabra: upper(palabra[1]) || palabra[2:]` (la primera letra en mayúscula y el resto igual; la sintaxis `lambda` es la de DuckDB 2.0, que reemplazó a la flecha `palabra -> ...` de versiones anteriores) y `array_to_string()` las vuelve a unir. Es un buen ejemplo de que SQL moderno trabaja también con listas; para presentación, de todas formas, suele ser más sencillo hacerlo en R o en Python.
@@ -228,9 +272,16 @@ Todos los NIT, una vez limpios, existen en la tabla de clientes. En el teléfono
 #| label: regex-r-validar
 crm <- crm |>
   mutate(
-    telefono = if_else(str_detect(digitos, "^(60\\d|3\\d{2})\\d{7}$"), digitos, NA),
-    correo   = if_else(str_detect(correo, "^[a-z0-9._-]+@[a-z0-9-]+(\\.[a-z0-9-]+)+$"),
-                       correo, NA)
+    telefono = if_else(
+      str_detect(digitos, "^(60\\d|3\\d{2})\\d{7}$"),
+      digitos,
+      NA
+    ),
+    correo = if_else(
+      str_detect(correo, "^[a-z0-9._-]+@[a-z0-9-]+(\\.[a-z0-9-]+)+$"),
+      correo,
+      NA
+    )
   )
 
 colSums(is.na(crm[, c("telefono", "correo")]))
@@ -246,9 +297,11 @@ crm["nit"] = crm["nit"].str.replace(r"\D", "", regex=True).str.zfill(10)
 clientes = pd.read_parquet("datos/cap06/clientes.parquet")
 print((~crm["nit"].isin(clientes["nit"])).sum())
 
-digitos = (crm["telefono"]
-           .str.replace(r"\D", "", regex=True)
-           .str.replace(r"^57(?=\d{10}$)", "", regex=True))
+digitos = (
+    crm["telefono"]
+    .str.replace(r"\D", "", regex=True)
+    .str.replace(r"^57(?=\d{10}$)", "", regex=True)
+)
 print(digitos.str.len().value_counts(dropna=False))
 ```
 
@@ -265,7 +318,9 @@ Name: count, dtype: int64
 
 ```python
 telefono_ok = digitos.str.fullmatch(r"(60\d|3\d{2})\d{7}")
-correo_ok = crm["correo"].str.fullmatch(r"[a-z0-9._-]+@[a-z0-9-]+(\.[a-z0-9-]+)+")
+correo_ok = crm["correo"].str.fullmatch(
+    r"[a-z0-9._-]+@[a-z0-9-]+(\.[a-z0-9-]+)+"
+)
 
 crm["telefono"] = digitos.where(telefono_ok == True)
 crm["correo"] = crm["correo"].where(correo_ok == True)
@@ -284,7 +339,9 @@ dtype: int64
 
 ```{r}
 #| label: regex-duckdb
-dbGetQuery(con, r"(
+dbGetQuery(
+  con,
+  r"(
   WITH limpio AS (
     SELECT lpad(regexp_replace(nit, '\D', '', 'g'), 10, '0') AS nit,
            regexp_replace(telefono, '\D', '', 'g')          AS digitos
@@ -302,7 +359,8 @@ dbGetQuery(con, r"(
   FROM telefonos
   GROUP BY ALL
   ORDER BY longitud
-)")
+)"
+)
 ```
 
 DuckDB usa la biblioteca de expresiones regulares RE2, que no admite búsquedas hacia adelante como `(?=...)`. Por eso quitamos el `57` con un `CASE`: si el número tiene doce dígitos y empieza por `57`, nos quedamos desde el tercero. `lpad()` completa con ceros a la izquierda, como `str_pad()`.
@@ -360,8 +418,10 @@ pendientes <- variantes |>
 
 distancias <- adist(pendientes$clave, clave(catalogo_ciudades))
 pendientes |>
-  mutate(sugerencia = catalogo_ciudades[apply(distancias, 1, which.min)],
-         distancia  = apply(distancias, 1, min))
+  mutate(
+    sugerencia = catalogo_ciudades[apply(distancias, 1, which.min)],
+    distancia = apply(distancias, 1, min)
+  )
 ```
 
 `adist()`, de R base, calcula la **distancia de Levenshtein**: cuántas letras hay que insertar, borrar o cambiar para pasar de un texto a otro. `BARRANQILLA` está a una letra de `BARRANQUILLA`: es un error de digitación y la sugerencia es buena. `BOGOTA DC` está a tres letras de `BOGOTA`, y la sugerencia también sirve. Pero `B/quilla`, `Cartagena de Indias` y `Santiago de Cali` están lejos de todo: son abreviaturas y nombres oficiales, y la distancia de edición no los reconoce: `BQUILLA` está a cinco letras de Barranquilla, de Bogotá y de Cúcuta por igual, y que la sugerencia sea Barranquilla es solo porque aparece primero en el catálogo. Esos los decide una persona, y la decisión se escribe como datos:
@@ -369,12 +429,12 @@ pendientes |>
 ```{r}
 #| label: estandarizar-manual
 manual <- tribble(
-  ~canonica,             ~corregida,
-  "Barranqilla",         "Barranquilla",   # error de digitación, distancia 1
-  "Bogotá D.C.",         "Bogotá",         # nombre oficial
-  "B/quilla",            "Barranquilla",   # abreviatura
-  "Cartagena de Indias", "Cartagena",      # nombre oficial
-  "Santiago de Cali",    "Cali"            # nombre oficial
+  ~canonica             , ~corregida     ,
+  "Barranqilla"         , "Barranquilla" , # error de digitación, distancia 1
+  "Bogotá D.C."         , "Bogotá"       , # nombre oficial
+  "B/quilla"            , "Barranquilla" , # abreviatura
+  "Cartagena de Indias" , "Cartagena"    , # nombre oficial
+  "Santiago de Cali"    , "Cali" # nombre oficial
 )
 
 equivalencias <- variantes |>
@@ -385,7 +445,11 @@ equivalencias <- variantes |>
 write_csv(equivalencias, "datos/cap08/equivalencias_ciudad.csv")
 
 crm <- crm |>
-  left_join(equivalencias, by = c("ciudad" = "variante"), relationship = "many-to-one") |>
+  left_join(
+    equivalencias,
+    by = c("ciudad" = "variante"),
+    relationship = "many-to-one"
+  ) |>
   mutate(ciudad = canonica) |>
   select(-canonica)
 
@@ -401,25 +465,42 @@ Fíjate en dónde se hizo el trabajo costoso: quitar espacios, quitar tildes y a
 ```python
 import difflib
 
-def clave(serie):
-    return (serie.str.split().str.join(" ")
-            .str.normalize("NFKD").str.encode("ascii", "ignore").str.decode("ascii")
-            .str.upper()
-            .str.replace(r"[^A-Z ]", "", regex=True))
 
-variantes = (crm["ciudad"].value_counts().rename("registros").reset_index()
-             .assign(clave=lambda d: clave(d["ciudad"])))
+def clave(serie):
+    return (
+        serie.str.split()
+        .str.join(" ")
+        .str.normalize("NFKD")
+        .str.encode("ascii", "ignore")
+        .str.decode("ascii")
+        .str.upper()
+        .str.replace(r"[^A-Z ]", "", regex=True)
+    )
+
+
+variantes = (
+    crm["ciudad"]
+    .value_counts()
+    .rename("registros")
+    .reset_index()
+    .assign(clave=lambda d: clave(d["ciudad"]))
+)
 mas_frecuente = variantes.groupby("clave")["registros"].idxmax()
 variantes["canonica"] = variantes["clave"].map(
-    variantes.loc[mas_frecuente].set_index("clave")["ciudad"])
+    variantes.loc[mas_frecuente].set_index("clave")["ciudad"]
+)
 
 catalogo = sorted(clientes["ciudad"].unique())
 claves_catalogo = dict(zip(clave(pd.Series(catalogo)), catalogo))
-pendientes = variantes.loc[~variantes["canonica"].isin(catalogo),
-                           ["clave", "canonica"]].drop_duplicates()
+pendientes = variantes.loc[
+    ~variantes["canonica"].isin(catalogo), ["clave", "canonica"]
+].drop_duplicates()
 pendientes["sugerencia"] = pendientes["clave"].map(
-    lambda c: [claves_catalogo[s] for s in
-               difflib.get_close_matches(c, claves_catalogo, n=1, cutoff=0.8)])
+    lambda c: [
+        claves_catalogo[s]
+        for s in difflib.get_close_matches(c, claves_catalogo, n=1, cutoff=0.8)
+    ]
+)
 print(pendientes)
 ```
 
@@ -435,9 +516,13 @@ print(pendientes)
 `str.normalize("NFKD")` separa cada letra de su tilde y `encode("ascii", "ignore")` descarta las tildes, como en el @sec-limpieza-temprana. `idxmax()` devuelve, para cada clave, la fila con más registros. `difflib.get_close_matches()`, de la biblioteca estándar de Python, sugiere los textos más parecidos por encima de un umbral (`cutoff`): con 0,8 solo propone `Barranquilla` y `Bogotá`, y deja sin sugerencia los casos que necesitan una persona.
 
 ```python
-manual = {"Barranqilla": "Barranquilla", "Bogotá D.C.": "Bogotá",
-          "B/quilla": "Barranquilla", "Cartagena de Indias": "Cartagena",
-          "Santiago de Cali": "Cali"}
+manual = {
+    "Barranqilla": "Barranquilla",
+    "Bogotá D.C.": "Bogotá",
+    "B/quilla": "Barranquilla",
+    "Cartagena de Indias": "Cartagena",
+    "Santiago de Cali": "Cali",
+}
 variantes["canonica"] = variantes["canonica"].replace(manual)
 equivalencias = dict(zip(variantes["ciudad"], variantes["canonica"]))
 
@@ -465,7 +550,9 @@ En `pandas`, la tabla de equivalencias puede ser un diccionario y `map()` la apl
 
 ```{r}
 #| label: estandarizar-duckdb
-dbGetQuery(con, r"(
+dbGetQuery(
+  con,
+  r"(
   WITH conteo AS (
     SELECT ciudad, count(*) AS registros,
            regexp_replace(upper(strip_accents(trim(regexp_replace(ciudad, '\s+', ' ', 'g')))),
@@ -487,7 +574,8 @@ dbGetQuery(con, r"(
   GROUP BY ALL
   HAVING distancia_minima > 0
   ORDER BY distancia_minima
-)")
+)"
+)
 ```
 
 `arg_max(ciudad, registros)` devuelve la ciudad del registro con más conteo: la forma canónica en una sola función. `levenshtein()` calcula la distancia de edición, y la unión cruzada (`CROSS JOIN`) compara cada clave con cada ciudad del catálogo. DuckDB tiene también `jaro_winkler_similarity()`, otra medida de parecido que da más peso al inicio del texto.
@@ -518,16 +606,25 @@ count(crm, nit, name = "registros") |> count(registros, name = "clientes")
 
 consolidado <- crm |>
   arrange(nit, desc(actualizado)) |>
-  summarise(across(c(ciudad, telefono, correo, contacto), \(x) x[!is.na(x)][1]),
-            actualizado = max(actualizado),
-            registros   = n(),
-            .by = nit) |>
-  left_join(select(clientes, nit, razon_social), by = "nit",
-            relationship = "one-to-one")
+  summarise(
+    across(c(ciudad, telefono, correo, contacto), \(x) x[!is.na(x)][1]),
+    actualizado = max(actualizado),
+    registros = n(),
+    .by = nit
+  ) |>
+  left_join(
+    select(clientes, nit, razon_social),
+    by = "nit",
+    relationship = "one-to-one"
+  )
 
 nrow(consolidado)
-c(sin_correo_con_un_registro_cualquiera = sum(is.na(crm$correo[!duplicated(crm$nit)])),
-  sin_correo_con_la_regla              = sum(is.na(consolidado$correo)))
+c(
+  sin_correo_con_un_registro_cualquiera = sum(is.na(crm$correo[
+    !duplicated(crm$nit)
+  ])),
+  sin_correo_con_la_regla = sum(is.na(consolidado$correo))
+)
 ```
 
 46 clientes tienen dos o tres registros. Ordenamos de más reciente a más antiguo y, para cada columna, `x[!is.na(x)][1]` toma el primer valor no faltante: el más reciente que exista. Así, si el registro más nuevo no tiene correo pero uno anterior sí, el correo se conserva. La razón social, en cambio, la tomamos de la tabla maestra de clientes, que es la referencia: así no importa cómo la escribió cada asesor.
@@ -537,12 +634,19 @@ c(sin_correo_con_un_registro_cualquiera = sum(is.na(crm$correo[!duplicated(crm$n
 ```python
 print(crm["nit"].value_counts().value_counts().sort_index())
 
-consolidado = (crm.sort_values(["nit", "actualizado"], ascending=[True, False])
-               .groupby("nit", as_index=False)
-               .agg(ciudad=("ciudad", "first"), telefono=("telefono", "first"),
-                    correo=("correo", "first"), contacto=("contacto", "first"),
-                    actualizado=("actualizado", "max"), registros=("nit", "size"))
-               .merge(clientes[["nit", "razon_social"]], on="nit", validate="1:1"))
+consolidado = (
+    crm.sort_values(["nit", "actualizado"], ascending=[True, False])
+    .groupby("nit", as_index=False)
+    .agg(
+        ciudad=("ciudad", "first"),
+        telefono=("telefono", "first"),
+        correo=("correo", "first"),
+        contacto=("contacto", "first"),
+        actualizado=("actualizado", "max"),
+        registros=("nit", "size"),
+    )
+    .merge(clientes[["nit", "razon_social"]], on="nit", validate="1:1")
+)
 print(len(consolidado), consolidado["correo"].isna().sum())
 ```
 
@@ -561,7 +665,9 @@ En `pandas`, `first` dentro de `groupby()` ya devuelve el primer valor **no falt
 
 ```{r}
 #| label: duplicados-duckdb
-dbGetQuery(con, r"(
+dbGetQuery(
+  con,
+  r"(
   WITH limpio AS (
     SELECT lpad(regexp_replace(nit, '\D', '', 'g'), 10, '0') AS nit,
            lower(trim(correo)) AS correo, actualizado
@@ -574,7 +680,8 @@ dbGetQuery(con, r"(
     FROM limpio
     GROUP BY nit
   )
-)")
+)"
+)
 ```
 
 `first(correo ORDER BY actualizado DESC)` toma el correo del registro más reciente, y `FILTER (WHERE correo IS NOT NULL)` descarta antes los faltantes: la misma regla, en una sola expresión. Aquí hay más clientes con correo que en R y en Python porque esta consulta no aplica la validación de formato del Ejemplo 8.2.
@@ -633,10 +740,16 @@ Las cuatro facturas sin ciudad tienen un NIT que está en la tabla de clientes, 
 
 ```python
 cartera = pd.read_parquet("datos/cap06/cartera_2026_t1.parquet")
-sin_ciudad = (cartera.loc[cartera["ciudad"].isna(), ["factura", "nit", "ciudad"]]
-              .merge(clientes[["nit", "ciudad"]].rename(columns={"ciudad": "ciudad_cliente"}),
-                     on="nit", how="left"))
-sin_ciudad["ciudad"] = sin_ciudad["ciudad"].fillna(sin_ciudad["ciudad_cliente"])
+sin_ciudad = cartera.loc[
+    cartera["ciudad"].isna(), ["factura", "nit", "ciudad"]
+].merge(
+    clientes[["nit", "ciudad"]].rename(columns={"ciudad": "ciudad_cliente"}),
+    on="nit",
+    how="left",
+)
+sin_ciudad["ciudad"] = sin_ciudad["ciudad"].fillna(
+    sin_ciudad["ciudad_cliente"]
+)
 print(sin_ciudad)
 ```
 
@@ -654,12 +767,15 @@ print(sin_ciudad)
 
 ```{r}
 #| label: faltantes-duckdb
-dbGetQuery(con, r"(
+dbGetQuery(
+  con,
+  r"(
   SELECT f.factura, f.nit, coalesce(f.ciudad, c.ciudad) AS ciudad
   FROM 'datos/cap06/cartera_2026_t1.parquet' AS f
   LEFT JOIN 'datos/cap06/clientes.parquet' AS c USING (nit)
   WHERE f.ciudad IS NULL
-)")
+)"
+)
 ```
 
 :::
@@ -691,12 +807,18 @@ Todas las facturas menos una vencen 30 días después de emitirse, y la excepci�
 ```{r}
 #| label: atipicos-r
 cuartiles <- quantile(cartera$valor_factura, c(0.25, 0.75))
-iqr <- IQR(cartera$valor_factura)   # tercer cuartil menos el primero
-limites <- c(inferior = cuartiles[[1]] - 1.5 * iqr, superior = cuartiles[[2]] + 1.5 * iqr)
+iqr <- IQR(cartera$valor_factura) # tercer cuartil menos el primero
+limites <- c(
+  inferior = cuartiles[[1]] - 1.5 * iqr,
+  superior = cuartiles[[2]] + 1.5 * iqr
+)
 limites
 
 cartera |>
-  filter(valor_factura < limites[["inferior"]] | valor_factura > limites[["superior"]]) |>
+  filter(
+    valor_factura < limites[["inferior"]] |
+      valor_factura > limites[["superior"]]
+  ) |>
   select(factura, nit, valor_factura)
 ```
 
@@ -705,8 +827,9 @@ La regla del IQR marca tres facturas. Dos son negativas, valores imposibles que 
 ### Python
 
 ```python
-cartera[["fecha_emision", "fecha_vencimiento"]] = (
-    cartera[["fecha_emision", "fecha_vencimiento"]].apply(pd.to_datetime))
+cartera[["fecha_emision", "fecha_vencimiento"]] = cartera[
+    ["fecha_emision", "fecha_vencimiento"]
+].apply(pd.to_datetime)
 dias = (cartera["fecha_vencimiento"] - cartera["fecha_emision"]).dt.days
 print(dias.value_counts())
 
@@ -730,7 +853,9 @@ Name: count, dtype: int64
 
 ```{r}
 #| label: atipicos-duckdb
-dbGetQuery(con, r"(
+dbGetQuery(
+  con,
+  r"(
   WITH limites AS (
     SELECT quantile_cont(valor_factura, 0.25) AS q1,
            quantile_cont(valor_factura, 0.75) AS q3
@@ -739,7 +864,8 @@ dbGetQuery(con, r"(
   SELECT factura, nit, valor_factura
   FROM 'datos/cap06/cartera_2026_t1.parquet', limites
   WHERE valor_factura NOT BETWEEN q1 - 1.5 * (q3 - q1) AND q3 + 1.5 * (q3 - q1)
-)")
+)"
+)
 ```
 
 `quantile_cont()` calcula el cuantil con interpolación, igual que el método por defecto de R y de `pandas`.
@@ -763,8 +889,11 @@ Ahora reunimos todo en un solo proceso, en el orden de la @fig-flujo-limpieza. C
 ```{r}
 #| label: limpieza-completa-r
 corte <- as.Date("2026-03-31")
-equivalencias <- read_csv("datos/cap08/equivalencias_ciudad.csv", show_col_types = FALSE,
-                          trim_ws = FALSE)
+equivalencias <- read_csv(
+  "datos/cap08/equivalencias_ciudad.csv",
+  show_col_types = FALSE,
+  trim_ws = FALSE
+)
 
 # 1. Filas idénticas
 limpia <- distinct(cartera)
@@ -775,32 +904,50 @@ n_nit <- sum(nchar(limpia$nit) == 9, na.rm = TRUE)
 n_ciudad <- sum(!limpia$ciudad %in% catalogo_ciudades & !is.na(limpia$ciudad))
 n_ciudad_faltante <- sum(is.na(limpia$ciudad))
 n_anio <- sum(limpia$fecha_emision > corte)
-n_calificacion <- sum(!limpia$calificacion %in% 1:5 & !is.na(limpia$calificacion))
+n_calificacion <- sum(
+  !limpia$calificacion %in% 1:5 & !is.na(limpia$calificacion)
+)
 
 limpia <- limpia |>
   mutate(nit = if_else(nchar(nit) == 9, str_pad(nit, 10, pad = "0"), nit)) |>
-  left_join(equivalencias, by = c("ciudad" = "variante"), relationship = "many-to-one") |>
+  left_join(
+    equivalencias,
+    by = c("ciudad" = "variante"),
+    relationship = "many-to-one"
+  ) |>
   mutate(ciudad = coalesce(canonica, ciudad)) |>
   select(-canonica) |>
-  left_join(select(clientes, nit, ciudad_cliente = ciudad), by = "nit",
-            relationship = "many-to-one") |>
-  mutate(ciudad        = coalesce(ciudad, ciudad_cliente),
-         fecha_emision = if_else(fecha_emision > corte, fecha_vencimiento - 30, fecha_emision),
-         calificacion  = if_else(calificacion %in% 1:5, calificacion, NA)) |>
+  left_join(
+    select(clientes, nit, ciudad_cliente = ciudad),
+    by = "nit",
+    relationship = "many-to-one"
+  ) |>
+  mutate(
+    ciudad = coalesce(ciudad, ciudad_cliente),
+    fecha_emision = if_else(
+      fecha_emision > corte,
+      fecha_vencimiento - 30,
+      fecha_emision
+    ),
+    calificacion = if_else(calificacion %in% 1:5, calificacion, NA)
+  ) |>
   select(-ciudad_cliente)
 
 # 3. Cuarentena: lo que no tiene una regla de corrección
 limpia <- limpia |>
-  mutate(motivo = case_when(
-    n() > 1                         ~ "factura con dos versiones",
-    is.na(nit)                      ~ "NIT faltante",
-    !nit %in% clientes$nit          ~ "NIT que no está en clientes",
-    valor_factura <= 0              ~ "valor cero o negativo",
-    fecha_pago < fecha_emision      ~ "pago anterior a la emisión",
-    pagada != !is.na(fecha_pago)    ~ "pagada y fecha de pago no coinciden",
-    pagada & saldo != 0             ~ "pagada con saldo pendiente",
-    saldo > valor_factura           ~ "saldo mayor que el valor"
-  ), .by = factura)
+  mutate(
+    motivo = case_when(
+      n() > 1 ~ "factura con dos versiones",
+      is.na(nit) ~ "NIT faltante",
+      !nit %in% clientes$nit ~ "NIT que no está en clientes",
+      valor_factura <= 0 ~ "valor cero o negativo",
+      fecha_pago < fecha_emision ~ "pago anterior a la emisión",
+      pagada != !is.na(fecha_pago) ~ "pagada y fecha de pago no coinciden",
+      pagada & saldo != 0 ~ "pagada con saldo pendiente",
+      saldo > valor_factura ~ "saldo mayor que el valor"
+    ),
+    .by = factura
+  )
 
 cuarentena <- filter(limpia, !is.na(motivo))
 limpia <- limpia |> filter(is.na(motivo)) |> select(-motivo)
@@ -818,15 +965,15 @@ La bitácora reúne los conteos de cada paso, y la auditoría usa las mismas reg
 ```{r}
 #| label: bitacora-r
 bitacora <- tribble(
-  ~paso,                                ~accion,                         ~filas,
-  "Filas idénticas",                    "eliminar la copia",             n_copias,
-  "NIT de nueve dígitos",               "completar el cero inicial",     n_nit,
-  "Ciudad escrita de otra forma",       "tabla de equivalencias",        n_ciudad,
-  "Ciudad faltante",                    "completar desde clientes",      n_ciudad_faltante,
-  "Emisión posterior al corte",         "vencimiento menos 30 días",     n_anio,
-  "Calificación fuera de 1 a 5",        "convertir en faltante",         n_calificacion,
-  "Problema sin regla de corrección",   "cuarentena",                    nrow(cuarentena),
-  "Valor mayor a 50 millones",          "aceptar y marcar para revisar", sum(limpia$revisar)
+  ~paso                              , ~accion                         , ~filas              ,
+  "Filas idénticas"                  , "eliminar la copia"             , n_copias            ,
+  "NIT de nueve dígitos"             , "completar el cero inicial"     , n_nit               ,
+  "Ciudad escrita de otra forma"     , "tabla de equivalencias"        , n_ciudad            ,
+  "Ciudad faltante"                  , "completar desde clientes"      , n_ciudad_faltante   ,
+  "Emisión posterior al corte"       , "vencimiento menos 30 días"     , n_anio              ,
+  "Calificación fuera de 1 a 5"      , "convertir en faltante"         , n_calificacion      ,
+  "Problema sin regla de corrección" , "cuarentena"                    , nrow(cuarentena)    ,
+  "Valor mayor a 50 millones"        , "aceptar y marcar para revisar" , sum(limpia$revisar)
 )
 bitacora
 
@@ -859,38 +1006,67 @@ n_copias = len(cartera) - len(limpia)
 # 2. Correcciones con regla clara
 nit_corto = limpia["nit"].str.len() == 9
 anio_mal = limpia["fecha_emision"] > corte
-calificacion_mal = limpia["calificacion"].notna() & ~limpia["calificacion"].between(1, 5)
-ciudad_por_cliente = limpia["nit"].str.zfill(10).map(clientes.set_index("nit")["ciudad"])
+calificacion_mal = limpia["calificacion"].notna() & ~limpia[
+    "calificacion"
+].between(1, 5)
+ciudad_por_cliente = (
+    limpia["nit"].str.zfill(10).map(clientes.set_index("nit")["ciudad"])
+)
 bitacora = {
     "NIT de nueve dígitos": int(nit_corto.sum()),
-    "Ciudad escrita de otra forma": int((limpia["ciudad"].notna()
-                                         & ~limpia["ciudad"].isin(catalogo)).sum()),
+    "Ciudad escrita de otra forma": int(
+        (limpia["ciudad"].notna() & ~limpia["ciudad"].isin(catalogo)).sum()
+    ),
     "Ciudad faltante": int(limpia["ciudad"].isna().sum()),
     "Emisión posterior al corte": int(anio_mal.sum()),
     "Calificación fuera de 1 a 5": int(calificacion_mal.sum()),
 }
 
 limpia.loc[nit_corto, "nit"] = limpia.loc[nit_corto, "nit"].str.zfill(10)
-limpia["ciudad"] = (limpia["ciudad"]
-                    .map(dict(zip(equivalencias["variante"], equivalencias["canonica"])))
-                    .fillna(ciudad_por_cliente))
-limpia.loc[anio_mal, "fecha_emision"] = (limpia.loc[anio_mal, "fecha_vencimiento"]
-                                         - pd.Timedelta(days=30))
-limpia["calificacion"] = limpia["calificacion"].where(~calificacion_mal).astype("Int64")
+limpia["ciudad"] = (
+    limpia["ciudad"]
+    .map(dict(zip(equivalencias["variante"], equivalencias["canonica"])))
+    .fillna(ciudad_por_cliente)
+)
+limpia.loc[anio_mal, "fecha_emision"] = limpia.loc[
+    anio_mal, "fecha_vencimiento"
+] - pd.Timedelta(days=30)
+limpia["calificacion"] = (
+    limpia["calificacion"].where(~calificacion_mal).astype("Int64")
+)
 
 # 3. Cuarentena
-motivo = pd.Series(pd.NA, index=limpia.index, dtype="str").case_when([
-    (limpia["factura"].duplicated(keep=False), "factura con dos versiones"),
-    (limpia["nit"].isna(), "NIT faltante"),
-    (~limpia["nit"].isin(clientes["nit"]), "NIT que no está en clientes"),
-    (limpia["valor_factura"] <= 0, "valor cero o negativo"),
-    (limpia["fecha_pago"] < limpia["fecha_emision"], "pago anterior a la emisión"),
-    (limpia["pagada"] != limpia["fecha_pago"].notna(), "pagada y fecha de pago no coinciden"),
-    (limpia["pagada"] & (limpia["saldo"] != 0), "pagada con saldo pendiente"),
-    (limpia["saldo"] > limpia["valor_factura"], "saldo mayor que el valor"),
-])
+motivo = pd.Series(pd.NA, index=limpia.index, dtype="str").case_when(
+    [
+        (
+            limpia["factura"].duplicated(keep=False),
+            "factura con dos versiones",
+        ),
+        (limpia["nit"].isna(), "NIT faltante"),
+        (~limpia["nit"].isin(clientes["nit"]), "NIT que no está en clientes"),
+        (limpia["valor_factura"] <= 0, "valor cero o negativo"),
+        (
+            limpia["fecha_pago"] < limpia["fecha_emision"],
+            "pago anterior a la emisión",
+        ),
+        (
+            limpia["pagada"] != limpia["fecha_pago"].notna(),
+            "pagada y fecha de pago no coinciden",
+        ),
+        (
+            limpia["pagada"] & (limpia["saldo"] != 0),
+            "pagada con saldo pendiente",
+        ),
+        (
+            limpia["saldo"] > limpia["valor_factura"],
+            "saldo mayor que el valor",
+        ),
+    ]
+)
 cuarentena = limpia[motivo.notna()].assign(motivo=motivo)
-limpia = limpia[motivo.isna()].assign(revisar=lambda d: d["valor_factura"] > 50e6)
+limpia = limpia[motivo.isna()].assign(
+    revisar=lambda d: d["valor_factura"] > 50e6
+)
 
 print(cuarentena["motivo"].value_counts())
 reporte = auditar(limpia, reglas_cartera(clientes))
@@ -922,7 +1098,9 @@ En DuckDB, la limpieza completa es una consulta con varios pasos encadenados con
 
 ```{r}
 #| label: limpieza-completa-duckdb
-dbExecute(con, r"(
+dbExecute(
+  con,
+  r"(
   CREATE OR REPLACE TABLE cartera_revisada AS
   WITH sin_copias AS (
     SELECT DISTINCT * FROM 'datos/cap06/cartera_2026_t1.parquet'
@@ -955,14 +1133,18 @@ dbExecute(con, r"(
          END AS motivo,
          valor_factura > 50e6 AS revisar
   FROM corregida
-)")
+)"
+)
 
-dbGetQuery(con, r"(
+dbGetQuery(
+  con,
+  r"(
   SELECT coalesce(motivo, '(limpia)') AS destino, count(*) AS filas
   FROM cartera_revisada
   GROUP BY ALL
   ORDER BY filas DESC
-)")
+)"
+)
 ```
 
 `SELECT * REPLACE (...)` reemplaza columnas existentes sin repetir las demás, y `EXCLUDE` quita las que trajeron las uniones. La tabla `cartera_revisada` tiene todas las filas con su `motivo`; la limpia y la cuarentena son dos filtros sobre ella. Escrita así, la misma limpieza funciona igual con 400 facturas que con 40 millones: es la forma de limpiar cuando el volumen supera la memoria, como vimos en el @sec-volumen.

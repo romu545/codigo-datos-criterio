@@ -9,6 +9,7 @@ knitr:
   opts_chunk: 
     comment: "#>"
     collapse: true
+    jupyter_compat: true # en Python, solo se imprime la última expresión, como en Jupyter
 
 
 

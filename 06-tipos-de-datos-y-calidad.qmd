@@ -12,7 +12,7 @@ Seguimos con la misma red regional de distribución, ahora con la cartera comple
 ## Antes de empezar
 
 1. Abre la carpeta de materiales en Positron para que las rutas relativas `datos/cap06/...` funcionen.
-2. No necesitas paquetes nuevos: usamos los que instalaste al comienzo del @sec-importacion.
+2. Usamos los paquetes que instalaste en la @sec-instalar-paquetes. La @sec-contratos usa además `pointblank` en R y `pandera` en Python, que también están en esa lista.
 3. Si los archivos de `datos/cap06/` no están en tu copia, genéralos desde la terminal, en la carpeta de materiales, con `Rscript scripts/generar_datos_cap06.R`.
 :::
 
@@ -40,6 +40,22 @@ use(
 )
 use("DBI", c("dbConnect", "dbGetQuery", "dbExecute", "dbDisconnect"))
 use("duckdb", "duckdb")
+use(
+  "pointblank",
+  c(
+    "create_agent",
+    "col_vals_not_null",
+    "rows_distinct",
+    "col_vals_gt",
+    "col_vals_regex",
+    "col_vals_in_set",
+    "col_vals_between",
+    "col_vals_expr",
+    "expr",
+    "interrogate",
+    "get_agent_x_list"
+  )
+)
 
 con <- dbConnect(duckdb())
 ruta_cartera <- "datos/cap06/cartera_2026_t1.parquet"
@@ -98,7 +114,7 @@ unclass(cartera$fecha_emision[1])
 
 ### Python
 
-```python
+```{python}
 import pandas as pd
 
 ruta_cartera = "datos/cap06/cartera_2026_t1.parquet"
@@ -106,40 +122,15 @@ cartera = pd.read_parquet(ruta_cartera)
 print(cartera.dtypes)
 ```
 
-```text
-factura                                         str
-nit                                             str
-fecha_emision                                object
-fecha_vencimiento                            object
-fecha_pago                                   object
-valor_factura                               float64
-pagada                                         bool
-cliente_activo                                 bool
-calificacion                                float64
-ciudad                                          str
-saldo                                       float64
-registrado_en        datetime64[us, America/Bogota]
-dtype: object
-```
-
 El archivo es el mismo, pero `pandas` no lo entiende igual. Las fechas llegan como `object`: cada celda es un objeto `datetime.date` de Python, no una columna de fechas de `pandas`, así que no sirven para restar ni filtrar por rango. Y `calificacion`, que en el archivo es un entero, llega como `float64`, porque tiene faltantes y el `int64` de NumPy no los admite. Lo corregimos con conversiones explícitas:
 
-```python
+```{python}
 print(type(cartera["fecha_emision"].iloc[0]))
 
 fechas = ["fecha_emision", "fecha_vencimiento", "fecha_pago"]
 cartera[fechas] = cartera[fechas].apply(pd.to_datetime)
 cartera = cartera.astype({"calificacion": "Int64"})
 print(cartera[fechas + ["calificacion"]].dtypes)
-```
-
-```text
-<class 'datetime.date'>
-fecha_emision        datetime64[s]
-fecha_vencimiento    datetime64[s]
-fecha_pago           datetime64[s]
-calificacion                 Int64
-dtype: object
 ```
 
 Otra opción es leer con `pd.read_parquet(ruta_cartera, dtype_backend="pyarrow")`, que conserva los tipos exactos del archivo (`date32`, `int32`) usando las columnas de Arrow dentro de `pandas`. Es más fiel al archivo, pero algunas funciones de `pandas` y de otras librerías todavía esperan los tipos de NumPy, así que en el libro preferimos la conversión explícita.
@@ -196,7 +187,7 @@ La cuenta detecta dos valores que no se pudieron convertir: `"3,5"`, por la coma
 
 ### Python
 
-```python
+```{python}
 import numpy as np
 
 print(np.array([True, 2, 3.5]))
@@ -204,24 +195,13 @@ print(np.array([1, "a", True]))
 print(pd.Series([True, 2, 3.5]).dtype)
 ```
 
-```text
-[1.  2.  3.5]
-['1' 'a' 'True']
-object
-```
-
 NumPy hace la misma coerción que R. `pandas`, en cambio, no convierte: guarda la mezcla como `object`, una columna donde cada celda es un objeto de Python con su propio tipo. No hay error, pero la columna deja de comportarse como números. Para convertir texto en números y contar lo que se pierde:
 
-```python
+```{python}
 texto = pd.Series(["12", "3,5", "1.200", "", None])
 numeros = pd.to_numeric(texto, errors="coerce")
 print(numeros.tolist())
 print("Faltantes nuevos:", numeros.isna().sum() - texto.isna().sum())
-```
-
-```text
-[12.0, nan, 1.2, nan, nan]
-Faltantes nuevos: 2
 ```
 
 `errors="coerce"` convierte en `NaN` lo que no se puede convertir; sin él, `pd.to_numeric()` se detiene con un error en el primer valor problemático. Y, como en R, `"1.200"` se convierte en `1.2` sin aviso.
@@ -271,18 +251,12 @@ isTRUE(all.equal(0.1 + 0.2, 0.3))
 
 ### Python
 
-```python
+```{python}
 import math
 
 print(0.1 + 0.2 == 0.3)
 print(0.1 + 0.2)
 print(math.isclose(0.1 + 0.2, 0.3))
-```
-
-```text
-False
-0.30000000000000004
-True
 ```
 
 `math.isclose()`, o `np.isclose()` para columnas enteras, compara con una tolerancia.
@@ -370,7 +344,7 @@ count(cartera[fuera, ], ciudad)
 
 ### Python
 
-```python
+```{python}
 rng = np.random.default_rng(2026)
 ciudades = pd.Series(
     rng.choice(["Bogotá", "Cali", "Medellín", "Pasto"], 1_000_000)
@@ -379,27 +353,14 @@ print(round(ciudades.memory_usage(deep=True) / 1e6, 1))
 print(round(ciudades.astype("category").memory_usage(deep=True) / 1e6, 1))
 ```
 
-```text
-14.3
-1.0
-```
-
 En `pandas` la diferencia es grande: 14,3 MB como texto y 1 MB como categoría. Para validar contra el catálogo usamos `isin()`:
 
-```python
+```{python}
 clientes = pd.read_parquet("datos/cap06/clientes.parquet")
 catalogo = sorted(clientes["ciudad"].unique())
 
 fuera = cartera["ciudad"].notna() & ~cartera["ciudad"].isin(catalogo)
 print(cartera.loc[fuera, "ciudad"].value_counts())
-```
-
-```text
-ciudad
-BOGOTA         6
-Bogota D.C.    3
- Cali          2
-Name: count, dtype: int64
 ```
 
 En versiones anteriores, `astype(pd.CategoricalDtype(catalogo))` convertía en silencio en `NaN` los valores fuera del catálogo, como `factor()` en R. Desde `pandas` 3.1 esa conversión emite un aviso de que en el futuro será un error. Por eso conviene validar primero con `isin()` y convertir a categoría después.
@@ -474,25 +435,9 @@ summary(cartera)
 
 ### Python
 
-```python
+```{python}
 print(cartera.describe().T[["count", "min", "max"]])
 print(cartera.select_dtypes(["str", "bool"]).nunique())
-```
-
-```text
-                   count                  min                  max
-fecha_emision        406  2026-01-02 00:00:00  2062-03-21 00:00:00
-fecha_vencimiento    406  2026-02-01 00:00:00  2026-04-30 00:00:00
-fecha_pago           195  2026-01-06 00:00:00  2026-03-31 00:00:00
-valor_factura      406.0          -6226332.66           98500000.0
-calificacion       396.0                  0.0                  7.0
-saldo              406.0          -6226332.66           98500000.0
-factura           400
-nit               179
-pagada              2
-cliente_activo      2
-ciudad             11
-dtype: int64
 ```
 
 `describe()` resume las columnas numéricas y de fecha; `nunique()` cuenta los valores distintos de las columnas de texto y lógicas.
@@ -559,7 +504,7 @@ select(versiones, factura, nit, fecha_emision, valor_factura)
 
 ### Python
 
-```python
+```{python}
 print(cartera.isna().sum()[lambda s: s > 0])
 print("Filas idénticas repetidas:", cartera.duplicated().sum())
 print("Facturas repetidas:", cartera["factura"].duplicated().sum())
@@ -567,21 +512,6 @@ print("Facturas repetidas:", cartera["factura"].duplicated().sum())
 sin_copias = cartera.drop_duplicates()
 versiones = sin_copias[sin_copias["factura"].duplicated(keep=False)]
 print(versiones[["factura", "nit", "fecha_emision", "valor_factura"]])
-```
-
-```text
-nit               3
-fecha_pago      211
-calificacion     10
-ciudad            4
-dtype: int64
-Filas idénticas repetidas: 4
-Facturas repetidas: 6
-      factura         nit fecha_emision  valor_factura
-225  FV-20224  0213202814    2026-02-24     9400663.24
-226  FV-20224  0213202814    2026-02-24    10152716.30
-229  FV-20227  0284871151    2026-02-24     3909520.58
-230  FV-20227  0284871151    2026-02-24     4222282.23
 ```
 
 `duplicated(keep=False)` marca todas las filas de una clave repetida, sin distinguir la primera.
@@ -687,7 +617,7 @@ Los cuatro aparecen al recuperar el cero. El problema de calidad tiene una causa
 
 ### Python
 
-```python
+```{python}
 inicio, corte = pd.Timestamp("2026-01-01"), pd.Timestamp("2026-03-31")
 
 validez = pd.DataFrame(
@@ -705,18 +635,9 @@ validez = pd.DataFrame(
 print((~validez).sum())
 ```
 
-```text
-valor_positivo         3
-calificacion_1_a_5     3
-emision_en_periodo     1
-nit_10_digitos         4
-ciudad_en_catalogo    11
-dtype: Int64
-```
-
 `~` es la negación en `pandas` y `|` es el "o". Cada condición va entre paréntesis o en su propia línea, porque `|` tiene más precedencia que las comparaciones. `str.fullmatch(r"\d{10}")` exige que todo el texto sean diez dígitos.
 
-```python
+```{python}
 consistencia = pd.DataFrame(
     {
         "pago_despues_emision": cartera["fecha_pago"].isna()
@@ -732,22 +653,6 @@ huerfanas = cartera[
     cartera["nit"].notna() & ~cartera["nit"].isin(clientes["nit"])
 ]
 print(huerfanas["nit"].value_counts())
-```
-
-```text
-pago_despues_emision    3
-pagada_con_fecha        2
-pagada_sin_saldo        3
-saldo_hasta_valor       2
-dtype: int64
-nit
-0900123456    2
-580691787     1
-691181931     1
-584524401     1
-738702752     1
-0811000222    1
-Name: count, dtype: int64
 ```
 
 `~isin()` cumple el papel del `anti_join()` de R: las filas cuyo NIT no está en la lista de clientes.
@@ -866,7 +771,7 @@ write_parquet(cartera_auditada, "datos/cap06/cartera_2026_t1_auditada.parquet")
 
 ### Python
 
-```python
+```{python}
 reglas = [
     # (regla, dimensión, severidad, función que dice qué filas cumplen)
     ("nit_presente", "Completitud", "bloquea", lambda d: d["nit"].notna()),
@@ -960,27 +865,9 @@ reporte = pd.DataFrame(
 print(reporte)
 ```
 
-```text
-                   regla      dimension severidad  filas  porcentaje
-0           nit_presente    Completitud   bloquea      3         0.7
-1        ciudad_presente    Completitud  advierte      4         1.0
-2          factura_unica       Unicidad   bloquea     12         3.0
-3         valor_positivo        Validez   bloquea      3         0.7
-4     calificacion_1_a_5        Validez  advierte      3         0.7
-5     emision_en_periodo        Validez   bloquea      1         0.2
-6         nit_10_digitos        Validez   bloquea      4         1.0
-7     ciudad_en_catalogo        Validez  advierte     11         2.7
-8   pago_despues_emision   Consistencia   bloquea      3         0.7
-9       pagada_con_fecha   Consistencia   bloquea      2         0.5
-10      pagada_sin_saldo   Consistencia   bloquea      3         0.7
-11     saldo_hasta_valor   Consistencia   bloquea      2         0.5
-12       nit_en_clientes     Integridad   bloquea      7         1.7
-13       valor_plausible  Plausibilidad  advierte      1         0.2
-```
-
 Cada regla es una tupla con una función `lambda`. La comprensión de diccionario aplica cada función a la cartera y arma el `DataFrame` de marcas, con una columna por regla. `astype(bool)` convierte los booleanos con faltantes (`boolean`) en booleanos simples; si una regla dejara un `NA`, quedaría como `True` y la contaríamos como cumplida, por eso cada regla deja pasar los faltantes de forma explícita. Marcar las filas:
 
-```python
+```{python}
 cartera["problemas"] = marcas.apply(
     lambda fila: ", ".join(fila.index[fila]) or None, axis=1
 )
@@ -990,11 +877,6 @@ print("Filas con algún problema:", cartera["problemas"].notna().sum())
 print("Filas con un problema que bloquea:", marcas[bloquean].any(axis=1).sum())
 
 cartera.to_parquet("datos/cap06/cartera_2026_t1_auditada.parquet", index=False)
-```
-
-```text
-Filas con algún problema: 55
-Filas con un problema que bloquea: 36
 ```
 
 `", ".join(...) or None` devuelve `None` cuando la fila no falla ninguna regla, porque un texto vacío cuenta como falso en Python.
@@ -1035,11 +917,100 @@ La consulta interna calcula todas las reglas en una sola pasada y devuelve una f
 
 El reporte cuenta una historia clara. Son 55 facturas con algún problema, un 13,5 % de la cartera, y 36 con al menos uno que bloquea su uso. Ninguna regla falla en más del 3 % de las filas: es una cartera usable, con problemas concentrados y conocidos. Y lo más importante: ahora cada problema tiene nombre, conteo y ubicación, y la auditoría se repite el próximo trimestre ejecutando el mismo código.
 
-::: {.callout-note}
-## Paquetes de validación
+### Otra herramienta: las reglas como contrato {#sec-contratos}
 
-La tabla de reglas de este capítulo es la idea central de varios paquetes especializados. En R, [pointblank](https://rstudio.github.io/pointblank/) genera reportes de validación en HTML y [validate](https://cran.r-project.org/package=validate) trata las reglas como un objeto propio, con su propio lenguaje. En Python, [pandera](https://pandera.readthedocs.io/) declara un esquema con tipos y condiciones por columna y [Great Expectations](https://greatexpectations.io/) está pensado para equipos y flujos de datos grandes. Son útiles cuando las reglas crecen, se comparten entre proyectos o hay que presentar reportes; para empezar, una tabla de reglas como la de este ejemplo enseña lo esencial sin dependencias nuevas.
+La tabla de reglas que acabamos de construir es la idea central de varios paquetes especializados. Dos de ellos convierten las reglas en un **contrato de datos**: una declaración de lo que una tabla debe cumplir, que se comprueba cada vez que llega una versión nueva. En R, [pointblank](https://rstudio.github.io/pointblank/); en Python, [pandera](https://pandera.readthedocs.io/). Aquí escribimos con ellos siete de las catorce reglas, para comparar.
+
+::: {.panel-tabset group="lenguaje"}
+
+### R
+
+```{r}
+#| label: contrato-pointblank
+contrato <- create_agent(cartera, label = "Contrato de la cartera") |>
+  col_vals_not_null(nit) |>
+  rows_distinct(columns = factura) |>
+  col_vals_gt(valor_factura, 0) |>
+  col_vals_regex(nit, "^[0-9]{10}$", na_pass = TRUE) |>
+  col_vals_in_set(nit, c(clientes$nit, NA)) |>
+  col_vals_between(calificacion, 1, 5, na_pass = TRUE) |>
+  col_vals_expr(expr(is.na(fecha_pago) | fecha_pago >= fecha_emision)) |>
+  interrogate()
+
+resultado <- get_agent_x_list(contrato)
+data.frame(
+  regla = resultado$type,
+  filas = resultado$n_failed,
+  porcentaje = round(100 * resultado$f_failed, 1)
+)
+```
+
+Cada función `col_vals_*()` es una regla, y su nombre dice qué comprueba. `na_pass = TRUE` deja pasar los faltantes de forma explícita, como hicimos a mano en la tabla de reglas. Al imprimir `contrato` en Positron o en un documento HTML, `pointblank` muestra un reporte con una fila por regla, semáforos de color y ejemplos de las filas que fallan.
+
+Las mismas funciones sirven para detener un flujo. Aplicadas directamente a la tabla, sin `create_agent()`, devuelven la tabla si se cumplen y producen un error si no:
+
+```{r}
+#| label: contrato-pointblank-flujo
+#| error: true
+cartera |>
+  col_vals_gt(valor_factura, 0) |>
+  nrow()
+```
+
+### Python
+
+```{python}
+import pandera.pandas as pa
+
+contrato = pa.DataFrameSchema(
+    {
+        "factura": pa.Column(str, unique=True),
+        "nit": pa.Column(
+            str,
+            checks=[
+                pa.Check.str_matches(r"^\d{10}$", error="nit_10_digitos"),
+                pa.Check.isin(clientes["nit"], error="nit_en_clientes"),
+            ],
+            nullable=False,
+        ),
+        "valor_factura": pa.Column(
+            float, pa.Check.gt(0, error="valor_positivo")
+        ),
+        "calificacion": pa.Column(
+            "Int64",
+            pa.Check.in_range(1, 5, error="calificacion_1_a_5"),
+            nullable=True,
+        ),
+    },
+    checks=pa.Check(
+        lambda d: (
+            d["fecha_pago"].isna() | (d["fecha_pago"] >= d["fecha_emision"])
+        ),
+        name="pago_despues_emision",
+    ),
+)
+
+try:
+    contrato.validate(cartera, lazy=True)
+except pa.errors.SchemaErrors as error:
+    fallas = error.failure_cases
+    print(fallas.groupby("check")["index"].nunique())
+```
+
+`pandera` declara el contrato como un **esquema**: para cada columna, su tipo, si admite faltantes y sus condiciones. Las reglas que involucran varias columnas van en `checks`, al nivel de la tabla. `validate()` detiene el flujo con un error en la primera falla; con `lazy=True` revisa todo y reúne las fallas en `failure_cases`, una tabla con la fila, la columna y la regla. El contrato también comprueba los tipos: si `valor_factura` llegara como texto, fallaría antes de evaluar ninguna regla.
+
 :::
+
+Las dos herramientas encuentran las mismas fallas que la tabla de reglas: 12 facturas repetidas, 7 NIT que no están en clientes, 4 que no tienen diez dígitos y 3 en cada una de las demás reglas.
+
+**¿Cuándo conviene cada camino?** La tabla de reglas escrita a mano no agrega dependencias, se entiende sin conocer ningún paquete y produce exactamente el reporte que necesitamos; para un proyecto con una o dos tablas, es suficiente. Un paquete de contratos conviene cuando:
+
+- **las reglas se comparten**: el mismo contrato lo usan varios proyectos o varias personas, y conviene un formato que todos conozcan;
+- **el reporte es para otros**: el informe HTML de `pointblank` se entrega tal cual a quien administra la fuente de datos;
+- **el contrato protege un flujo automático**: un flujo que corre solo, como el del @sec-flujos, debe detenerse si los datos que llegan no cumplen lo pactado, y `validate()` o las funciones de `pointblank` lo hacen en una línea;
+- **los tipos también importan**: `pandera` comprueba el tipo de cada columna junto con las reglas.
+
+El costo es una dependencia más y un lenguaje que aprender. Hay alternativas: en R, [validate](https://cran.r-project.org/package=validate) trata las reglas como un objeto propio; en Python, [Great Expectations](https://greatexpectations.io/) está pensado para equipos y flujos de datos grandes. La lógica es la misma en todos: **las reglas se escriben una vez, como datos, y se comprueban siempre**.
 
 La @tbl-herramientas-calidad resume con qué se hace cada tarea del capítulo en cada herramienta.
 
@@ -1100,7 +1071,8 @@ sobrecobro <- ... # TODO
 
 ### Python
 
-```python
+```{python}
+#| eval: false
 recaudos = pd.read_parquet("datos/cap06/recaudos_2026_t1.parquet")
 recaudos["fecha_recaudo"] = pd.to_datetime(recaudos["fecha_recaudo"])
 medios_validos = ["Transferencia", "PSE", "Cheque", "Efectivo"]

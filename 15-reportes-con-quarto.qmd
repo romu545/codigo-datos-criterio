@@ -120,7 +120,7 @@ Las dos últimas líneas son la comprobación, leyendo los archivos generados y 
 
 ### Python
 
-```python
+```{python}
 import os
 import subprocess
 import sys
@@ -153,10 +153,6 @@ def generar_reporte(sucursal, mes="2026-04"):
 
 generados = [generar_reporte(s) for s in ["S01", "S03"]]
 print(generados)
-```
-
-```text
-['reportes\\salida\\reporte_py_S01_2026-04.html', 'reportes\\salida\\reporte_py_S03_2026-04.html']
 ```
 
 `cwd="reportes"` ejecuta Quarto desde la carpeta del proyecto de reportes, como `setwd()` en R, pero solo para ese proceso: la carpeta de trabajo de Python no cambia. `os.environ["QUARTO_PYTHON"] = sys.executable` le dice a Quarto que use el mismo Python que está ejecutando este código, con sus bibliotecas; sin esa línea, Quarto puede encontrar otro Python del sistema. La variable de entorno pasa a los procesos que se lanzan después, como el de Quarto.

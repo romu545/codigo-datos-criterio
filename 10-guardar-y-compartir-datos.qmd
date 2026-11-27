@@ -217,7 +217,7 @@ head(diccionario, 4)
 
 ### Python
 
-```python
+```{python}
 import pandas as pd
 import pyarrow as pa
 import pyarrow.parquet as pq
@@ -254,20 +254,11 @@ tipos = pd.DataFrame(
 print(tipos[tipos["original"] != tipos["csv"]])
 ```
 
-```text
-True
-                  original    csv
-nit                    str  int64
-fecha_emision       object    str
-fecha_vencimiento   object    str
-fecha_pago          object    str
-```
-
 En `pandas` el viaje por CSV es peor que en R: además del NIT, las tres fechas vuelven como texto, porque `read_csv()` no reconoce fechas si no se le pide. El Parquet vuelve idéntico (`equals()` da `True`). Las fechas aparecen como `object` porque `pandas` lee las columnas de tipo fecha de Parquet como objetos `date` de Python, como vimos en el @sec-tipos-calidad.
 
 Los metadatos se escriben con `pyarrow`, la biblioteca sobre la que `pandas` lee y escribe Parquet:
 
-```python
+```{python}
 tabla = pa.Table.from_pandas(cartera, preserve_index=False)
 tabla = tabla.replace_schema_metadata(
     {
@@ -282,10 +273,6 @@ print(
         b"corte"
     ]
 )
-```
-
-```text
-b'2026-03-31'
 ```
 
 Los metadatos de Parquet se guardan como bytes, por eso las claves y los valores llevan el prefijo `b`. `**tabla.schema.metadata` conserva los metadatos que `pandas` ya había guardado (los tipos originales de cada columna) y agrega los nuevos.
@@ -421,7 +408,7 @@ Fíjate en la última línea: `corte` volvió como texto, no como fecha. El valo
 
 ### Python
 
-```python
+```{python}
 import pyarrow.dataset as ds
 
 
@@ -480,15 +467,6 @@ print(
     .value_counts()
     .sort_index()
 )
-```
-
-```text
-[94, 141, 201]
-corte
-2026-01-31     94
-2026-02-28    141
-2026-03-31    201
-Name: count, dtype: int64
 ```
 
 Las fechas de la cartera son objetos `date` de Python (columnas `object`), así que la diferencia de días se calcula con una comprensión de listas sobre cada fecha. `partitioning_flavor="hive"` nombra las carpetas `corte=2026-01-31`, igual que `arrow` en R. Como en R, el valor de la partición vuelve como categoría de texto al leer.
@@ -591,7 +569,7 @@ De las facturas que estaban vencidas al cierre de febrero, una parte se pagó en
 
 ### Python
 
-```python
+```{python}
 historia = (
     pd.read_parquet("datos/cap10/cierres_py")
     .pivot_table(
@@ -606,14 +584,6 @@ historia = (
     .round(1)
 )
 print(historia[["al día", "1 a 15", "16 a 30", "más de 30"]])
-```
-
-```text
-edad        al día  1 a 15  16 a 30  más de 30
-corte                                         
-2026-01-31   559.3     0.0      0.0        0.0
-2026-02-28   479.8   218.2     69.4        0.0
-2026-03-31   548.6   145.4    123.5      266.8
 ```
 
 `pivot_table()` resume y pasa a ancho en un solo paso. `observed=True` evita que aparezcan combinaciones vacías de las categorías, porque la columna de partición se lee como categoría.
@@ -811,7 +781,7 @@ La comprobación de la sucursal usa `identical(unique(...), ...)` y no `all(leid
 
 ### Python
 
-```python
+```{python}
 from pathlib import Path
 
 clientes = pd.read_parquet("datos/cap06/clientes.parquet")[
@@ -856,14 +826,6 @@ print(
     manifiesto["facturas"].sum() == len(pendiente),
     manifiesto["valor"].sum() == pendiente["valor_factura"].sum(),
 )
-```
-
-```text
-  sucursal                     archivo  facturas     valor
-0      S01  cartera_S01_2026-03-31.csv        25 125655942
-1      S02  cartera_S02_2026-03-31.csv        17  63356408
-2      S03  cartera_S03_2026-03-31.csv        29 129715972
-True True
 ```
 
 En Python, el bucle sobre `groupby()` cumple las dos funciones: cada vuelta entrega el nombre del grupo y su tabla, y el manifiesto se arma en el mismo bucle con una lista de diccionarios. `encoding="utf-8-sig"` agrega la marca para Excel, y `sep=";"` con `decimal=","` dan el formato del Excel en español, como `write_excel_csv2()`.
@@ -928,7 +890,7 @@ Excel impone límites que conviene recordar al nombrar las hojas desde los datos
 
 ### Python
 
-```python
+```{python}
 resumen = manifiesto[["sucursal", "facturas", "valor"]]
 
 with pd.ExcelWriter(
@@ -943,10 +905,6 @@ print(
         "datos/cap10/cartera_pendiente_py_2026-03-31.xlsx"
     ).sheet_names
 )
-```
-
-```text
-['resumen', 'S01', 'S02', 'S03', 'S04', 'S05', 'S06', 'S07', 'S08']
 ```
 
 `pd.ExcelWriter` abre el libro y cada `to_excel()` agrega una hoja. El bloque `with` cierra y guarda el archivo al terminar. `pandas` usa `openpyxl` por debajo; para escribir libros con mucho formato, `XlsxWriter` es la alternativa más completa en Python.
@@ -1020,7 +978,7 @@ names(leido)
 
 ### Python
 
-```python
+```{python}
 contable = pendiente.assign(
     valor=lambda d: d["valor_factura"].round().astype("int64")
 )[["factura", "nit", "fecha_vencimiento", "valor", "dias_vencida"]]
@@ -1031,14 +989,6 @@ with open(
     "datos/cap10/cartera_contable_py_2026-03-31.csv", encoding="utf-8"
 ) as f:
     print(f.readline() + f.readline())
-```
-
-```text
-valor_factura
-8560042.83
-
-factura,nit,fecha_vencimiento,valor,dias_vencida
-FV-20009,0686665203,2026-02-04,8560043,55
 ```
 
 La primera salida muestra lo que escribiría `pandas` sin la conversión: el valor con sus centavos, `8560042.83`, que un sistema que espera pesos enteros rechazaría. Y aunque una columna decimal no tenga centavos, `pandas` la escribe con `.0` al final (`3818152.0`), con el mismo resultado. Redondear y convertir a entero con `round().astype("int64")` antes de escribir resuelve los dos casos. Las fechas, que son objetos `date`, se escriben en formato ISO.
@@ -1103,7 +1053,8 @@ iwalk(por_region, \(tabla, region) {
 
 ### Python
 
-```python
+```{python}
+#| eval: false
 ventas = ...  # TODO
 ds.write_dataset(
     ...,

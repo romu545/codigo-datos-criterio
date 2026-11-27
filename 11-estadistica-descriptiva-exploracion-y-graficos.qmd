@@ -76,7 +76,8 @@ use(
     "geom_vline",
     "scale_fill_gradient",
     "scale_fill_gradient2",
-    "facet_grid"
+    "facet_grid",
+    "geom_pointrange"
   )
 )
 use("forcats", c("fct_reorder", "fct_infreq"))
@@ -172,40 +173,13 @@ Paquetes como `skimr` hacen este resumen con una sola función, y lo acompañan 
 
 ### Python
 
-```python
+```{python}
 import pandas as pd
 
 entregas = pd.read_parquet("datos/cap11/entregas_2026_t1.parquet")
 print(entregas.shape, entregas["pedido"].nunique())
 entregas.info()
 print(entregas.describe().T.round(1).to_string())
-```
-
-```text
-(2400, 10) 2400
-<class 'pandas.DataFrame'>
-RangeIndex: 2400 entries, 0 to 2399
-Data columns (total 10 columns):
- #   Column            Non-Null Count  Dtype  
----  ------            --------------  -----  
- 0   pedido            2400 non-null   str    
- 1   fecha             2400 non-null   object 
- 2   sucursal          2400 non-null   str    
- 3   canal             2400 non-null   str    
- 4   distancia_km      1908 non-null   float64
- 5   tiempo_entrega_h  1908 non-null   float64
- 6   unidades          2400 non-null   float64
- 7   valor_pedido      2378 non-null   float64
- 8   calificacion      1992 non-null   float64
- 9   devuelto          2400 non-null   bool   
-dtypes: bool(1), float64(5), object(1), str(3)
-memory usage: 211.6+ KB
-                   count      mean        std      min       25%       50%       75%         max
-distancia_km      1908.0       7.0        4.4      0.9       4.1       5.8       8.8        37.4
-tiempo_entrega_h  1908.0      11.2        5.8      0.7       7.3      10.0      13.6        32.6
-unidades          2400.0       8.5       31.2      1.0       5.0       7.0       9.0       758.0
-valor_pedido      2378.0  276583.7  1065735.5  16400.0  111450.0  175900.0  281875.0  24536000.0
-calificacion      1992.0       4.3        0.8      1.0       4.0       4.0       5.0         5.0
 ```
 
 `info()` muestra cada columna con sus valores no faltantes y su tipo, y `describe()` resume las numéricas con el conteo, la media, la desviación estándar y los cuartiles. `.T` transpone la tabla para que cada variable sea una fila, y `to_string()` la imprime completa, sin columnas recortadas. Observa `calificacion`: en R es un entero, pero aquí llega como `float64`, porque `pandas` convierte a decimal un entero que tiene faltantes, como vimos en el @sec-tipos-calidad.
@@ -317,7 +291,7 @@ La diferencia parece pequeña, pero en una escala de 1 a 5 donde casi todo está
 
 ### Python
 
-```python
+```{python}
 import seaborn as sns
 import matplotlib.pyplot as plt
 
@@ -344,18 +318,6 @@ print(
     )
     .round(2)
 )
-```
-
-```text
-           distancia_km  tiempo_entrega_h  valor_pedido  calificacion
-canal                                                                
-domicilio             0                 0             9           178
-retiro              492               492             4            62
-web                   0                 0             9           168
-          pedidos  sin_calificacion  calificacion
-entrega                                          
-a tiempo     1740              0.15          4.33
-tardía        168              0.46          2.81
 ```
 
 `sns.heatmap()` dibuja la tabla lógica de faltantes como un mapa de celdas, el mismo gráfico de la pestaña de R. La biblioteca `missingno` tiene una versión lista para usar (`msno.matrix()`).
@@ -443,7 +405,7 @@ Entre el percentil 99 y el máximo hay un salto de más de 20 veces. Los pedidos
 
 ### Python
 
-```python
+```{python}
 v = entregas["valor_pedido"].dropna()
 
 
@@ -468,16 +430,6 @@ comparacion["cambio_pct"] = (
     100 * (comparacion["todos"] / comparacion["sin_grandes"] - 1)
 ).round()
 print(comparacion)
-```
-
-```text
-                     todos  sin_grandes  cambio_pct
-media             276584.0     224201.0        23.0
-media_recortada   206118.0     205050.0         1.0
-mediana           175900.0     175500.0         0.0
-desviacion       1065735.0     171946.0       520.0
-iqr               170425.0     168850.0         1.0
-mad               112085.0     112010.0         0.0
 ```
 
 `pandas` no tiene media recortada ni MAD robusta, pero se escriben en una línea cada una. La media recortada se calcula aquí con los valores entre los percentiles 5 y 95, que es lo mismo que recorta `mean(trim = 0.05)` de R salvo en los empates. Para la MAD, el factor 1,4826 se escribe a mano. Cuidado con `Series.mad()` en código antiguo: en versiones viejas de `pandas` era la desviación media absoluta, otra medida, y se eliminó en la versión 2.0.
@@ -591,7 +543,7 @@ Donde la curva corta la línea de 12 horas se lee directamente la proporción de
 
 ### Python
 
-```python
+```{python}
 fig, ejes = plt.subplots(1, 2, figsize=(10, 3.5))
 sns.histplot(entregas, x="valor_pedido", bins=40, ax=ejes[0])
 sns.histplot(entregas, x="valor_pedido", bins=40, log_scale=True, ax=ejes[1])
@@ -616,13 +568,6 @@ print(
     .apply(lambda x: (x <= 12).mean())
     .round(2)
 )
-```
-
-```text
-canal
-domicilio    0.66
-web          0.66
-Name: tiempo_entrega_h, dtype: float64
 ```
 
 `plt.subplots(1, 2)` crea una figura con dos paneles, y el argumento `ax` de cada función de `seaborn` dice en cuál dibujar. `log_scale=True` pone el eje en escala logarítmica, y `ecdfplot()` dibuja la ECDF. Los gráficos son los mismos de la pestaña de R.
@@ -755,7 +700,7 @@ Hay más variantes de la misma idea, en paquetes que vale la pena conocer. El **
 
 ### Python
 
-```python
+```{python}
 fig, ejes = plt.subplots(1, 2, figsize=(12, 4), sharey=True)
 orden = sorted(entregas["sucursal"].unique())
 
@@ -795,14 +740,6 @@ print(
 )
 ```
 
-```text
-          count  median  mean
-sucursal                     
-S02         343    10.1  10.7
-S03         284     5.2  12.9
-S07           9    12.6  12.8
-```
-
 `sns.stripplot()` es el `geom_jitter()` de `seaborn`, y `violinplot()` con `inner=None` dibuja solo la forma, sin la caja interna que trae por defecto. `cut=0` evita que el violín se extienda más allá del dato mínimo y máximo. `seaborn` también tiene `swarmplot()`, la versión en enjambre.
 
 ### DuckDB
@@ -828,6 +765,104 @@ dbGetQuery(
 El hueco entre las 9 y las 18 horas se ve en la columna de barras: entre esos dos tiempos hay un solo pedido. La lección vale para cualquier herramienta: un resumen por grupo (media, mediana, desviación) debe ir acompañado de una mirada a la distribución completa de cada grupo, aunque sea en texto.
 
 :::
+
+### ¿Cuánto se puede confiar en una mediana? Remuestrear {#sec-remuestreo}
+
+El ejemplo anterior dejó una advertencia: con 9 pedidos, la mediana de `S07` es frágil. Pero ¿qué tan frágil? «Pocos datos» no es una medida. Para comparar sucursales con algo más que intuición, necesitamos saber **cuánto cambiaría la mediana si los datos hubieran sido otros**, sacados del mismo proceso.
+
+No tenemos otros datos, pero podemos simularlos con los que tenemos. Es la idea del **remuestreo** (*bootstrap*), que propuso Bradley Efron [-@efron1979]:
+
+1. De los pedidos de una sucursal, se saca una muestra **del mismo tamaño, con reemplazo**: cada pedido puede salir una vez, varias veces o ninguna.
+2. Se calcula la mediana de esa muestra.
+3. Se repite muchas veces, por ejemplo 2.000.
+
+Las 2.000 medianas muestran cuánto se mueve el resumen de una muestra a otra. Si casi no se mueven, la mediana es firme. Si saltan, no lo es. El rango que deja por fuera el 2,5 % más bajo y el 2,5 % más alto de esas medianas es un **intervalo del 95 %**: una medida práctica de la incertidumbre de la cifra.
+
+::: {.panel-tabset group="lenguaje"}
+
+### R
+
+```{r}
+#| label: remuestreo-medianas
+remuestrear_mediana <- function(x, veces = 2000) {
+  x <- x[!is.na(x)]
+  replicate(veces, median(sample(x, replace = TRUE)))
+}
+
+set.seed(2026)
+intervalos <- entregas |>
+  summarise(
+    pedidos = sum(!is.na(tiempo_entrega_h)),
+    mediana = median(tiempo_entrega_h, na.rm = TRUE),
+    desde = quantile(remuestrear_mediana(tiempo_entrega_h), 0.025),
+    hasta = quantile(remuestrear_mediana(tiempo_entrega_h), 0.975),
+    .by = sucursal
+  ) |>
+  arrange(sucursal)
+intervalos
+```
+
+```{r}
+#| label: fig-remuestreo
+#| fig-cap: "Mediana del tiempo de entrega por sucursal, con su intervalo del 95 % por remuestreo."
+#| fig-alt: "Ocho sucursales en el eje vertical. Cada una tiene un punto en su mediana y una línea horizontal con su intervalo. Seis sucursales tienen medianas entre 9,5 y 10,6 horas con líneas cortas, de menos de una hora y media. S03 tiene la mediana más baja, 5,2 horas, con una línea corta. S07 tiene la mediana más alta, 12,6 horas, pero su línea es larga: va de 9,3 a 15,8 horas y se superpone con las de todas las demás sucursales salvo S03."
+#| fig-height: 3
+ggplot(intervalos, aes(y = sucursal, x = mediana, xmin = desde, xmax = hasta)) +
+  geom_pointrange() +
+  labs(x = "mediana del tiempo de entrega (horas)", y = NULL)
+```
+
+`replicate()` repite la expresión las veces indicadas y devuelve un vector con los resultados. `sample(x, replace = TRUE)` es el paso 1: una muestra del mismo tamaño que `x`, con reemplazo. R trae además el paquete `boot`, que hace lo mismo con más opciones; para entender la idea, cuatro líneas bastan.
+
+### Python
+
+```{python}
+import numpy as np
+
+rng = np.random.default_rng(2026)
+
+
+def remuestrear_mediana(x, veces=2000):
+    x = x.dropna().to_numpy()
+    muestras = rng.choice(x, size=(veces, len(x)), replace=True)
+    return np.median(muestras, axis=1)
+
+
+intervalos = (
+    entregas.groupby("sucursal")["tiempo_entrega_h"]
+    .agg(
+        pedidos="count",
+        mediana="median",
+        desde=lambda x: np.quantile(remuestrear_mediana(x), 0.025),
+        hasta=lambda x: np.quantile(remuestrear_mediana(x), 0.975),
+    )
+    .round(1)
+)
+print(intervalos)
+```
+
+`rng.choice()` saca las 2.000 muestras de una vez, como una matriz de 2.000 filas, y `np.median(..., axis=1)` calcula la mediana de cada fila. Para el gráfico, `ax.errorbar()` de `matplotlib` dibuja los puntos con sus intervalos.
+
+:::
+
+Ahora la fragilidad tiene tamaño. La mediana de `S02`, con 343 pedidos, está entre 9,6 y 10,5 horas: un intervalo de menos de una hora. La de `S07` está entre 9,3 y 15,8: más de seis horas de incertidumbre. ¿Es `S07` más lenta que `S02`? Se puede remuestrear también la diferencia entre las dos medianas:
+
+```{r}
+#| label: remuestreo-diferencia
+set.seed(2026)
+tiempos <- split(entregas$tiempo_entrega_h, entregas$sucursal)
+diferencia <- remuestrear_mediana(tiempos$S07) -
+  remuestrear_mediana(tiempos$S02)
+quantile(diferencia, c(0.025, 0.975))
+```
+
+El intervalo va desde alrededor de cero hasta más de cuatro horas. Con la semilla de R, el extremo inferior es negativo; con la de Python, levemente positivo. Que la conclusión cambie con el azar de la simulación es la respuesta: **con 9 pedidos no se puede afirmar que `S07` sea más lenta**. Hay que esperar más datos antes de llevar esa conclusión a una reunión.
+
+Tres advertencias sobre el remuestreo:
+
+- **Mide la precisión, no la pertinencia.** El intervalo de `S03` es angosto, de 4,9 a 6,0 horas, pero la mediana de una distribución con dos grupos separados describe mal a los dos. Un resumen preciso puede ser un mal resumen.
+- **No corrige los datos.** Si los pedidos de `S07` no representan su operación normal, por ejemplo porque son de una semana atípica, remuestrearlos reproduce el sesgo con toda precisión.
+- **No es una prueba formal.** Es una forma honesta de mostrar cuánto se mueve una cifra. Las pruebas de hipótesis y los modelos que comparan grupos con rigor son tema de un libro de inferencia estadística, que este no es.
 
 ## Categorías: comparar longitudes, no ángulos {#sec-categorias-graficos}
 
@@ -889,7 +924,7 @@ Cada fila suma 100 %, porque la proporción se calculó dentro de cada sucursal 
 
 ### Python
 
-```python
+```{python}
 por_sucursal = entregas["sucursal"].value_counts().sort_values()
 plt.hlines(por_sucursal.index, 0, por_sucursal.values)
 plt.plot(por_sucursal.values, por_sucursal.index, "o")
@@ -901,14 +936,6 @@ proporciones = pd.crosstab(
 sns.heatmap(proporciones, annot=True, fmt=".0%", cmap="Greys", cbar=False)
 plt.show()
 print(proporciones.round(2).head(3))
-```
-
-```text
-canal     domicilio  retiro   web
-sucursal                         
-S01            0.43     0.2  0.36
-S02            0.45     0.2  0.36
-S03            0.45     0.2  0.35
 ```
 
 `value_counts()` cuenta y ordena de mayor a menor; con `sort_values()` lo dejamos de menor a mayor, porque en un gráfico horizontal el primer valor queda abajo. `pd.crosstab(..., normalize="index")` arma la tabla cruzada con proporciones por fila, y `heatmap(annot=True)` escribe el valor en cada celda.
@@ -985,7 +1012,7 @@ Con decenas de miles de puntos, la nube se vuelve una mancha negra en la que no 
 
 ### Python
 
-```python
+```{python}
 entregas["grupo"] = (
     entregas["sucursal"].eq("S03").map({True: "S03", False: "otras"})
 )
@@ -1009,11 +1036,6 @@ for grupo, datos in entregas.dropna(subset=["tiempo_entrega_h"]).groupby(
         datos["distancia_km"].rank().corr(datos["tiempo_entrega_h"].rank())
     )
     print(grupo, round(pearson, 2), round(spearman, 2))
-```
-
-```text
-S03 -0.05 -0.09
-otras 0.57 0.52
 ```
 
 `corr()` calcula la correlación de Pearson. Para la de Spearman, `pandas` tiene `corr(method="spearman")`, pero necesita la biblioteca `scipy`; sin ella da un error. La alternativa es aplicar la definición: `rank()` convierte cada valor en su posición, y la correlación de Pearson de los rangos es la de Spearman. `plt.xscale("log")` pone el eje horizontal en escala logarítmica.
@@ -1104,7 +1126,7 @@ La cuadrícula responde una pregunta que quedaba abierta: las dos clases de entr
 
 ### Python
 
-```python
+```{python}
 g = sns.displot(
     entregas,
     x="tiempo_entrega_h",
@@ -1205,7 +1227,7 @@ El mapa de calor resume la matriz de pares en números: una sola relación clara
 
 ### Python
 
-```python
+```{python}
 import numpy as np
 
 pares = entregas[
@@ -1235,15 +1257,6 @@ sns.heatmap(
 )
 plt.show()
 print(correlaciones.round(2).loc["tiempo_entrega_h"])
-```
-
-```text
-distancia_km        0.38
-tiempo_entrega_h    1.00
-unidades           -0.02
-valor_pedido        0.06
-calificacion       -0.15
-Name: tiempo_entrega_h, dtype: float64
 ```
 
 `sns.pairplot()` es la matriz de pares de `seaborn`: con `hue` colorea por grupo, con `corner=True` dibuja solo la mitad inferior, y en la diagonal pone la distribución de cada variable. Para la matriz de Spearman, `rank()` convierte cada columna en rangos y `corr()` calcula Pearson sobre ellos, sin necesitar `scipy`. `corr()` también usa, para cada par, las filas con datos en las dos columnas. `numpy` calcula el logaritmo.
@@ -1284,7 +1297,7 @@ entregas |>
 
 ### Python
 
-```python
+```{python}
 por_dia = entregas.groupby("fecha").size().rename("pedidos").reset_index()
 fechas = pd.to_datetime(por_dia["fecha"])
 por_dia["semana"] = fechas.dt.isocalendar().week.astype(int)
@@ -1297,10 +1310,6 @@ calendario.index = ["lun", "mar", "mié", "jue", "vie", "sáb", "dom"]
 sns.heatmap(calendario, cmap="Greys", linewidths=1)
 plt.show()
 print(por_dia.groupby("dia")["pedidos"].mean().round(1).tolist())
-```
-
-```text
-[27.8, 31.4, 30.8, 28.2, 29.3, 31.5, 10.2]
 ```
 
 `isocalendar()` devuelve el año, la semana y el día según la norma ISO, y `pivot_table()` arma la tabla de días por semanas que `heatmap()` dibuja. La última línea es el promedio de pedidos por día de la semana, de lunes a domingo.
@@ -1338,7 +1347,8 @@ ggplot(pagadas, aes(x = region, y = dias_pago)) +
 
 ### Python
 
-```python
+```{python}
+#| eval: false
 cartera = pd.read_parquet("datos/cap10/cartera_analitica.parquet")
 pagadas = cartera[...].assign(dias_pago=...)  # TODO
 sns.violinplot(...)  # TODO
@@ -1348,6 +1358,69 @@ sns.stripplot(...)  # TODO
 :::
 
 Para comprobar tu resultado: la cartera tiene 379 facturas, todas distintas; `fecha_pago` falta en 201 facturas, las que no se han pagado, así que es un faltante de "no aplica" que a la vez es informativo sobre el estado de la factura. Las 178 facturas pagadas tardaron una mediana de 18 días y una media de 19,3, entre 3 y 44 días: una distribución casi simétrica, en la que la media y la mediana dicen lo mismo. En el valor de las facturas, la escala logarítmica deja ver una factura de 98,5 millones, la que el @sec-limpiar aceptó y marcó para revisar. Las tres regiones tienen entre 51 y 76 facturas pagadas, suficientes para comparar.
+
+## Auditoría 11.1: el ranking de sucursales {#sec-auditoria-explorar}
+
+El pedido: *«Con entregas_2026_t1.parquet, haz un ranking de sucursales de peor a mejor tiempo de entrega, para el comité de operaciones»*. La respuesta típica:
+
+::: {.panel-tabset group="lenguaje"}
+
+### R
+
+```{r}
+#| label: auditoria-11-1
+entregas |>
+  summarise(
+    tiempo_promedio = round(mean(tiempo_entrega_h, na.rm = TRUE), 1),
+    .by = sucursal
+  ) |>
+  arrange(desc(tiempo_promedio))
+```
+
+### Python
+
+```{python}
+promedio = (
+    entregas.groupby("sucursal")["tiempo_entrega_h"]
+    .mean()
+    .round(1)
+    .sort_values(ascending=False)
+)
+print(promedio)
+```
+
+:::
+
+`S03` y `S07` son las peores, y el resto de la red está parejo. Con lo que viste en este capítulo, ¿qué le dirías al comité?
+
+::: {.callout-tip collapse="true"}
+## Solución de la auditoría 11.1
+
+**El promedio describe un pedido que no existe.** En el Ejemplo guiado 11.5 vimos que `S03` tiene dos clases de entrega, una alrededor de 4 horas y otra alrededor de 26. Su promedio, 12,9 horas, cae en el hueco entre las dos. Según la mediana, `S03` es la sucursal **más rápida** de la red; según el promedio, la más lenta. Ninguna de las dos cifras responde bien la pregunta.
+
+**`S07` no se puede ordenar.** Tiene 9 entregas con tiempo. La @sec-remuestreo mostró que su mediana podría estar en cualquier punto entre 9,3 y 15,8 horas, así que su segundo lugar es casi un sorteo. Un ranking que no muestra cuántos datos tiene cada fila esconde esto.
+
+**«Peor» no está definido.** Para el comité, una entrega lenta probablemente importa más que el promedio. Si la pregunta es cuántos pedidos tardan más de un día, el resultado es muy distinto:
+
+```{r}
+#| label: auditoria-11-1-corregida
+entregas |>
+  filter(!is.na(tiempo_entrega_h)) |>
+  summarise(
+    pedidos = n(),
+    mediana = median(tiempo_entrega_h),
+    mas_de_24_h = round(100 * mean(tiempo_entrega_h > 24), 1),
+    .by = sucursal
+  ) |>
+  arrange(desc(mas_de_24_h))
+```
+
+El 28,2 % de los pedidos de `S03` tarda más de 24 horas; en ninguna otra sucursal pasa del 2 %. Ese es el problema real de `S03`, y no aparecía en el ranking: el promedio lo mezclaba con las entregas rápidas.
+
+**Lo que no se ve: los faltantes.** `na.rm = TRUE` descartó en silencio 492 pedidos sin tiempo. Aquí la decisión es correcta, porque son todos de retiro en tienda y no tienen entrega (@sec-explorar-faltantes), pero el código no lo dice. Un análisis que descarta datos debe decir cuántos y por qué.
+
+Lo que se le lleva al comité no es un ranking, sino tres frases: `S03` tiene dos clases de entrega y más de una cuarta parte de sus pedidos tarda más de un día; `S07` tiene muy pocos datos para concluir algo; el resto de la red está pareja, con medianas entre 9,5 y 10,6 horas.
+:::
 
 ## Cierre: preguntas antes que respuestas {#sec-cierre-explorar}
 

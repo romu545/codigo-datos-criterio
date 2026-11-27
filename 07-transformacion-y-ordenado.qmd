@@ -141,7 +141,7 @@ Las tres formas dan el mismo resultado. `dplyr` es la más legible cuando la tra
 
 En `pandas`, los **corchetes** reciben una lista de columnas o una serie lógica para filtrar, y `.loc[filas, columnas]` combina ambas cosas, como los corchetes de R:
 
-```python
+```{python}
 import pandas as pd
 
 ventas = pd.read_parquet("datos/cap07/ventas_2026_t1.parquet")
@@ -155,26 +155,13 @@ print(cali.head(3))
 print(len(cali))
 ```
 
-```text
-          fecha producto  unidades
-3194 2026-02-18      P09        40
-836  2026-01-14      P06        39
-1897 2026-01-30      P10        39
-55
-```
-
 Cada condición va entre paréntesis porque `&` y `|` tienen más precedencia que `==` y `>`. `kind="stable"` conserva el orden original de los empates; sin él, `sort_values()` puede ordenarlos de otra forma y el resultado no coincidiría con el de R.
 
 `query()` recibe la condición como texto, y la **notación de punto** permite escribir `ventas.sucursal` en lugar de `ventas["sucursal"]`:
 
-```python
+```{python}
 print(len(ventas.query("sucursal == 'S03' and unidades > 30")))
 print(ventas.sucursal.head(2).tolist())
-```
-
-```text
-55
-['S07', 'S08']
 ```
 
 La notación de punto es cómoda para explorar, pero tiene límites: no funciona con nombres que tienen espacios o tildes, se confunde con los métodos cuando una columna se llama como uno de ellos (`count`, `size`, `values`) y no sirve para crear columnas. En el libro usamos los corchetes.
@@ -275,13 +262,13 @@ count(ventas, tamano)
 
 En `pandas`, una columna se crea asignándola con **corchetes**. La notación de punto no sirve para esto: `ventas.valor_bruto = ...` crea un atributo del objeto, no una columna.
 
-```python
+```{python}
 ventas["valor_bruto"] = ventas["unidades"] * ventas["precio_unitario"]
 ```
 
 `assign()` crea columnas y devuelve una tabla nueva, así que se puede encadenar. Con funciones `lambda`, cada columna puede usar las creadas antes en la misma llamada, como en `mutate()`. Para varios casos, `case_when()` (desde `pandas` 2.2) recibe una lista de pares `(condición, valor)` y se aplica sobre una serie con el valor por defecto:
 
-```python
+```{python}
 ventas = ventas.assign(
     valor_neto=lambda d: d["valor_bruto"] * (1 - d["descuento"]),
     mes=lambda d: d["fecha"].dt.month,
@@ -295,24 +282,13 @@ ventas = ventas.assign(
 print(ventas["tamano"].value_counts())
 ```
 
-```text
-tamano
-mediano    3203
-pequeño    2323
-grande      474
-Name: count, dtype: int64
-```
-
 Para modificar solo algunas filas de una columna se usa `.loc[filas, columna]`. Desde `pandas` 3.0, que trabaja con *Copy-on-Write*, la **asignación encadenada** (dos corchetes seguidos) no modifica nada:
 
-```python
+```{python}
+#| error: true
 copia = ventas.copy()
 copia[copia["sucursal"] == "S03"]["descuento"] = 0  # no cambia nada
 copia.loc[copia["sucursal"] == "S03", "descuento"] = 0  # así sí
-```
-
-```text
-ChainedAssignmentError: A value is being set on a copy of a DataFrame or Series through chained assignment.
 ```
 
 El primer corchete crea una tabla intermedia, y es a ella a la que se le asigna el cero. `pandas` muestra el aviso, pero el código sigue y `copia` queda igual. En versiones anteriores a la 3.0 esto a veces funcionaba y a veces no, con el famoso `SettingWithCopyWarning`; ahora la regla es simple: para modificar, un solo `.loc`.
@@ -388,7 +364,7 @@ La diferencia está en el verbo: `summarise(.by = )` deja una fila por grupo; `m
 
 ### Python
 
-```python
+```{python}
 por_mes = ventas.groupby(["sucursal", "mes"], as_index=False).agg(
     ventas=("id_venta", "size"),
     unidades=("unidades", "sum"),
@@ -397,17 +373,9 @@ por_mes = ventas.groupby(["sucursal", "mes"], as_index=False).agg(
 print(por_mes.head(4))
 ```
 
-```text
-  sucursal  mes  ventas  unidades  valor_neto
-0      S01    1     335      4537  73569395.0
-1      S01    2     292      4331  65561415.0
-2      S01    3     349      4759  73217055.0
-3      S02    1     316      4670  65917145.0
-```
-
 Cada argumento de `agg()` es `nombre=(columna, función)`. `as_index=False` deja las columnas de agrupación como columnas normales, en lugar de convertirlas en el índice de la tabla.
 
-```python
+```{python}
 participacion = ventas.groupby(["sucursal", "producto"], as_index=False).agg(
     valor_neto=("valor_neto", "sum")
 )
@@ -424,14 +392,6 @@ print(
     .sort_values("sucursal")
     .head(4)
 )
-```
-
-```text
-   sucursal producto  valor_neto  participacion
-4       S01      P05  35520875.0           16.7
-16      S02      P05  29963375.0           15.7
-28      S03      P05  30060875.0           17.7
-40      S04      P05  28907125.0           17.7
 ```
 
 `transform("sum")` es el equivalente de `mutate(.by = )`: devuelve una serie del mismo largo que la tabla, con la suma de cada grupo repetida en sus filas.
@@ -521,38 +481,27 @@ En R base, la unión se hace con `merge(ventas, productos, by = "producto", all.
 
 ### Python
 
-```python
+```{python}
 productos = pd.read_csv("datos/cap07/productos.csv")
 sucursales = pd.read_csv("datos/cap07/sucursales.csv")
 
 print(len(ventas), len(ventas.merge(productos, on="producto", how="left")))
 ```
 
-```text
-6000 6483
-```
-
 `merge()` no avisa nada. El control es el argumento `validate`, que declara la relación esperada y da un error si no se cumple:
 
-```python
+```{python}
+#| error: true
 ventas.merge(productos, on="producto", how="left", validate="m:1")
 ```
 
-```text
-MergeError: Merge keys are not unique in right dataset; not a many-to-one merge
-```
-
-```python
+```{python}
 productos = productos.drop_duplicates()
 
 ventas_detalle = ventas.merge(
     productos, on="producto", how="left", validate="m:1"
 ).merge(sucursales, on="sucursal", how="left", validate="m:1")
 print(len(ventas_detalle))
-```
-
-```text
-6000
 ```
 
 Para el equivalente de `anti_join()`, `merge()` tiene el argumento `indicator=True`, que agrega una columna `_merge` con el origen de cada fila (`both`, `left_only` o `right_only`); las filas `left_only` son las que no encontraron pareja.
@@ -666,7 +615,7 @@ R base tiene `reshape()` para estas dos operaciones, pero su interfaz es difíci
 
 ### Python
 
-```python
+```{python}
 metas = pd.read_csv("datos/cap07/metas_2026_ancho.csv")
 meses = [
     "ene",
@@ -707,20 +656,6 @@ print(
         index="sucursal", columns="mes_nombre", values="cumplimiento"
     )[["ene", "feb", "mar"]]
 )
-```
-
-```text
-(96, 5)
-mes_nombre    ene   feb    mar
-sucursal
-S01          98.0  92.0   95.0
-S02         100.0  94.0   95.0
-S03         108.0  81.0   95.0
-S04          87.0  91.0  108.0
-S05          89.0  84.0   83.0
-S06          87.0  81.0  107.0
-S07          93.0  99.0   94.0
-S08         106.0  94.0  106.0
 ```
 
 `melt()` es el `pivot_longer()` de `pandas`: `id_vars` son las columnas que se conservan y todas las demás se derriten. `pivot()` es el `pivot_wider()`. Ordena las columnas alfabéticamente, por eso las pedimos en orden con `[["ene", "feb", "mar"]]`. Si hubiera más de una fila por combinación de índice y columna, `pivot()` daría un error; `pivot_table()` resuelve ese caso con una función de resumen (`aggfunc`).
@@ -845,7 +780,7 @@ Los 250 pedidos tienen 525 líneas de producto. Con la tabla en este formato ya 
 
 ### Python
 
-```python
+```{python}
 print(
     metas["ciudad_departamento"]
     .str.split(" - ", expand=True)
@@ -854,16 +789,9 @@ print(
 )
 ```
 
-```text
-     ciudad     departamento
-0    Bogotá      Bogotá D.C.
-1  Medellín        Antioquia
-2      Cali  Valle del Cauca
-```
-
 `str.split(..., expand=True)` devuelve una columna por cada parte, con nombres 0, 1, 2; `set_axis()` les da nombre. Con un patrón se usa `str.extract()` y grupos con nombre, `(?P<nombre>...)`, como en el @sec-importacion:
 
-```python
+```{python}
 pedidos = pd.read_csv("datos/cap07/pedidos_web.csv", dtype={"nit": str})
 print(
     pedidos["contacto"]
@@ -872,15 +800,9 @@ print(
 )
 ```
 
-```text
-        nombre                 correo
-0  Juan Ospina  juan.ospina@correo.co
-1    Marta Gil   compras@distrigil.co
-```
-
 Para separar en filas, `str.split()` sin `expand` convierte cada celda en una lista, y `explode()` crea una fila por cada elemento de la lista:
 
-```python
+```{python}
 items = (
     pedidos[["pedido", "items"]]
     .assign(items=lambda d: d["items"].str.split("; "))
@@ -891,15 +813,6 @@ items = items.drop(columns="items").astype({"unidades": int})
 
 print(items.head(4))
 print(len(items))
-```
-
-```text
-          pedido producto  unidades
-0  WEB-MED-01201      P05         1
-1  WEB-MED-01201      P10         6
-2  WEB-MED-01201      P12         1
-3  WEB-BOG-01202      P03         5
-525
 ```
 
 `ignore_index=True` numera de nuevo las filas; sin él, las filas de un mismo pedido conservarían el índice original, repetido.
@@ -948,7 +861,7 @@ Al leer JSON o respuestas de API (@sec-importacion-fuentes) es común que una co
 
 Todo lo anterior se hizo con 6.000 filas. ¿Qué pasa con 10 millones? `dplyr` y `pandas` trabajan con la tabla completa en la memoria RAM, y eso tiene dos límites. El primero es la memoria: la tabla tiene que caber, y muchas operaciones crean copias temporales. El segundo es la velocidad: `pandas` usa un solo núcleo del procesador para casi todo, y `dplyr` también.
 
-Para esos casos hay herramientas diseñadas con otras reglas. **data.table** (R) modifica las tablas en su lugar, sin copias, y usa varios núcleos. **collapse** (R) reescribe en C las operaciones más comunes (sumas, medias, resúmenes por grupo) y las ofrece con nombres que empiezan por `f`, como `fsum()` y `fgroup_by()`, sin depender de ningún otro paquete. **polars** (Python, y también R) usa todos los núcleos y tiene un **modo perezoso**: con `scan_parquet()` describe el cálculo completo y solo lo ejecuta al final, leyendo del archivo únicamente las columnas y filas que necesita. **DuckDB**, como vimos desde el @sec-importacion, trabaja sobre el archivo en disco, y `arrow::open_dataset()` y `duckplyr` llevan esa idea a la sintaxis de `dplyr` (@fig-volumen).
+Para esos casos hay herramientas diseñadas con otras reglas. **data.table** (R) modifica las tablas en su lugar, sin copias, y usa varios núcleos. **collapse** (R) reescribe en C las operaciones más comunes (sumas, medias, resúmenes por grupo) y las ofrece con nombres que empiezan por `f`, como `fsum()` y `fgroup_by()`, con una sola dependencia, `Rcpp`. **polars** (Python, y también R) usa todos los núcleos y tiene un **modo perezoso**: con `scan_parquet()` describe el cálculo completo y solo lo ejecuta al final, leyendo del archivo únicamente las columnas y filas que necesita. **DuckDB**, como vimos desde el @sec-importacion, trabaja sobre el archivo en disco, y `arrow::open_dataset()` y `duckplyr` llevan esa idea a la sintaxis de `dplyr` (@fig-volumen).
 
 ![Qué herramienta usar según el tamaño de los datos frente a la memoria del equipo.](imagenes/transformacion/volumen.svg){#fig-volumen fig-alt="Una escala del tamaño de los datos frente a la memoria RAM, con tres cajas. Si los datos caben con holgura, menos de una quinta parte de la RAM: dplyr, R base y pandas; lo más legible gana. Si caben pero justo, o el cálculo tarda demasiado: data.table, dtplyr, polars o DuckDB sobre el archivo; motores multihilo y sin copias. Si no caben o son muchos archivos: DuckDB, duckplyr, arrow open_dataset o polars en modo perezoso; se reduce en disco y llega a la memoria solo el resultado. Con trazo discontinuo, Evitar: cargar todo en memoria para usar al final unas pocas columnas o filas, o un resumen."}
 
@@ -1030,7 +943,7 @@ La sintaxis de `data.table` es `tabla[filas, columnas, by = grupos]`: los corche
 
 `data.table` tiene, además, asignación **por referencia** con `:=`: `grande_dt[, valor_neto := valor_venta * 0.9]` crea la columna dentro de la misma tabla, sin copiarla. Es la razón de su velocidad y también un cambio de hábito, porque en el resto de R modificar una copia no altera el original. Si prefieres la sintaxis de `dplyr` con el motor de `data.table`, existe [dtplyr](https://dtplyr.tidyverse.org/); con el motor de DuckDB, [duckplyr](https://duckplyr.tidyverse.org/), presentado en el @sec-importacion.
 
-[collapse](https://sebkrantz.github.io/collapse/) es la opción para quien quiere velocidad sin cambiar de forma de pensar: `fgroup_by()` y `fsummarise()` se leen como `group_by()` y `summarise()`, funcionan sobre las mismas tablas de R y no modifican nada por referencia. Su otra ventaja es el criterio de dependencias del @sec-importacion: es un solo paquete, escrito en C, sin dependencias. La versión de R de [polars](https://pola-rs.github.io/r-polars/) ofrece el mismo motor que la de Python, con su modo perezoso; no está en CRAN y se instala desde el repositorio de sus autores:
+[collapse](https://sebkrantz.github.io/collapse/) es la opción para quien quiere velocidad sin cambiar de forma de pensar: `fgroup_by()` y `fsummarise()` se leen como `group_by()` y `summarise()`, funcionan sobre las mismas tablas de R y no modifican nada por referencia. Su otra ventaja es el criterio de dependencias del @sec-importacion: es un solo paquete, escrito en C y C++, que solo depende de `Rcpp`. La versión de R de [polars](https://pola-rs.github.io/r-polars/) ofrece el mismo motor que la de Python, con su modo perezoso; no está en CRAN y se instala desde el repositorio de sus autores:
 
 ```{r}
 #| label: volumen-polars-r
@@ -1058,7 +971,7 @@ invisible(gc())
 
 ### Python
 
-```python
+```{python}
 import time
 import polars as pl
 import duckdb
@@ -1101,13 +1014,6 @@ r_duckdb = duckdb.sql(f"""
 print(
     "leer y resumir con DuckDB:", round(time.perf_counter() - inicio, 2), "s"
 )
-```
-
-```text
-leer con pandas: 2.34 s, 820 MB
-resumir con pandas: 2.27 s
-leer y resumir con polars: 0.32 s
-leer y resumir con DuckDB: 0.49 s
 ```
 
 La misma tabla ocupa en `pandas` 820 MB, más del doble que en R, sobre todo por las columnas de texto. `polars` en modo perezoso hace todo el trabajo (leer y resumir) en una fracción del tiempo que `pandas` tarda solo en leer. Su sintaxis se parece a la de `dplyr`: expresiones como `pl.col("valor_venta").sum()` describen el cálculo, y `collect()` lo ejecuta.
@@ -1221,7 +1127,8 @@ unidades_ciudad <- ... |> pivot_wider(...) # TODO
 
 ### Python
 
-```python
+```{python}
+#| eval: false
 lineas = pedidos.copy()
 lineas[["canal", "ciudad", "consecutivo"]] = ...  # TODO
 lineas = ...  # TODO: split + explode
@@ -1233,6 +1140,115 @@ unidades_ciudad = ....pivot_table(...)  # TODO
 :::
 
 Para comprobar tu resultado: hay 525 líneas de producto; el pedido de mayor valor es el `WEB-MED-01395`, con 425.000 pesos, y en la tabla ancha Medellín (`MED`) pidió 240 unidades de productos de aseo y Bogotá (`BOG`), 166.
+
+## Auditoría 7.1: ¿qué sucursales cumplieron la meta? {#sec-auditoria-transformar}
+
+Como en la @sec-auditoria-importacion, revisamos un código del tipo que entrega un asistente. El pedido: *«Con ventas_2026_t1.parquet, productos.csv y metas_2026_ancho.csv, dime qué sucursales cumplieron su meta del primer trimestre. Las metas están en millones de pesos»*.
+
+::: {.panel-tabset group="lenguaje"}
+
+### R
+
+```{r}
+#| label: auditoria-7-1
+ventas <- read_parquet("datos/cap07/ventas_2026_t1.parquet")
+productos <- read_csv("datos/cap07/productos.csv", show_col_types = FALSE)
+metas <- read_csv("datos/cap07/metas_2026_ancho.csv", show_col_types = FALSE)
+
+ventas |>
+  left_join(productos, by = "producto") |>
+  group_by(sucursal) |>
+  summarise(valor = sum(unidades * precio_lista)) |>
+  left_join(metas, by = "sucursal") |>
+  mutate(
+    meta = (meta_ene + meta_feb + meta_mar) * 1e6,
+    cumplio = valor >= meta
+  ) |>
+  select(sucursal, valor, meta, cumplio)
+```
+
+### Python
+
+```{python}
+ventas = pd.read_parquet("datos/cap07/ventas_2026_t1.parquet")
+productos = pd.read_csv("datos/cap07/productos.csv")
+metas = pd.read_csv("datos/cap07/metas_2026_ancho.csv")
+
+resultado = (
+    ventas.merge(productos, on="producto", how="left")
+    .assign(valor=lambda d: d["unidades"] * d["precio_lista"])
+    .groupby("sucursal", as_index=False)["valor"]
+    .sum()
+    .merge(metas, on="sucursal")
+    .assign(
+        meta=lambda d: (d["meta_ene"] + d["meta_feb"] + d["meta_mar"]) * 1e6,
+        cumplio=lambda d: d["valor"] >= d["meta"],
+    )
+)
+print(resultado[["sucursal", "valor", "meta", "cumplio"]])
+```
+
+:::
+
+Seis de ocho sucursales cumplieron. Es una buena noticia para llevar a la reunión de cierre. Antes de llevarla, ¿la firmarías?
+
+::: {.callout-tip collapse="true"}
+## Solución de la auditoría 7.1
+
+**El catálogo multiplicó ventas.** Es la trampa del Ejemplo guiado 7.4: `P07` está dos veces en `productos.csv`, y cada venta de ese producto se contó dos veces. En R, `dplyr` lo advirtió con el aviso de relación "muchos a muchos", que aparece en la salida y que es fácil pasar por alto cuando el resultado parece razonable. En Python no hubo ningún aviso: la unión pasó de 6.000 a 6.483 filas en silencio.
+
+**La unión no hacía falta.** El valor de cada venta ya está en `ventas`: `unidades * precio_unitario`. El asistente trajo `precio_lista` del catálogo porque el nombre sonaba a precio, y con esa unión innecesaria entró la fila repetida. Cada unión es un riesgo; se hace solo cuando trae algo que la tabla no tiene.
+
+**El descuento no se restó.** La meta se mide sobre el valor neto, el que se definió en el Ejemplo guiado 7.2: `valor_bruto * (1 - descuento)`. El código compara la meta contra el valor antes de descuentos.
+
+Con las tres correcciones, el panorama cambia por completo:
+
+::: {.panel-tabset group="lenguaje"}
+
+### R
+
+```{r}
+#| label: auditoria-7-1-corregida
+ventas |>
+  summarise(
+    valor_neto = sum(unidades * precio_unitario * (1 - descuento)),
+    .by = sucursal
+  ) |>
+  left_join(metas, by = "sucursal", relationship = "one-to-one") |>
+  mutate(
+    meta = (meta_ene + meta_feb + meta_mar) * 1e6,
+    cumplimiento = round(100 * valor_neto / meta, 1)
+  ) |>
+  select(sucursal, valor_neto, cumplimiento) |>
+  arrange(sucursal)
+```
+
+### Python
+
+```{python}
+correcto = (
+    ventas.assign(
+        valor_neto=lambda d: (
+            d["unidades"] * d["precio_unitario"] * (1 - d["descuento"])
+        )
+    )
+    .groupby("sucursal", as_index=False)["valor_neto"]
+    .sum()
+    .merge(metas, on="sucursal", validate="1:1")
+    .assign(
+        meta=lambda d: (d["meta_ene"] + d["meta_feb"] + d["meta_mar"]) * 1e6,
+        cumplimiento=lambda d: (100 * d["valor_neto"] / d["meta"]).round(1),
+    )
+)
+print(correcto[["sucursal", "cumplimiento"]])
+```
+
+:::
+
+Solo `S08` cumplió la meta del trimestre. El informe del asistente habría celebrado a cinco sucursales que no la alcanzaron.
+
+Tres preguntas sirven para revisar cualquier transformación: ¿cuántas filas había antes y después de cada unión?, ¿cada columna significa lo que su nombre sugiere?, ¿la cifra final se definió igual que la que usa el negocio?
+:::
 
 ## Cierre: las herramientas para limpiar {#sec-cierre-transformar}
 

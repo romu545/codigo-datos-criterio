@@ -206,7 +206,7 @@ Lo que cambió, capa por capa:
 
 ### Python
 
-```python
+```{python}
 from pathlib import Path
 
 import matplotlib.pyplot as plt
@@ -268,10 +268,6 @@ fig.text(
 )
 plt.show()
 print(len(a_domicilio), cali["pct_tardias"].tolist())
-```
-
-```text
-2536 [38.7, 46.2, 30.0, 29.1]
 ```
 
 En `matplotlib`, el gráfico se construye llamando a métodos de un objeto de ejes (`ax`): `plot()` para las líneas, `scatter()` para los puntos, `annotate()` para los textos. El destacado es el mismo truco de R: primero las líneas grises, después la negra, que queda encima. `spines` son los bordes del área del gráfico; quitar el de arriba y el de la derecha elimina tinta que no informa. Las fechas llegan como texto (`"2026-01"`), así que el eje horizontal es una categoría y las anotaciones usan su posición: 0 para enero, 1 para febrero.
@@ -363,7 +359,7 @@ El tamaño de los puntos dice cuántos pedidos tiene cada sucursal, y por eso `S
 
 ### Python
 
-```python
+```{python}
 por_sucursal = a_domicilio.groupby("sucursal", as_index=False).agg(
     pedidos=("pedido", "size"),
     mediana=("tiempo_entrega_h", "median"),
@@ -401,13 +397,6 @@ print(
     .head(3)
     .to_string(index=False)
 )
-```
-
-```text
-sucursal  pedidos  mediana  pct_tardias
-     S03      363      5.1         36.6
-     S07       10     13.2         10.0
-     S01      438     10.4          5.0
 ```
 
 En `scatter()`, el argumento `s` es el **área** de cada punto, en puntos tipográficos al cuadrado: ya es proporcional al área, como `scale_size_area()` en R. `iterrows()` recorre las filas para escribir una etiqueta por punto; con ocho filas no importa que sea un bucle.
@@ -472,7 +461,7 @@ La cuadrícula es una función de diez líneas: cien filas con su posición (`x`
 
 ### Python
 
-```python
+```{python}
 import numpy as np
 
 tardias = a_domicilio[a_domicilio["tiempo_entrega_h"] > 20]
@@ -504,10 +493,6 @@ fig.suptitle(
 )
 plt.show()
 print({k: round(100 * v) for k, v in proporciones.items()})
-```
-
-```text
-{'De los pedidos a domicilio': 14, 'De las entregas tardías': 65}
 ```
 
 `reshape(10, 10)` convierte la lista de cien unos y ceros en una matriz de diez por diez, y `pcolormesh()` la dibuja como una cuadrícula de celdas, con un borde blanco entre ellas. `vmin=-0.2` hace que el cero se vea gris claro y no blanco.
@@ -609,7 +594,7 @@ El título compara a Cali con `S01` y no con la sucursal que le sigue en la list
 
 ### Python
 
-```python
+```{python}
 fig, ejes = plt.subplots(1, 2, figsize=(9, 3))
 ejes[0].scatter(
     por_sucursal["mediana"],
@@ -633,10 +618,6 @@ ejes[1].barh(
 plt.show()
 pct = orden.set_index("sucursal")["pct_tardias"]
 print(round(pct["S03"] / pct["S01"], 1))
-```
-
-```text
-7.3
 ```
 
 En `matplotlib` no hay escalas que traduzcan columnas en colores: cada estética se pasa como un valor o como una lista de valores, uno por dato. `c` y `color` son el relleno; `edgecolor` (o `edgecolors` en `scatter()`), el borde; `alpha`, la transparencia; `s`, el área del punto; `marker`, la forma, y `linestyle`, el tipo de línea. `seaborn` sí asigna columnas a estéticas, con los argumentos `hue`, `size` y `style`, más cerca de la idea de `ggplot2`.
@@ -773,7 +754,7 @@ La fórmula `pct_tardias ~ mes | sucursal` se lee "el porcentaje según el mes, 
 
 ### Python
 
-```python
+```{python}
 tardias_cali = a_domicilio.loc[
     a_domicilio["sucursal"] == "S03", "tiempo_entrega_h"
 ]
@@ -802,10 +783,6 @@ fig.suptitle(
 )
 plt.show()
 print(sorted(ejes))
-```
-
-```text
-['A', 'B', 'C']
 ```
 
 `subplot_mosaic("AA;BC")` describe la cuadrícula con texto: cada fila se separa con `;` y cada letra es un panel, así que `"AA"` ocupa toda la primera fila y `"BC"` divide la segunda en dos. Devuelve un diccionario de ejes con las letras como claves. `layout="constrained"` acomoda los márgenes para que nada se superponga.
@@ -879,7 +856,7 @@ Lo importante no es JavaScript: es que los datos del gráfico interactivo son lo
 
 En Python, la biblioteca más usada para gráficos interactivos es `plotly`:
 
-```python
+```{python}
 import plotly.express as px
 
 figura = px.line(
@@ -902,10 +879,6 @@ figura.write_html(
     "datos/cap13/salida/tardias_interactivo.html", include_plotlyjs="cdn"
 )
 print(len(figura.data), "series")
-```
-
-```text
-8 series
 ```
 
 `px.line()` dibuja una línea por sucursal y, al pasar el ratón, muestra sus datos, incluidas las columnas de `hover_data`. Con la leyenda visible, un clic en una sucursal la oculta y un doble clic la deja sola: la interactividad reemplaza parte del trabajo de destacar. `write_html()` guarda el gráfico en un archivo HTML que se abre en cualquier navegador; dentro de un documento de Quarto con Python, basta con mostrar la figura.
@@ -946,7 +919,8 @@ ggplot(calificaciones, aes(...)) + # TODO
 
 ### Python
 
-```python
+```{python}
+#| eval: false
 calificaciones = (
     a_domicilio.dropna(subset=["calificacion"])
     .assign(

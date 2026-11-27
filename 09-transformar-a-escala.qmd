@@ -83,6 +83,7 @@ use(
 )
 use("DBI", c("dbConnect", "dbGetQuery", "dbExecute", "dbDisconnect"))
 use("duckdb", "duckdb")
+use("collapse", c("fgroup_by", "fsummarise", "fsum", "fmean"))
 
 con <- dbConnect(duckdb())
 segundos <- function(expr) round(system.time(expr)[["elapsed"]], 3)
@@ -177,7 +178,7 @@ vapply(ventas, is.numeric, logical(1))
 
 ### Python
 
-```python
+```{python}
 import pandas as pd
 import numpy as np
 
@@ -195,13 +196,9 @@ resumen = ventas.groupby("sucursal")[
 print(resumen.columns[:2].tolist())
 ```
 
-```text
-[('unidades', 'sum'), ('unidades', 'mean')]
-```
-
 Con una lista de funciones, `agg()` devuelve columnas de dos niveles: la columna y la función. Para trabajar con ellas conviene aplanarlas en un solo nombre, con una **comprensión de listas** que recorre los pares:
 
-```python
+```{python}
 nombres = {"sum": "total", "mean": "prom"}
 resumen.columns = [f"{col}_{nombres[fun]}" for col, fun in resumen.columns]
 
@@ -211,13 +208,6 @@ resumen = resumen.round(
     {"unidades_total": 1, "unidades_prom": 1}
 ).reset_index()
 print(resumen.head(3).to_string())
-```
-
-```text
-  sucursal  unidades_total  unidades_prom  valor_bruto_total  valor_bruto_prom  valor_neto_total  valor_neto_prom
-0      S01           13627           14.0             219.01              0.22            212.35             0.22
-1      S02           13244           14.5             196.95              0.22            190.51             0.21
-2      S03           11358           14.2             175.31              0.22            169.56             0.21
 ```
 
 En `pandas` las operaciones aritméticas ya trabajan sobre varias columnas a la vez: `resumen[valor] / 1e6` divide todas las columnas elegidas. Por eso no hace falta un equivalente de `across()` para casos como este. `select_dtypes("number")` elige las columnas por tipo.
@@ -251,6 +241,70 @@ dbGetQuery(
 `COLUMNS()` también acepta una función anónima que recibe el nombre de cada columna, como `COLUMNS(lambda c: c LIKE 'valor%')`. En DuckDB 2.0 las funciones anónimas se escriben con `lambda`, como en Python.
 
 :::
+
+### Otra herramienta: `collapse` {#sec-otra-collapse}
+
+Este libro escribe el código de R con `dplyr`, porque es la sintaxis que más gente lee y la que más ayuda encuentra. Pero no es la única, y elegir bien exige saber cuándo otra rinde más. En las secciones «Otra herramienta» resolvemos el mismo problema con una alternativa y decimos cuándo conviene.
+
+[collapse](https://sebkrantz.github.io/collapse/) reescribe en C y C++ las operaciones estadísticas más comunes. Sus funciones empiezan por `f` (`fsum()`, `fmean()`, `fgroup_by()`, `fsummarise()`) y se leen casi igual que las de `dplyr`. El resumen del Ejemplo guiado 9.1:
+
+```{r}
+#| label: collapse-resumen
+resumen_collapse <- ventas |>
+  fgroup_by(sucursal) |>
+  fsummarise(across(
+    c(unidades, valor_bruto, valor_neto),
+    list(total = fsum, prom = fmean)
+  ))
+
+names(resumen_collapse)
+```
+
+Los mismos nombres y, sin redondear, los mismos valores. En una sola ejecución sobre 6.000 filas, la diferencia de velocidad no importa: las dos tardan milésimas de segundo. Importa cuando **el mismo resumen se repite miles de veces**, como en una simulación o en el remuestreo que veremos en el @sec-explorar. Aquí, 1.000 remuestreos del valor neto medio por sucursal, con las dos herramientas trabajando sobre los mismos datos:
+
+```{r}
+#| label: collapse-repetir
+remuestrear <- function(resumir, veces = 1000) {
+  set.seed(2026)
+  for (i in seq_len(veces)) {
+    filas <- sample(nrow(ventas), replace = TRUE)
+    resumir(ventas$valor_neto[filas], ventas$sucursal[filas])
+  }
+}
+
+con_dplyr <- \(valor, sucursal) {
+  summarise(tibble(valor, sucursal), prom = mean(valor), .by = sucursal)
+}
+con_collapse <- \(valor, sucursal) fmean(valor, g = sucursal)
+
+tiempos <- c(
+  dplyr = segundos(remuestrear(con_dplyr)),
+  collapse = segundos(remuestrear(con_collapse))
+)
+tiempos
+```
+
+`collapse` tarda `r round(tiempos[["dplyr"]] / tiempos[["collapse"]])` veces menos. Y buena parte de su tiempo se va en `sample()`, no en resumir. La diferencia viene de que `summarise()` hace en cada llamada un trabajo fijo (construir la tabla, revisar los grupos y armar el resultado) que en una ejecución no se nota y en mil sí.
+
+**Una diferencia que no se ve.** `fmean()` no es `mean()` con otro nombre: por defecto ignora los faltantes.
+
+```{r}
+#| label: collapse-na
+c(mean = mean(c(1, NA, 3)), fmean = fmean(c(1, NA, 3)))
+```
+
+Con `mean()`, un faltante produce `NA` y obliga a decidir qué hacer con él. Con `fmean()`, el faltante desaparece del cálculo sin aviso. Ninguna de las dos es incorrecta, pero cambiar de herramienta sin saberlo cambia los resultados. Es la clase de detalle que hay que revisar antes de reemplazar una función por otra «equivalente».
+
+| Conviene `dplyr` cuando... | Conviene `collapse` cuando... |
+|---|---|
+| El código lo van a leer y mantener otras personas. | El mismo resumen se repite miles de veces: simulaciones, remuestreo, funciones dentro de bucles. |
+| El cálculo se ejecuta una vez y tarda poco. | Hay muchos grupos o muchas filas, y la memoria y el tiempo importan. |
+| Se necesita el resto del ecosistema: `tidyr`, `ggplot2`, DuckDB con `duckplyr`. | Un script de producción debe tener pocas dependencias: `collapse` solo depende de `Rcpp`. |
+| Se quiere el comportamiento de R base ante los faltantes. | Se conoce y se quiere su manejo de faltantes por defecto. |
+
+: Cuándo elegir `dplyr` o `collapse` {#tbl-dplyr-collapse}
+
+En Python, `pandas` ya ejecuta sus resúmenes por grupo en código compilado, así que la distancia es menor; cuando el resumen se repite mucho, la alternativa equivalente es trabajar con los arreglos de `numpy` directamente, o pasar a `polars`.
 
 ## Muchas tablas: reducir una lista {#sec-reducir}
 
@@ -333,7 +387,7 @@ En R base, la misma reducción es `Reduce(unir, otras, indicadores$ventas_mes)`.
 
 ### Python
 
-```python
+```{python}
 from functools import reduce
 from itertools import accumulate
 from pathlib import Path
@@ -354,14 +408,10 @@ otras = [
 print([len(paso) for paso in accumulate(otras, unir, initial=base)])
 ```
 
-```text
-{'devoluciones_mes': 25, 'recaudos_mes': 24, 'ventas_mes': 24, 'visitas_mes': 23}
-[24, 25, 25, 25]
-```
-
 La **comprensión de diccionarios** `{ruta.stem: ... for ruta in rutas}` arma un diccionario con el nombre del archivo como clave y la tabla como valor: el equivalente de la lista con nombre de R. `accumulate()` de `itertools` recibe la función y el valor inicial en `initial`. Con `validate="1:1"` en `merge()`, la reducción se detiene en la tabla con la clave repetida:
 
-```python
+```{python}
+#| error: true
 def unir(x, y):
     return x.merge(y, on=["sucursal", "mes"], how="left", validate="1:1")
 
@@ -369,11 +419,7 @@ def unir(x, y):
 tablero = reduce(unir, otras, base)
 ```
 
-```text
-MergeError: Merge keys are not unique in right dataset; not a one-to-one merge
-```
-
-```python
+```{python}
 indicadores = {
     nombre: tabla.drop_duplicates() for nombre, tabla in indicadores.items()
 }
@@ -385,12 +431,6 @@ otras = [
 tablero = reduce(unir, otras, base)
 print(tablero.shape)
 print(tablero[tablero["visitas"].isna()])
-```
-
-```text
-(24, 6)
-   sucursal  mes  valor_ventas  devoluciones  valor_recaudado  visitas
-20      S07    3      45034850             3         38393000      NaN
 ```
 
 `functools.reduce()` tiene el mismo orden de argumentos que `Reduce()` de R base: la función, la lista y el valor inicial.
@@ -512,7 +552,7 @@ Los tramos usan `>=` en un extremo y `<` en el otro a propósito. Con `between()
 
 En `pandas`, la unión por fecha vigente es `merge_asof()`. Exige que ambas tablas estén ordenadas por la columna de la fecha:
 
-```python
+```{python}
 precios = pd.read_csv(
     "datos/cap09/precios_historial.csv", parse_dates=["vigente_desde"]
 )
@@ -548,19 +588,11 @@ print(
 )
 ```
 
-```text
-6000
-  producto vigente_desde  ventas  diferencia
-3      P05    2026-02-01     335   8956315.0
-2      P04    2026-02-01     337   5871515.0
-0      P01    2026-02-01     329   5091350.0
-```
-
 `direction="backward"` busca hacia atrás: el precio más reciente que no sea posterior a la venta. `by="producto"` hace la búsqueda dentro de cada producto. Si las tablas no están ordenadas, `merge_asof()` da un error en lugar de un resultado equivocado. También exige que las dos fechas tengan exactamente el mismo tipo, incluida la resolución: en `pandas` 3, la fecha que viene del Parquet queda en microsegundos (`datetime64[us]`) y la que se lee del CSV, en segundos (`datetime64[s]`). Sin la conversión de la segunda línea, `merge_asof()` da el error `incompatible merge keys`.
 
 `pandas` no tiene uniones por rango. Para los tramos, la herramienta es `pd.cut()`, que asigna cada valor a un intervalo; después se une por el nombre del tramo, una unión por igualdad común y corriente:
 
-```python
+```{python}
 tramos = pd.read_csv("datos/cap09/tramos_comision.csv")
 limites = [*tramos["desde"], np.inf]
 
@@ -577,15 +609,6 @@ comisiones = (
     .merge(tramos[["tramo", "comision_pct"]], on="tramo", validate="m:1")
 )
 print(comisiones["tramo"].value_counts().sort_index())
-```
-
-```text
-tramo
-A     4
-B    13
-C     5
-D     2
-Name: count, dtype: int64
 ```
 
 `right=False` cierra los intervalos por la izquierda y los abre por la derecha, como el `>=` y `<` de R. `[*tramos["desde"], np.inf]` arma la lista de límites: los inicios de cada tramo y, al final, infinito.
@@ -680,7 +703,7 @@ La diferencia entre los dos promedios es grande: sin completar, el promedio solo
 
 En `pandas` se arma el universo con `MultiIndex.from_product()`, que produce todas las combinaciones, y se reindexa la tabla sobre él:
 
-```python
+```{python}
 dias = np.sort(ventas["fecha"].unique())
 sucursales = sorted(ventas["sucursal"].unique())
 
@@ -696,16 +719,6 @@ demanda_p05 = (
 )
 print(len(demanda_p05))
 print(demanda_p05.groupby("sucursal")["unidades"].mean().round(2).head(4))
-```
-
-```text
-712
-sucursal
-S01    12.67
-S02    10.70
-S03    10.85
-S04    10.28
-Name: unidades, dtype: float64
 ```
 
 `reindex()` alinea la serie con el nuevo índice: conserva los valores que existen y llena con `fill_value` las combinaciones nuevas.
@@ -807,7 +820,7 @@ tibble(archivo = names(rutas), ruta = rutas) |>
 
 `pandas` admite columnas con objetos (de tipo `object`), pero no tiene un flujo cómodo para trabajar con ellas. La forma habitual es `groupby().apply()`, que pasa a una función la tabla de cada grupo:
 
-```python
+```{python}
 diario = (
     ventas.groupby(["sucursal", "fecha"], as_index=False)["valor_neto"]
     .sum()
@@ -828,14 +841,6 @@ tendencias = (
     .sort_values(ascending=False)
 )
 print(tendencias.head(3))
-```
-
-```text
-sucursal
-S06    0.14
-S04    0.13
-S08    0.10
-dtype: float64
 ```
 
 `np.polyfit(x, y, deg=1)` ajusta una recta y devuelve sus coeficientes, primero la pendiente. Seleccionar las columnas antes de `apply()` (`[["fecha", "valor"]]`) evita que la función reciba también la columna de agrupación.
@@ -954,7 +959,7 @@ La misma línea devuelve tres tipos distintos según los datos. En un análisis 
 
 ### Python
 
-```python
+```{python}
 import time
 
 rng = np.random.default_rng(9)
@@ -990,13 +995,6 @@ tiempos = {
 }
 for forma, (segundos, _) in tiempos.items():
     print(f"{forma:<22} {segundos}")
-```
-
-```text
-np.select()            0.035
-comprensión de listas  0.288
-Series.map()           0.418
-for                    0.424
 ```
 
 El patrón es el mismo de R: la forma vectorizada gana con claridad, y entre las demás la diferencia es pequeña. En Python la forma idiomática de aplicar una función a cada elemento es la **comprensión de listas**, `[tamano(x) for x in u]`. `apply()` y `map()` de `pandas` también llaman a la función una vez por elemento: son bucles con otra sintaxis, no operaciones vectorizadas.
@@ -1128,7 +1126,7 @@ Con esta política todas las sucursales pierden ventas, y `S01`, la de mayor dem
 
 En Python el bucle se escribe igual. Sobre listas o arreglos de NumPy, no sobre la tabla:
 
-```python
+```{python}
 def simular_inventario(demanda, inicial=120, reorden=50, lote=100, espera=5):
     inventario, perdidas = [0] * len(demanda), [0] * len(demanda)
     disponible, llegada = inicial, None
@@ -1164,14 +1162,6 @@ print(
     .sort_values("pct_perdido", ascending=False)
     .head(3)
 )
-```
-
-```text
-          unidades  perdidas  pct_perdido
-sucursal                                 
-S01           1128       190         16.8
-S03            966       119         12.3
-S04            915        95         10.4
 ```
 
 Aquí hay dos bucles con papeles distintos. El de adentro es necesario: cada día depende del anterior. El de afuera recorre los grupos y guarda cada resultado en una lista que se apila al final con `pd.concat()`; es el equivalente de `map()` seguido de `list_rbind()`. Agregar filas a una tabla dentro del bucle, con `pd.concat()` en cada vuelta, sería el mismo error que hacer crecer un vector en R.
@@ -1276,7 +1266,7 @@ Seis archivos se leyeron bien y dos tienen problemas distintos, cada uno con su 
 
 En Python, la estructura natural es un bucle con `try` y `except`: el bloque `try` intenta la lectura y, si algo falla, el bloque `except` guarda el error y el bucle sigue con el siguiente archivo:
 
-```python
+```{python}
 def leer_conteo(ruta):
     conteo = pd.read_csv(ruta, dtype=str)
     if "unidades_contadas" not in conteo.columns:
@@ -1297,13 +1287,6 @@ for ruta in sorted(Path("datos/cap09/conteos").glob("*.csv")):
 
 print(pd.DataFrame(errores))
 print(pd.concat(conteos)["archivo"].nunique())
-```
-
-```text
-          archivo                                  error
-0  conteo_S04.csv             unidades no numéricas: N/D
-1  conteo_S07.csv  no tiene la columna unidades_contadas
-6
 ```
 
 `raise` es el `stop()` de Python. `except ValueError` atrapa solo ese tipo de error: si el archivo no existe o está dañado, `pandas` lanza otro tipo de error y el bucle sí se detiene. Atrapar todos los errores con un `except Exception` genérico parece más seguro, pero esconde los problemas que no esperabas.
@@ -1369,7 +1352,8 @@ tibble(reorden = puntos, perdidas)
 
 ### Python
 
-```python
+```{python}
+#| eval: false
 demanda_p11 = ...  # TODO: groupby + reindex
 demanda_s01 = demanda_p05.loc[
     demanda_p05["sucursal"] == "S01", "unidades"

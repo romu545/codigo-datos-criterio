@@ -129,7 +129,7 @@ El flujo leyó los tres archivos y produjo 24 filas de indicadores, una por sucu
 
 ### Python
 
-```python
+```{python}
 import sys
 from pathlib import Path
 
@@ -138,20 +138,6 @@ from scripts.flujo_entregas import ejecutar_flujo, PASOS
 trimestre = sorted(str(p) for p in Path("datos/cap13/entregas").glob("*.csv"))
 indicadores = ejecutar_flujo(trimestre, PASOS)
 print(indicadores[indicadores["sucursal"] == "S03"])
-```
-
-```text
-2026-11-25 15:54:13  inicio del flujo: 5 pasos
-2026-11-25 15:54:13  leer         2400 filas   0.05 s
-2026-11-25 15:54:13  armonizar    2400 filas   0.07 s
-2026-11-25 15:54:13  validar      2400 filas   0.01 s
-2026-11-25 15:54:13  resumir        24 filas   0.06 s
-2026-11-25 15:54:13  guardar        24 filas   0.01 s
-2026-11-25 15:54:13  fin del flujo
-        mes sucursal  pedidos  mediana_horas  pct_tardias  pct_devueltos
-2   2026-01      S03      111           5.20         38.7            8.1
-10  2026-02      S03       93           5.70         46.2            4.3
-18  2026-03      S03       80           4.95         30.0            1.2
 ```
 
 El flujo de Python tiene la misma forma: un diccionario de pasos y una función que los recorre. La bitácora usa el módulo `logging` de la biblioteca estándar, que escribe cada línea con su hora en un archivo y en la consola a la vez, y que permite distinguir niveles: `log.info()` para lo normal y `log.error()` para los fallos. `raise RuntimeError(...) from e` lanza un error nuevo con el nombre del paso y conserva el original, que Python muestra debajo como la causa.
@@ -247,7 +233,7 @@ c(
 
 ### Python
 
-```python
+```{python}
 import subprocess
 
 resultado = subprocess.run(
@@ -257,11 +243,6 @@ resultado = subprocess.run(
 )
 print(resultado.stdout.strip().splitlines()[-1])
 print("código de salida:", resultado.returncode)
-```
-
-```text
-2026-11-25 15:54:16  fin del flujo
-código de salida: 0
 ```
 
 `subprocess.run()` ejecuta un programa en un proceso nuevo; `sys.executable` es la ruta del Python que estás usando, y `-m scripts.flujo_entregas` ejecuta el archivo como módulo desde la carpeta del proyecto, lo que activa su bloque `if __name__ == "__main__":`. El **código de salida** es 0 cuando el programa terminó bien y otro número cuando falló; es lo que revisan las herramientas que automatizan tareas, como veremos en la @sec-programar.
@@ -311,7 +292,7 @@ pedidos_de <- function(archivos) {
 
 pedidos <- pedidos_de(trimestre) # primera vez: se calcula
 pedidos <- pedidos_de(trimestre) # nada cambió: se lee
-Sys.setFileTime(trimestre[3], Sys.time() + 5)
+Sys.setFileTime(trimestre[3], Sys.time())
 pedidos <- pedidos_de(trimestre) # marzo cambió: se vuelve a calcular
 ```
 
@@ -342,7 +323,7 @@ list(
 
 ### Python
 
-```python
+```{python}
 import os
 
 
@@ -366,11 +347,6 @@ salida = "datos/cap13/salida/pedidos_py.parquet"
 calcular = lambda: validar(armonizar(leer_crudo(trimestre)))
 pedidos = paso_si_hace_falta(salida, trimestre, calcular)
 pedidos = paso_si_hace_falta(salida, trimestre, calcular)
-```
-
-```text
-al día, se lee: pedidos_py.parquet
-al día, se lee: pedidos_py.parquet
 ```
 
 En Python no hay una herramienta tan integrada como `targets`. Las más usadas para flujos de datos son [Snakemake](https://snakemake.readthedocs.io/), muy común en investigación, que declara cada paso con sus archivos de entrada y de salida; y orquestadores como Prefect o Dagster, pensados para flujos que corren en servidores. Y está `make`, la herramienta original de los años setenta, que sigue funcionando para cualquier lenguaje.
@@ -461,7 +437,7 @@ indicadores |> count(mes)
 
 ### Python
 
-```python
+```{python}
 import pandas as pd
 
 ingenuo = pd.concat(
@@ -478,17 +454,11 @@ print(
 print(ingenuo["fecha"].iloc[[0, -1]].tolist())
 ```
 
-```text
-(3220, 11)
-1312 628
-['2026-01-02', '30/04/2026']
-```
-
 En Python, la lectura ingenua **no falla**. `pd.concat()` une las tablas aunque tengan columnas distintas: agrega `tiempo_entrega_min` como una columna nueva, deja `tiempo_entrega_h` vacía en abril y guarda las fechas como texto, con los dos formatos mezclados. Ningún mensaje. Los indicadores calculados con esta tabla tendrían abril con todos los tiempos faltantes, y quizá nadie lo notaría hasta la reunión. Es el caso que la @tbl-guia-explorar llamaba "devolver un resultado equivocado sin quejarse", y es la razón para validar entre pasos aunque el lenguaje no se queje.
 
 Con el flujo y su validación, el mismo archivo produce un error claro, y con la versión corregida de `armonizar()` pasa:
 
-```python
+```{python}
 from scripts.flujo_entregas import ejecutar_flujo, PASOS
 
 
@@ -510,13 +480,6 @@ except RuntimeError as e:
 
 indicadores = ejecutar_flujo(todos, PASOS)
 print(indicadores["mes"].value_counts().sort_index().to_dict())
-```
-
-```text
-el paso 'validar' falló: los datos no pasan la validación:
-- 820 fechas sin leer en entregas_2026_04.csv
-- 628 entregas a domicilio sin tiempo de entrega
-{'2026-01': 8, '2026-02': 8, '2026-03': 8, '2026-04': 8}
 ```
 
 `{**PASOS, "armonizar": armonizar_marzo}` crea un diccionario nuevo con todos los pasos y reemplaza uno: el desempaque con `**` del @sec-funciones. `errors="coerce"` convierte en faltante lo que no se puede leer como fecha, en lugar de fallar; la validación es la que se encarga de detenerlo.
@@ -657,7 +620,8 @@ ejecutar_flujo(trimestre, pasos)
 
 ### Python
 
-```python
+```{python}
+#| eval: false
 def marcar_atipicos(d):
     return d.assign(corporativo=...)  # TODO
 

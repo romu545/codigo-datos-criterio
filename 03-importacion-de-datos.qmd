@@ -56,7 +56,7 @@ Las alternativas se justifican por razones concretas. `data.table` ofrece `fread
 
 ### El estándar en Python
 
-En Python, `pandas` es el estándar histórico, casi cualquier tutorial, pregunta o ejemplo lo usa. `polars` es una alternativa moderna que suele ser más rápida y consumir menos memoria, y lo usaremos en el experimento de rendimiento de este capítulo. Entre `tidyverse` y `pandas` o `polars` se cubre la gran mayoría de las tareas cotidianas de importación.
+En Python, `pandas` es el estándar histórico, casi cualquier tutorial, pregunta o ejemplo lo usa. `polars` es una alternativa moderna que suele ser más rápida y consumir menos memoria, y lo usaremos en el experimento de rendimiento de este capítulo. Entre `tidyverse` y `pandas` se cubre la gran mayoría de las tareas cotidianas de importación.
 
 ### DuckDB como motor transversal
 
@@ -64,7 +64,7 @@ En Python, `pandas` es el estándar histórico, casi cualquier tutorial, pregunt
 
 Su gran ventaja para este capítulo es que puede **leer y consultar directamente archivos CSV, JSON, Excel y Parquet sin cargarlos por completo en la memoria**. Podemos escribir una consulta que filtra y resume un archivo grande, y solo el resultado llega a R o Python.
 
-Esto plantea una pregunta natural: *¿conviene abandonar `tidyverse`, `pandas` o `polars` y hacerlo todo con DuckDB?* No. SQL es excelente para filtrar, agregar y combinar tablas, pero la manipulación compleja, el modelado estadístico y la visualización se hacen mejor en R o Python. Lo recomendable es un **flujo híbrido** (@fig-flujo-hibrido):
+Esto plantea una pregunta natural: *¿conviene abandonar `tidyverse` o `pandas` y hacerlo todo con DuckDB?* No. SQL es excelente para filtrar, agregar y combinar tablas, pero la manipulación compleja, el modelado estadístico y la visualización se hacen mejor en R o Python. Lo recomendable es un **flujo híbrido** (@fig-flujo-hibrido):
 
 1. Usar DuckDB para **filtrar, agregar y reducir** los grandes volúmenes directamente en disco.
 2. Traer a R o Python un *data frame* ligero con lo que realmente se necesita.
@@ -250,7 +250,9 @@ Los ceros iniciales de `codigo_dane` y `nit_cliente` sobreviven (`"05001"`), per
 
 <!-- Salidas de esta pestaña obtenidas con pandas 2.3.3 (nov. 2026). Pueden variar levemente con otras versiones. -->
 
-```{.python .number-lines}
+```{python}
+#| error: true
+#| code-line-numbers: true
 import pandas as pd
 
 ruta_ventas = "datos/cap03/ventas_2026_01.csv"
@@ -265,7 +267,8 @@ UnicodeDecodeError: 'utf-8' codec can't decode byte 0xe1 in position 231: invali
 
 El mensaje menciona un byte, como `0xe1` o `0xed`, que en `Latin-1` representa una letra con tilde (`á` o `í`). `UTF-8` no puede interpretarlo y por eso se detiene. Una forma de seguir leyendo es pedirle a `pandas` que reemplace los bytes inválidos:
 
-```{.python .number-lines}
+```{python}
+#| code-line-numbers: true
 ventas_defecto = pd.read_csv(
     ruta_ventas, sep=";", decimal=",", encoding_errors="replace"
 )
@@ -273,33 +276,12 @@ ventas_defecto.info()
 print(ventas_defecto[["codigo_dane", "nit_cliente", "ciudad"]].head(3))
 ```
 
-```text
-<class 'pandas.core.frame.DataFrame'>
-RangeIndex: 5000 entries, 0 to 4999
-Data columns (total 7 columns):
- #   Column               Non-Null Count  Dtype
----  ------               --------------  -----
- 0   fecha                5000 non-null   object
- 1   codigo_dane          5000 non-null   int64
- 2   nit_cliente          5000 non-null   int64
- 3   ciudad               5000 non-null   object
- 4   valor_venta          5000 non-null   float64
- 5   observacion_interna  3101 non-null   object
- 6   usuario_auditoria    5000 non-null   object
-dtypes: float64(1), int64(2), object(4)
-memory usage: 273.6+ KB
-   codigo_dane  nit_cliente        ciudad
-0        76001    298528399          Cali
-1         8001    858053946  Barranquilla
-2        11001    952057756        Bogot�
-```
-
 La lectura "funciona", pero mal. Estos son los problemas:
 
 - **Tildes dañadas.** Las letras con tilde se reemplazan por `�` (por ejemplo, `Bogot�`). Esa información se pierde y no se puede recuperar después.
 - **Identificadores convertidos en números.** `codigo_dane` y `nit_cliente` quedan como `int64`, así que `05001` pasa a ser `5001` y el NIT pierde sus ceros iniciales. A diferencia de `readr`, `pandas` no conserva los ceros por defecto.
 - **Columnas innecesarias.** Se cargaron las siete columnas, incluidas `observacion_interna` y `usuario_auditoria`.
-- **Fechas como texto.** `fecha` queda como texto (`object`), porque no le pedimos a `pandas` que la interprete como fecha.
+- **Fechas como texto.** `fecha` queda como texto (`str`), porque no le pedimos a `pandas` que la interprete como fecha.
 
 `encoding_errors="replace"` sirve para diagnosticar, no para trabajar: oculta el error y deja los datos dañados.
 
@@ -376,7 +358,7 @@ El objeto `locale()` agrupa lo que depende de la región o del idioma: el separa
 
 ### Python
 
-```python
+```{python}
 import pandas as pd
 
 ventas = pd.read_csv(
@@ -392,25 +374,6 @@ ventas = pd.read_csv(
 
 ventas.info()
 print(ventas.head(3))
-```
-
-```text
-<class 'pandas.core.frame.DataFrame'>
-RangeIndex: 5000 entries, 0 to 4999
-Data columns (total 5 columns):
- #   Column       Non-Null Count  Dtype
----  ------       --------------  -----
- 0   fecha        5000 non-null   datetime64[ns]
- 1   codigo_dane  5000 non-null   object
- 2   nit_cliente  5000 non-null   object
- 3   ciudad       5000 non-null   object
- 4   valor_venta  5000 non-null   float64
-dtypes: datetime64[ns](1), float64(1), object(3)
-memory usage: 195.4+ KB
-       fecha codigo_dane nit_cliente        ciudad  valor_venta
-0 2026-01-07       76001  0298528399          Cali   1824280.01
-1 2026-01-07       08001  0858053946  Barranquilla    969260.57
-2 2026-01-31       11001  0952057756        Bogotá     82466.77
 ```
 
 `usecols` evita que las columnas innecesarias lleguen a memoria, y `dtype` fija los identificadores como texto antes de que `pandas` pueda convertirlos. Las tildes se leen bien y los ceros iniciales se conservan. Compara también el uso de memoria con la lectura ingenua: 195 KB frente a 274 KB.
@@ -465,7 +428,7 @@ glimpse(ventas_texto)
 
 ### Python
 
-```python
+```{python}
 ventas_texto = pd.read_csv(
     "datos/cap03/ventas_2026_01.csv",
     sep=";",
@@ -473,23 +436,6 @@ ventas_texto = pd.read_csv(
     dtype=str,
 )
 ventas_texto.info()
-```
-
-```text
-<class 'pandas.core.frame.DataFrame'>
-RangeIndex: 5000 entries, 0 to 4999
-Data columns (total 7 columns):
- #   Column               Non-Null Count  Dtype
----  ------               --------------  -----
- 0   fecha                5000 non-null   object
- 1   codigo_dane          5000 non-null   object
- 2   nit_cliente          5000 non-null   object
- 3   ciudad               5000 non-null   object
- 4   valor_venta          5000 non-null   object
- 5   observacion_interna  3101 non-null   object
- 6   usuario_auditoria    5000 non-null   object
-dtypes: object(7)
-memory usage: 273.6+ KB
 ```
 
 ### DuckDB
@@ -603,7 +549,7 @@ read_csv(
 
 ### Python
 
-```python
+```{python}
 import re
 from pathlib import Path
 import pandas as pd
@@ -621,16 +567,6 @@ sin_cuidado = pd.concat(
     (pd.read_csv(a, dtype=str) for a in archivos), ignore_index=True
 )
 print(sin_cuidado.isna().sum())
-```
-
-```text
-['recaudos_2025_10.csv', 'recaudos_2025_11.csv', 'recaudos_2025_12.csv', 'recaudos_2026_01.csv']
-id_recaudo       0
-fecha            0
-nit_cliente      0
-vlr_total      300
-valor_total    900
-dtype: int64
 ```
 
 `pandas` no se queja: simplemente crea las dos columnas, `vlr_total` y `valor_total`, y las llena de vacíos donde no aplican. Es un error silencioso.
@@ -722,7 +658,7 @@ mapa
 
 ### Python
 
-```python
+```{python}
 from pathlib import Path
 import pandas as pd
 
@@ -751,26 +687,6 @@ if mapa.shape[1] > mapa.shape[0]:  # más columnas que archivos: transponer
     mapa = mapa.T
     mapa.index.name = "columna"
 print(mapa.to_string())
-```
-
-```text
-nota           1
-autor          1
-id_recaudo     4
-fecha          4
-nit_cliente    4
-vlr_total      3
-valor_total    1
-dtype: int64
-archivo      borrador_notas.csv  recaudos_2025_10.csv  recaudos_2025_11.csv  recaudos_2025_12.csv  recaudos_2026_01.csv
-columna
-nota                       True                 False                 False                 False                 False
-autor                      True                 False                 False                 False                 False
-id_recaudo                False                  True                  True                  True                  True
-fecha                     False                  True                  True                  True                  True
-nit_cliente               False                  True                  True                  True                  True
-vlr_total                 False                  True                  True                  True                 False
-valor_total               False                 False                 False                 False                  True
 ```
 
 `nrows=0` cumple el mismo papel que `n_max = 0` en R. En `pandas`, transponer es tan simple como `.T`.
@@ -835,7 +751,7 @@ colSums(is.na(recaudos))
 
 ### Python
 
-```python
+```{python}
 def leer_lote(ruta):
     return (
         pd.read_csv(ruta, dtype=str)
@@ -850,21 +766,6 @@ recaudos["valor_total"] = pd.to_numeric(recaudos["valor_total"])
 
 print(recaudos["archivo_origen"].value_counts())
 print(recaudos.isna().sum())
-```
-
-```text
-archivo_origen
-recaudos_2025_10.csv    300
-recaudos_2025_11.csv    300
-recaudos_2025_12.csv    300
-recaudos_2026_01.csv    300
-Name: count, dtype: int64
-id_recaudo        0
-fecha             0
-nit_cliente       0
-valor_total       0
-archivo_origen    0
-dtype: int64
 ```
 
 ### DuckDB
@@ -898,7 +799,7 @@ count(recaudos_duck, archivo_origen)
 
 ### Ejercicio 3.1: solo los archivos de 2025
 
-Importa **únicamente** los recaudos de 2025 que están en `datos/cap03/lotes_mensuales/`, usando un patrón (no una lista manual). Estandariza los nombres de columna, agrega `archivo_origen` y verifica que, después de unir los archivos, no haya valores nulos inesperados. Escribe tu solución en el espacio siguiente.
+Importa **únicamente** los recaudos de 2025 que están en `datos/cap03/lotes_mensuales/`, usando un patrón (no una lista manual). Estandariza los nombres de columna, agrega archivo_origen y verifica que, después de unir los archivos, no haya valores nulos inesperados. Escribe tu solución en el espacio siguiente.
 
 ::: {.panel-tabset group="lenguaje"}
 
@@ -923,7 +824,8 @@ recaudos_2025 <- ... # TODO
 
 ### Python
 
-```python
+```{python}
+#| eval: false
 # 1. Descubrir los archivos de 2025 con un patrón
 archivos_2025 = ...  # TODO
 
@@ -989,7 +891,7 @@ sum(is.na(chat$autor))
 
 ### Python
 
-```python
+```{python}
 from pathlib import Path
 import pandas as pd
 
@@ -1008,15 +910,6 @@ patron = (
 chat = pd.Series(lineas).str.extract(patron)
 print(chat[["fecha", "hora", "autor"]].head(4))
 print(chat["autor"].isna().sum())
-```
-
-```text
-     fecha        hora        autor
-0      NaN         NaN          NaN
-1  5/01/26  8:15 a. m.  Laura Gómez
-2  5/01/26  8:21 a. m.  Andrés Ruiz
-3  5/01/26  8:22 a. m.  Andrés Ruiz
-3
 ```
 
 En Python los grupos con nombre se escriben `(?P<nombre>...)`, con una `P`. `str.extract()` devuelve un *data frame* cuyas columnas llevan el nombre de cada grupo.
@@ -1076,10 +969,98 @@ Con este capítulo tienes el método completo para archivos de texto. Cada vez q
 4. ¿Cómo encuentro los archivos? Con patrones, no con listas escritas a mano.
 5. ¿Qué pasa si el esquema cambia? Homologar nombres y conservar `archivo_origen`.
 
-::: {.callout-tip}
-## Revisar código de importación generado con IA
+## Auditoría 3.1: el código que propone un asistente {#sec-auditoria-importacion}
 
-Si le pides a un asistente de inteligencia artificial que lea `ventas_2026_01.csv`, es probable que obtengas código que se ejecuta sin errores. Eso no basta. Antes de usarlo, revísalo con las cinco preguntas anteriores: ¿declara la codificación o la deja al azar?, ¿protege los ceros de `codigo_dane` y `nit_cliente`?, ¿lee columnas que no necesitas?, ¿apila archivos sin revisar que sus columnas coincidan? Un código que falla con un mensaje claro es mejor que uno que entrega cifras incompletas en silencio.
+Este libro cierra varios capítulos con una **auditoría**: un código que se ejecuta sin errores, del tipo que entrega un asistente de inteligencia artificial cuando se le pide una tarea en pocas palabras, y la pregunta de si se puede usar. No son errores inventados para el ejercicio: son los que aparecen cuando el código se escribe sin conocer los datos.
+
+El pedido fue: *«Lee ventas_2026_01.csv, que usa punto y coma, y calcula las ventas de enero por municipio, con su código DANE, para cruzarlas con el catálogo de sucursales»*. Esta es la respuesta típica:
+
+::: {.panel-tabset group="lenguaje"}
+
+### R
+
+```{r}
+#| label: auditoria-3-1
+ventas <- read.csv2("datos/cap03/ventas_2026_01.csv")
+
+ventas_municipio <- aggregate(
+  valor_venta ~ codigo_dane + ciudad,
+  data = ventas,
+  FUN = sum
+)
+ventas_municipio
+```
+
+### Python
+
+```{python}
+import pandas as pd
+
+ventas = pd.read_csv(
+    "datos/cap03/ventas_2026_01.csv", sep=";", decimal=",", encoding="latin-1"
+)
+ventas_municipio = ventas.groupby(["codigo_dane", "ciudad"], as_index=False)[
+    "valor_venta"
+].sum()
+print(ventas_municipio)
+```
+
+:::
+
+El código corre, los totales suman lo mismo que el archivo y la tabla tiene ocho municipios, como debe ser. Antes de abrir la solución, revísalo con las cinco preguntas anteriores. ¿Se puede cruzar esta tabla con el catálogo?
+
+::: {.callout-tip collapse="true"}
+## Solución de la auditoría 3.1
+
+**Los códigos DANE perdieron el cero.** Las dos herramientas infieren que `codigo_dane` es un número, y `05001` se vuelve `5001`. El catálogo de sucursales guarda `05001` como texto, así que Medellín y Barranquilla no encontrarían su pareja al cruzar. Es la pregunta 2 del contrato: los identificadores son texto, aunque parezcan números. El mismo daño sufre `nit_cliente`, que no se usó aquí pero quedó cargado y dañado en `ventas`.
+
+```{r}
+#| label: auditoria-3-1-evidencia
+class(ventas$codigo_dane)
+table(nchar(ventas$codigo_dane))
+```
+
+Hay 1.215 filas con un código de cuatro cifras, que no existe en la codificación del DANE.
+
+**En R, además, las tildes se dañaron.** `read.csv2()` no recibió la codificación y leyó el archivo `Latin-1` como si fuera `UTF-8`: «Medellín» quedó como `Medell\xedn`. Un cruce por nombre de ciudad también fallaría. El código de Python sí declaró `encoding="latin-1"`; un asistente acierta a veces en esto, y por eso la revisión no puede depender de que acierte.
+
+**Lo que no se ve en el resultado.** En R, `fecha` quedó como texto, de modo que filtrar por rango de fechas daría resultados equivocados sin aviso. Y las dos versiones leen las siete columnas, cuando la tarea necesita tres (pregunta 3).
+
+La versión corregida aplica el contrato del Ejemplo guiado 3.1: codificación declarada, identificadores como texto y solo las columnas necesarias.
+
+::: {.panel-tabset group="lenguaje"}
+
+### R
+
+```{r}
+#| label: auditoria-3-1-corregida
+ventas <- read_csv2(
+  "datos/cap03/ventas_2026_01.csv",
+  locale = locale(encoding = "latin1", decimal_mark = ",", grouping_mark = "."),
+  col_types = cols(.default = col_character(), valor_venta = col_double()),
+  col_select = c(codigo_dane, ciudad, valor_venta)
+)
+
+aggregate(valor_venta ~ codigo_dane + ciudad, data = ventas, FUN = sum)
+```
+
+### Python
+
+```{python}
+ventas = pd.read_csv(
+    "datos/cap03/ventas_2026_01.csv",
+    sep=";",
+    decimal=",",
+    encoding="latin-1",
+    dtype={"codigo_dane": "string"},
+    usecols=["codigo_dane", "ciudad", "valor_venta"],
+)
+print(ventas.groupby(["codigo_dane", "ciudad"])["valor_venta"].sum().head(2))
+```
+
+:::
+
+La lección general: **un código que falla con un mensaje claro es mejor que uno que entrega cifras dañadas en silencio**. Cuando un asistente te entregue código de importación, no preguntes solo si corre; pregunta qué hizo con cada columna.
 :::
 
 En el siguiente capítulo (@sec-importacion-fuentes) aplicamos el mismo contrato a fuentes que no son texto plano: hojas de cálculo, archivos Parquet, respuestas JSON de APIs y bases de datos.

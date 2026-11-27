@@ -143,7 +143,7 @@ La comprobación lee el archivo escrito, como en el @sec-guardar-compartir: tien
 
 ### Python
 
-```python
+```{python}
 from pathlib import Path
 
 import pandas as pd
@@ -202,10 +202,6 @@ with pd.ExcelWriter(ruta, engine="xlsxwriter") as escritor:
 
 revisado = load_workbook(ruta)
 print(revisado.sheetnames, revisado["Indicadores"][f"B{ultima + 1}"].value)
-```
-
-```text
-['Indicadores', 'Notas'] =SUM(B4:B11)
 ```
 
 Con `engine="xlsxwriter"`, `pandas` escribe la tabla y deja disponibles el libro y la hoja de `XlsxWriter` para darles formato. Una diferencia con R: en `XlsxWriter` las filas y columnas se cuentan **desde cero** cuando se usan números (`write(2, col, ...)` es la fila 3 de Excel), pero los rangos en texto, como `"D4:D11"`, usan la notación de Excel. Mezclar las dos es la fuente de errores más común. Y como `XlsxWriter` solo escribe, la comprobación usa `openpyxl`, que lee el archivo y muestra la fórmula del total tal como quedó guardada.

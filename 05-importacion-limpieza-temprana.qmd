@@ -16,7 +16,7 @@ Seguimos con la misma red regional de distribución. Los archivos de este capít
 ## Antes de empezar
 
 1. Abre la carpeta de materiales en Positron para que las rutas relativas `datos/cap05/...` funcionen.
-2. No necesitas paquetes nuevos: usamos los que instalaste al comienzo del @sec-importacion.
+2. No necesitas paquetes nuevos: usamos los que instalaste en la @sec-instalar-paquetes.
 3. Si los archivos de `datos/cap05/` no están en tu copia, genéralos desde la terminal, en la carpeta de materiales, con `Rscript scripts/generar_datos_cap05.R`.
 :::
 
@@ -88,33 +88,13 @@ spec(ingenua)
 
 ### Python
 
-```python
+```{python}
 import pandas as pd
 
 ruta_cartera = "datos/cap05/cartera_clientes_2026_02.csv"
 
 ingenua = pd.read_csv(ruta_cartera, sep=";")
 print(ingenua.dtypes)
-```
-
-```text
-N° Factura                 str
-NIT Cliente              int64
-Fecha Emisión              str
-Fecha Vencimiento          str
-Fecha Pago                 str
-Valor Factura ($)          str
-¿Pagó?                     str
-Cliente Activo             str
-Calificación Riesgo      int64
-Ciudad                     str
-Saldo Pendiente            str
-Registrado En              str
-Observaciones          float64
-Columna1               float64
-Columna2               float64
-Unnamed: 15            float64
-dtype: object
 ```
 
 ### DuckDB
@@ -131,7 +111,7 @@ dbGetQuery(
 
 :::
 
-Las tres herramientas leen el archivo sin un solo error, y ese es justamente el problema. `R` y `pandas` dejan las fechas día/mes/año como texto; `DuckDB` detecta el formato en dos de ellas, pero no en la fecha de pago, porque el `N/A` le impide reconocerla. El valor de la factura queda como texto por el punto de miles, la columna sin nombre aparece como `...16`, `Unnamed: 15` o `column15`, y `pandas` convierte el NIT en número y le quita el cero inicial, el problema que ya conocemos del @sec-importacion. Vamos a resolver estas mañas una a una y, al final del capítulo, a reunirlas en un solo contrato.
+Las tres herramientas leen el archivo sin un solo error, y ese es justamente el problema. `readr` y `pandas` dejan las fechas día/mes/año como texto; `DuckDB` detecta el formato en dos de ellas, pero no en la fecha de pago, porque el `N/A` le impide reconocerla. El valor de la factura queda como texto por el punto de miles, la columna sin nombre aparece como `...16`, `Unnamed: 15` o `column15`, y `pandas` convierte el NIT en número y le quita el cero inicial, el problema que ya conocemos del @sec-importacion. Vamos a resolver estas mañas una a una y, al final del capítulo, a reunirlas en un solo contrato.
 
 ## Nombres de columnas {#sec-nombres-columnas}
 
@@ -191,7 +171,7 @@ Las columnas que no aparecen en `col_select` no se leen. `name_repair = "unique_
 
 ### Python
 
-```python
+```{python}
 import re
 import unicodedata
 
@@ -208,13 +188,9 @@ def limpiar_nombre(nombre):
 print([limpiar_nombre(c) for c in ingenua.columns])
 ```
 
-```text
-['n_factura', 'nit_cliente', 'fecha_emision', 'fecha_vencimiento', 'fecha_pago', 'valor_factura', 'pago', 'cliente_activo', 'calificacion_riesgo', 'ciudad', 'saldo_pendiente', 'registrado_en', 'observaciones', 'columna1', 'columna2', 'unnamed_15']
-```
-
 `unicodedata.normalize("NFKD", ...)` separa cada letra de su tilde, y `encode("ascii", "ignore")` descarta las tildes. En la versión explícita, `pandas` lee con `usecols` y renombra con un diccionario:
 
-```python
+```{python}
 nombres = {
     "N° Factura": "factura",
     "NIT Cliente": "nit",
@@ -226,13 +202,6 @@ cartera_nombres = pd.read_csv(
     ruta_cartera, sep=";", usecols=list(nombres), dtype=str
 ).rename(columns=nombres)
 print(cartera_nombres.head(3))
-```
-
-```text
-   factura         nit fecha_emision pagada
-0  FV-1001  0630538004    01/02/2026     No
-1  FV-1002  0275015391    01/02/2026     NO
-2  FV-1003  0304870301    01/02/2026     SI
 ```
 
 El diccionario cumple dos funciones a la vez: sus llaves dicen qué columnas leer y sus valores, cómo llamarlas.
@@ -348,7 +317,7 @@ El argumento `na` de `readr` se aplica a todo el archivo, así que lo usamos sol
 
 ### Python
 
-```python
+```{python}
 def a_pesos(texto):
     """Convierte '1.234,56' en 1234.56; el guion contable es cero."""
     if texto == "-":
@@ -377,24 +346,6 @@ cartera_na = pd.read_csv(
 
 print(cartera_na.isna().sum())
 print(cartera_na["Saldo Pendiente"].describe().round(0))
-```
-
-```text
-N° Factura              0
-Fecha Pago             26
-Calificación Riesgo     7
-Ciudad                  5
-Saldo Pendiente         0
-dtype: int64
-count         60.0
-mean     2031872.0
-std      2910032.0
-min            0.0
-25%            0.0
-50%            0.0
-75%      3499378.0
-max      8807256.0
-Name: Saldo Pendiente, dtype: float64
 ```
 
 En `pandas`, `na_values` acepta un diccionario con las marcas **de cada columna**, justo lo que pide la regla práctica. `converters` aplica una función propia a cada valor de una columna durante la lectura. El tipo `Int64`, con mayúscula, es el entero de `pandas` que admite faltantes; el `int64` de NumPy no los admite.
@@ -480,7 +431,7 @@ mean(cartera_bool$pagada)
 
 ### Python
 
-```python
+```{python}
 cartera_bool = pd.read_csv(
     ruta_cartera,
     sep=";",
@@ -494,21 +445,9 @@ print(cartera_bool["¿Pagó?"].value_counts())
 print(round(cartera_bool["¿Pagó?"].mean(), 3))
 ```
 
-```text
-N° Factura        str
-¿Pagó?           bool
-Cliente Activo   bool
-dtype: object
-¿Pagó?
-True     34
-False    26
-Name: count, dtype: int64
-0.567
-```
-
 `true_values` y `false_values` hacen la conversión durante la lectura, pero tienen dos condiciones que conviene conocer. La primera: se aplican a **todas** las columnas, no a una sola. La segunda, más delicada: solo convierten una columna si **todos** sus valores están en alguna de las dos listas. Si aparece una variante no prevista, como `sí` en minúscula con tilde, la columna entera se queda como texto, sin aviso. Por eso, después de leer, revisa siempre que el tipo sea `bool`:
 
-```python
+```{python}
 assert cartera_bool["¿Pagó?"].dtype == "bool", (
     "Hay variantes de sí/no sin declarar"
 )
@@ -636,7 +575,7 @@ El `locale` reúne las convenciones regionales del archivo: separadores numéric
 
 ### Python
 
-```python
+```{python}
 cartera_fechas = pd.read_csv(
     ruta_cartera,
     sep=";",
@@ -657,33 +596,15 @@ cartera_fechas["Registrado En"] = pd.to_datetime(
 ).dt.tz_convert("America/Bogota")
 
 print(cartera_fechas.dtypes)
-print(cartera_fechas.head(3))
-```
-
-```text
-N° Factura                                  str
-Fecha Emisión                    datetime64[us]
-Fecha Vencimiento                datetime64[us]
-Fecha Pago                       datetime64[us]
-Registrado En        datetime64[us, America/Bogota]
-dtype: object
-  N° Factura Fecha Emisión Fecha Vencimiento Fecha Pago             Registrado En
-0    FV-1001    2026-02-01        2026-03-03        NaT 2026-02-01 12:59:05-05:00
-1    FV-1002    2026-02-01        2026-03-03        NaT 2026-02-01 15:52:47-05:00
-2    FV-1003    2026-02-01        2026-03-03 2026-02-11 2026-02-01 10:45:36-05:00
+print(cartera_fechas.head(3).to_string())
 ```
 
 `parse_dates` dice qué columnas convertir y `date_format`, con qué formato. Si se omite `date_format`, `pandas` intenta adivinar y, cuando no lo logra, deja la columna como texto sin avisar. Para ver el riesgo de adivinar, compara:
 
-```python
+```{python}
 fechas = pd.Series(["01/02/2026", "03/02/2026", "12/02/2026"])
 print(pd.to_datetime(fechas).tolist())  # adivina mes/día
 print(pd.to_datetime(fechas, format="%d/%m/%Y").tolist())  # formato declarado
-```
-
-```text
-[Timestamp('2026-01-02 00:00:00'), Timestamp('2026-03-02 00:00:00'), Timestamp('2026-12-02 00:00:00')]
-[Timestamp('2026-02-01 00:00:00'), Timestamp('2026-02-03 00:00:00'), Timestamp('2026-02-12 00:00:00')]
 ```
 
 Las tres fechas eran de febrero. Sin el formato, `pandas` las repartió entre enero, marzo y diciembre, y no mostró ningún aviso.
@@ -761,7 +682,7 @@ ncol(cartera_sin_vacias)
 
 ### Python
 
-```python
+```{python}
 muestra = pd.read_csv(ruta_cartera, sep=";", dtype=str, nrows=5000)
 vacias = muestra.columns[muestra.isna().all()].tolist()
 print(vacias)
@@ -773,11 +694,6 @@ cartera_sin_vacias = pd.read_csv(
     usecols=lambda columna: columna not in vacias,
 )
 print(cartera_sin_vacias.shape)
-```
-
-```text
-['Observaciones', 'Columna1', 'Columna2', 'Unnamed: 15']
-(60, 12)
 ```
 
 `usecols` acepta una función que recibe el nombre de cada columna y devuelve `True` si se debe leer.
@@ -880,7 +796,7 @@ count(cartera, pagada, sin_fecha_pago = is.na(fecha_pago))
 
 ### Python
 
-```python
+```{python}
 columnas = {
     "N° Factura": "factura",
     "NIT Cliente": "nit",
@@ -926,26 +842,6 @@ print(cartera.dtypes)
 print(pd.crosstab(cartera["pagada"], cartera["fecha_pago"].isna()))
 
 cartera.to_parquet("datos/cap05/cartera_2026_02.parquet", index=False)
-```
-
-```text
-factura                                         str
-nit                                             str
-fecha_emision                        datetime64[us]
-fecha_vencimiento                    datetime64[us]
-fecha_pago                           datetime64[us]
-valor_factura                               float64
-pagada                                         bool
-cliente_activo                                 bool
-calificacion                                  Int64
-ciudad                                          str
-saldo                                       float64
-registrado_en        datetime64[us, America/Bogota]
-dtype: object
-fecha_pago  False  True
-pagada
-False           0    26
-True           34     0
 ```
 
 `decimal=","` y `thousands="."` declaran el formato numérico colombiano para todas las columnas numéricas. El saldo, con su guion contable, sigue pasando por el convertidor `a_pesos()` del Ejemplo 5.2.
@@ -1058,7 +954,8 @@ write_parquet(visitas, "datos/cap05/visitas_comerciales.parquet")
 
 ### Python
 
-```python
+```{python}
+#| eval: false
 ruta_visitas = "datos/cap05/visitas_comerciales.xlsx"
 
 # 1. Leer todo como texto

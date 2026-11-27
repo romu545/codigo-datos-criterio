@@ -108,7 +108,7 @@ entregas |>
 
 ### Python
 
-```python
+```{python}
 import numpy as np
 import pandas as pd
 
@@ -130,28 +130,16 @@ resumen = (
 print(resumen.head(3))
 ```
 
-```text
-42.9 42.857 nan
-  sucursal  pedidos  devueltos  pct_devuelto
-0      S01      394         14           3.6
-1      S02      428         11           2.6
-2      S03      355         17           4.8
-```
-
 `def` define la función y la sangría delimita el cuerpo. La primera línea del cuerpo, entre comillas triples, es la **cadena de documentación** (*docstring*): `help(tasa)` la muestra. `np.asarray()` convierte lo que llegue (un número, una lista o una columna) en un arreglo de NumPy, para que la misma función sirva con un valor o con muchos.
 
 En Python, una función sin `return` no da error: devuelve `None`. Es uno de los errores más difíciles de ver, porque el código sigue y el `None` aparece mucho después:
 
-```python
+```{python}
 def tasa_sin_return(parte, total):
     round(100 * parte / total, 1)
 
 
 print(tasa_sin_return(3, 7))
-```
-
-```text
-None
 ```
 
 ### DuckDB
@@ -263,7 +251,7 @@ with(politica, reorden < lote)
 
 ### Python
 
-```python
+```{python}
 def resumen_robusto(x, *, digitos=0, **kwargs):
     x = pd.Series(x)
     return pd.Series(
@@ -288,13 +276,6 @@ try:
     tasa_estricta(parte=3, total=7)
 except TypeError as e:
     print("TypeError:", e)
-```
-
-```text
-[175900.0, 276584.0]
-[nan, nan]
-42.86
-TypeError: tasa_estricta() got some positional-only arguments passed as keyword arguments: 'parte, total'
 ```
 
 `**kwargs` recoge los argumentos por nombre que la función no declara y los pasa a `median()` y `mean()`. A diferencia de R, en `pandas` estas funciones ignoran los faltantes por defecto (`skipna=True`), así que el caso se invierte: la primera llamada da números y la segunda, con `skipna=False`, da faltantes. Al llamar una función, `*` y `**` hacen lo contrario que al definirla: `tasa(*argumentos, **opciones)` **desempaca** una lista en argumentos por posición y un diccionario en argumentos por nombre. Es el `do.call()` de Python.
@@ -351,7 +332,7 @@ politicas |>
 
 ### Python
 
-```python
+```{python}
 from scripts.inventario import simular_inventario
 
 ventas = pd.read_parquet("datos/cap07/ventas_2026_t1.parquet")
@@ -374,13 +355,6 @@ for p in politicas:
     parametros = {k: v for k, v in p.items() if k != "nombre"}
     perdidas = simular_inventario(demanda_s01, **parametros)["perdidas"].sum()
     print(f"{p['nombre']:<13} {perdidas}")
-```
-
-```text
-actual        190
-reorden alto  15
-lote grande   101
-las dos       65
 ```
 
 `**parametros` desempaca el diccionario de cada política en argumentos por nombre. La comprensión de diccionarios quita la clave `nombre`, que no es un parámetro de la función.
@@ -501,7 +475,7 @@ La tabla de reglas tiene una columna de funciones, como la de la cartera, pero a
 
 ### Python
 
-```python
+```{python}
 def regla_rango(columna, minimo, maximo):
     def cumple(datos):
         x = datos[columna]
@@ -519,13 +493,6 @@ reglas = [
 for columna, minimo, maximo in reglas:
     regla = regla_rango(columna, minimo, maximo)
     print(f"{columna:<17} {(~regla(entregas)).sum()}")
-```
-
-```text
-calificacion      0
-distancia_km      0
-tiempo_entrega_h  0
-unidades          5
 ```
 
 En Python, una función se puede definir dentro de otra y devolverse con `return`, igual que en R. `between()` es la comparación de rango de `pandas`, con los dos extremos incluidos. `~` niega una serie lógica, como `!` en R. La biblioteca estándar tiene además `functools.partial()`, que fabrica una función nueva fijando algunos argumentos de otra: `partial(tasa, digitos=3)` es una `tasa()` que siempre redondea a tres decimales.
@@ -612,17 +579,13 @@ Las dos fábricas recibieron `limite` cuando valía 10. Pero `sobre_limite` no l
 
 **Valores por defecto mutables en Python.** El valor por defecto de un parámetro se crea **una sola vez**, cuando se define la función, no en cada llamada. Si es una lista, todas las llamadas comparten la misma:
 
-```python
+```{python}
 def agregar(x, acumulado=[]):
     acumulado.append(x)
     return acumulado
 
 
 print(agregar(1), agregar(2))
-```
-
-```text
-[1, 2] [1, 2]
 ```
 
 La segunda llamada encontró la lista con el 1 de la primera. La forma correcta es `acumulado=None` y, dentro de la función, `if acumulado is None: acumulado = []`. R no tiene esta trampa, porque evalúa los valores por defecto en cada llamada y no modifica objetos en su lugar.
@@ -702,7 +665,7 @@ Con un texto, el error es el de la primera condición: `c()` convierte todo en t
 
 En Python, la herramienta natural para un conjunto de parámetros con nombre es una **clase de datos** (*dataclass*), que está en `scripts/inventario.py`:
 
-```python
+```{python}
 from dataclasses import dataclass
 
 
@@ -715,13 +678,9 @@ class SinValidar:
 print(SinValidar(reorden="mucho"))
 ```
 
-```text
-SinValidar(reorden='mucho', lote=100)
-```
-
 Una clase de datos declara sus campos con su tipo y su valor por defecto, y Python escribe por nosotros el código para crearla, compararla e imprimirla. `frozen=True` la hace inmutable: una política no se puede modificar después de creada. Pero **las anotaciones de tipo no se comprueban**: `reorden="mucho"` se aceptó sin queja. Para validar, la clase de datos tiene un método especial, `__post_init__`, que se ejecuta justo después de crearla:
 
-```python
+```{python}
 from scripts.inventario import PoliticaInventario, simular_con
 
 pol = PoliticaInventario(reorden=80, lote=150)
@@ -733,13 +692,6 @@ for argumentos in [{"lote": -10}, {"espera": "tres"}]:
         PoliticaInventario(**argumentos)
     except (ValueError, TypeError) as e:
         print(type(e).__name__, "-", e)
-```
-
-```text
-PoliticaInventario(inicial=120, reorden=80, lote=150, espera=5)
-65
-ValueError - lote no puede ser negativo
-TypeError - espera debe ser un número, no 'tres'
 ```
 
 `__post_init__` revisa cada campo y lanza `TypeError` si no es un número y `ValueError` si es negativo. Si necesitas validar muchas estructuras, la biblioteca `pydantic` hace esto de forma automática a partir de las anotaciones de tipo, y es el estándar para validar datos que llegan de afuera, como las respuestas de una API.
@@ -849,7 +801,8 @@ regla_en_catalogo <- function(columna, valores) {
 
 ### Python
 
-```python
+```{python}
+#| eval: false
 def comparar_grupos(datos, variable, grupo, minimo=30):
     return (
         datos.groupby(grupo)[variable]

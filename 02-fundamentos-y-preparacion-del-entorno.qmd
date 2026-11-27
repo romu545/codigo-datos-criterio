@@ -283,7 +283,8 @@ unlink(c("codigo-datos-criterio-material-main", zip), recursive = TRUE)
 
 Ejecuta este código en la consola de Python de Positron, con la carpeta de trabajo abierta y vacía. No lo ejecutes en la terminal.
 
-```python
+```{python}
+#| eval: false
 from pathlib import Path
 from shutil import move
 from tempfile import TemporaryDirectory
@@ -337,6 +338,7 @@ install.packages(c(
   # Utilidades de capítulos concretos
   "rematch2", # capítulo 3
   "bench", # capítulo 4
+  "pointblank", # capítulo 6
   "patchwork", # capítulo 14
   "cowplot", # capítulo 14
   "testthat" # capítulo 17
@@ -364,15 +366,19 @@ En la terminal de Positron, dentro de la carpeta de materiales, ejecuta:
 ```bash
 uv init --bare
 uv add pandas polars pyarrow duckdb openpyxl requests
-uv add seaborn plotly xlsxwriter
+uv add pytest jupyter papermill tabulate pandera
 uv add pytest jupyter papermill tabulate
 ```
+<!--
+Nota para la IA:
+La segunda y tercera instalan los mismo paquetes y el parrafo de abajo los tratan como si tuvieran funciones distintas.
+ -->
 
-`uv init --bare` crea solo el archivo `pyproject.toml`, sin tocar los archivos que ya existen en la carpeta. Cada `uv add` instala los paquetes en `.venv` y los registra. La primera línea reúne lo que se usa en todo el libro; la segunda, los gráficos y el Excel con formato (capítulos 11, 14 y 16); la tercera, las pruebas y los reportes (capítulos 15 y 17).
+`uv init --bare` crea solo el archivo `pyproject.toml`, sin tocar los archivos que ya existen en la carpeta. Cada `uv add` instala los paquetes en `.venv` y los registra. La primera línea reúne lo que se usa en todo el libro; la segunda, los gráficos y el Excel con formato (capítulos 11, 14 y 16); la tercera, los contratos de datos, las pruebas y los reportes (capítulos 6, 15 y 17).
 
 Para que Positron use ese entorno, abre el selector de intérpretes y elige el Python que está en `.venv`. Para comprobarlo, ejecuta en la consola de Python:
 
-```python
+```{python}
 import duckdb
 import pandas as pd
 
@@ -381,4 +387,4 @@ print(pd.__version__, duckdb.__version__)
 
 ### Paquetes opcionales
 
-Algunos capítulos mencionan herramientas que no hace falta instalar para seguir el libro. Se instalan solo si quieres probarlas: `duckplyr` (capítulo 3), `polars` para R (capítulo 7, desde `https://community.r-multiverse.org`), `targets` y `renv` (capítulo 13), `usethis` y `devtools` (capítulo 12), y `taskscheduleR` o `cronR` (capítulo 13). Cada capítulo indica cómo instalarlas cuando aparecen.
+Algunos capítulos mencionan herramientas que no hace falta instalar para seguir el libro. Se instalan solo si quieres probarlas: `duckplyr` (capítulo 3), `polars` para R (capítulo 7, desde `https://community.r-multiverse.org`), `targets` y `renv` (capítulo 13), `usethis` y `devtools` (capítulo 12), `taskscheduleR` o `cronR` (capítulo 13), y `ellmer` en R o `anthropic` en Python para consultar un modelo de lenguaje (capítulo 8, que necesita además una cuenta y una clave). Cada capítulo indica cómo instalarlas cuando aparecen.

@@ -12,7 +12,7 @@ Usaremos dos fuentes. Para las técnicas de texto, una exportación del sistema 
 1. Abre la carpeta de materiales en Positron. Este capítulo usa `datos/cap08/` y también la cartera y los clientes de `datos/cap06/`.
 2. Usamos `stringr` y `stringi`, que se instalaron con el `tidyverse`.
 3. Las reglas de calidad del @sec-tipos-calidad están guardadas en `scripts/auditoria_cartera.R` y `scripts/auditoria_cartera.py`, para volver a auditar después de limpiar.
-4. Si `datos/cap08/clientes_crm.csv` no está en tu copia, genéralo con `Rscript scripts/generar_datos_cap08.R`.
+4. Si `datos/cap08/clientes_crm.csv` no está en tu copia, genéralo con `Rscript scripts/generar_datos_cap08.R`. Los reclamos del Ejemplo guiado 8.8 se generan con `Rscript scripts/generar_datos_cap08_reclamos.R`.
 :::
 
 ```{r}
@@ -37,6 +37,7 @@ use(
     "n",
     "left_join",
     "distinct",
+    "n_distinct",
     "tribble"
   )
 )
@@ -51,6 +52,7 @@ use(
     "str_remove",
     "str_remove_all",
     "str_detect",
+    "str_replace_all",
     "str_pad"
   )
 )
@@ -126,7 +128,7 @@ Ahora son exactamente diez personas. A la razón social solo le quitamos espacio
 
 ### Python
 
-```python
+```{python}
 import pandas as pd
 
 crm = pd.read_csv(
@@ -140,43 +142,14 @@ print(len(crm))
 print(crm["contacto"].value_counts().head(8))
 ```
 
-```text
-255
-contacto
-Luisa Fernández    18
-Natalia Ríos       17
-Jorge Ramírez      16
-Julián Peña        15
-Paula Ortiz        14
-Camila Díaz        14
-MARÍA PÉREZ        12
-Óscar Muñoz        12
-Name: count, dtype: int64
-```
-
 `keep_default_na=False` desactiva la lista larga de faltantes de `pandas` y `na_values` declara solo las dos marcas que queremos.
 
-```python
+```{python}
 crm["contacto"] = crm["contacto"].str.split().str.join(" ").str.title()
 crm["razon_social"] = crm["razon_social"].str.split().str.join(" ")
 crm["correo"] = crm["correo"].str.strip().str.lower()
 
 print(crm["contacto"].value_counts())
-```
-
-```text
-contacto
-Luisa Fernández    36
-Jorge Ramírez      30
-Paula Ortiz        27
-María Pérez        27
-Julián Peña        26
-Andrés Gómez       25
-Óscar Muñoz        23
-Natalia Ríos       22
-Camila Díaz        21
-Felipe Castaño     18
-Name: count, dtype: int64
 ```
 
 `str.split()` sin argumentos parte por cualquier cantidad de espacios y descarta los de los extremos; `str.join(" ")` vuelve a unir con un solo espacio. Es el `str_squish()` de `pandas`.
@@ -291,7 +264,7 @@ Diez correos no tenían dominio completo, como `cartera@costena089sas`, y quedar
 
 ### Python
 
-```python
+```{python}
 crm["nit"] = crm["nit"].str.replace(r"\D", "", regex=True).str.zfill(10)
 
 clientes = pd.read_parquet("datos/cap06/clientes.parquet")
@@ -305,18 +278,9 @@ digitos = (
 print(digitos.str.len().value_counts(dropna=False))
 ```
 
-```text
-0
-telefono
-10.0    210
-7.0      26
-NaN      19
-Name: count, dtype: int64
-```
-
 `str.zfill(10)` completa con ceros a la izquierda hasta diez caracteres. Con texto crudo (`r"\D"`) la barra invertida se escribe una sola vez.
 
-```python
+```{python}
 telefono_ok = digitos.str.fullmatch(r"(60\d|3\d{2})\d{7}")
 correo_ok = crm["correo"].str.fullmatch(
     r"[a-z0-9._-]+@[a-z0-9-]+(\.[a-z0-9-]+)+"
@@ -325,12 +289,6 @@ correo_ok = crm["correo"].str.fullmatch(
 crm["telefono"] = digitos.where(telefono_ok == True)
 crm["correo"] = crm["correo"].where(correo_ok == True)
 print(crm[["telefono", "correo"]].isna().sum())
-```
-
-```text
-telefono    45
-correo      40
-dtype: int64
 ```
 
 `where()` conserva el valor donde la condición es verdadera y pone faltante en el resto. Comparamos con `== True` porque `fullmatch()` devuelve faltante cuando el texto es faltante, y `where()` necesita una condición sin faltantes. `fullmatch()` exige que el patrón cubra todo el texto, así que no hacen falta `^` ni `$`.
@@ -462,7 +420,7 @@ Fíjate en dónde se hizo el trabajo costoso: quitar espacios, quitar tildes y a
 
 ### Python
 
-```python
+```{python}
 import difflib
 
 
@@ -504,18 +462,9 @@ pendientes["sugerencia"] = pendientes["clave"].map(
 print(pendientes)
 ```
 
-```text
-                  clave             canonica      sugerencia
-9               BQUILLA             B/quilla              []
-12            BOGOTA DC          Bogotá D.C.        [Bogotá]
-14  CARTAGENA DE INDIAS  Cartagena de Indias              []
-24     SANTIAGO DE CALI     Santiago de Cali              []
-27          BARRANQILLA          Barranqilla  [Barranquilla]
-```
-
 `str.normalize("NFKD")` separa cada letra de su tilde y `encode("ascii", "ignore")` descarta las tildes, como en el @sec-limpieza-temprana. `idxmax()` devuelve, para cada clave, la fila con más registros. `difflib.get_close_matches()`, de la biblioteca estándar de Python, sugiere los textos más parecidos por encima de un umbral (`cutoff`): con 0,8 solo propone `Barranquilla` y `Bogotá`, y deja sin sugerencia los casos que necesitan una persona.
 
-```python
+```{python}
 manual = {
     "Barranqilla": "Barranquilla",
     "Bogotá D.C.": "Bogotá",
@@ -528,20 +477,6 @@ equivalencias = dict(zip(variantes["ciudad"], variantes["canonica"]))
 
 crm["ciudad"] = crm["ciudad"].map(equivalencias)
 print(crm["ciudad"].value_counts(dropna=False))
-```
-
-```text
-ciudad
-Cali            37
-Cartagena       36
-Barranquilla    36
-Bogotá          32
-Cúcuta          31
-Santa Marta     29
-Pasto           26
-Medellín        22
-NaN              6
-Name: count, dtype: int64
 ```
 
 En `pandas`, la tabla de equivalencias puede ser un diccionario y `map()` la aplica.
@@ -631,7 +566,7 @@ c(
 
 ### Python
 
-```python
+```{python}
 print(crm["nit"].value_counts().value_counts().sort_index())
 
 consolidado = (
@@ -648,15 +583,6 @@ consolidado = (
     .merge(clientes[["nit", "razon_social"]], on="nit", validate="1:1")
 )
 print(len(consolidado), consolidado["correo"].isna().sum())
-```
-
-```text
-count
-1    154
-2     37
-3      9
-Name: count, dtype: int64
-200 27
 ```
 
 En `pandas`, `first` dentro de `groupby()` ya devuelve el primer valor **no faltante** de cada grupo, así que la regla "el más reciente que exista" sale directa después de ordenar. Con la regla, 27 clientes quedan sin correo; si nos quedáramos con un registro cualquiera de cada cliente, serían 31.
@@ -738,7 +664,7 @@ Las cuatro facturas sin ciudad tienen un NIT que está en la tabla de clientes, 
 
 ### Python
 
-```python
+```{python}
 cartera = pd.read_parquet("datos/cap06/cartera_2026_t1.parquet")
 sin_ciudad = cartera.loc[
     cartera["ciudad"].isna(), ["factura", "nit", "ciudad"]
@@ -751,14 +677,6 @@ sin_ciudad["ciudad"] = sin_ciudad["ciudad"].fillna(
     sin_ciudad["ciudad_cliente"]
 )
 print(sin_ciudad)
-```
-
-```text
-    factura         nit       ciudad ciudad_cliente
-0  FV-20151  0386563911  Santa Marta    Santa Marta
-1  FV-20322  0957136273         Cali           Cali
-2  FV-20374  0869228052       Cúcuta         Cúcuta
-3  FV-20398  0379203925       Bogotá         Bogotá
 ```
 
 `fillna()` con una serie es el `coalesce()` de `pandas`: completa cada faltante con el valor de la misma fila en la otra serie.
@@ -826,7 +744,7 @@ La regla del IQR marca tres facturas. Dos son negativas, valores imposibles que 
 
 ### Python
 
-```python
+```{python}
 cartera[["fecha_emision", "fecha_vencimiento"]] = cartera[
     ["fecha_emision", "fecha_vencimiento"]
 ].apply(pd.to_datetime)
@@ -837,16 +755,6 @@ q1, q3 = cartera["valor_factura"].quantile([0.25, 0.75])
 iqr = q3 - q1
 atipicas = ~cartera["valor_factura"].between(q1 - 1.5 * iqr, q3 + 1.5 * iqr)
 print(cartera.loc[atipicas, ["factura", "nit", "valor_factura"]])
-```
-
-```text
- 30       405
--13119      1
-Name: count, dtype: int64
-      factura         nit  valor_factura
-47   FV-20047  0523027606    98500000.00
-180  FV-20179  0391295313    -6226332.66
-383  FV-20379  0913010509    -5811791.75
 ```
 
 ### DuckDB
@@ -992,7 +900,7 @@ La auditoría solo encuentra la factura de 98,5 millones, una regla que advierte
 
 ### Python
 
-```python
+```{python}
 from scripts.auditoria_cartera import reglas_cartera, auditar
 
 equivalencias = pd.read_csv("datos/cap08/equivalencias_ciudad.csv")
@@ -1074,22 +982,6 @@ print(reporte[reporte["filas"] > 0])
 print(len(limpia), len(cuarentena), n_copias, bitacora)
 ```
 
-```text
-motivo
-factura con dos versiones              4
-pagada con saldo pendiente             3
-pago anterior a la emisión             3
-NIT que no está en clientes            3
-valor cero o negativo                  3
-NIT faltante                           3
-pagada y fecha de pago no coinciden    2
-saldo mayor que el valor               2
-Name: count, dtype: int64
-              regla      dimension severidad  filas
-13  valor_plausible  Plausibilidad  advierte      1
-379 23 4 {'NIT de nueve dígitos': 4, 'Ciudad escrita de otra forma': 11, 'Ciudad faltante': 4, 'Emisión posterior al corte': 1, 'Calificación fuera de 1 a 5': 3}
-```
-
 La regla "factura con dos versiones" se evalúa después de `drop_duplicates()`, así que `duplicated(keep=False)` solo encuentra las facturas que siguen repetidas con contenido distinto. Para importar las reglas con `from scripts.auditoria_cartera import ...`, Python debe ejecutarse desde la carpeta raíz de los materiales, que es lo que hace Positron al abrir la carpeta.
 
 ### DuckDB
@@ -1151,6 +1043,264 @@ dbGetQuery(
 
 :::
 
+## Ejemplo guiado 8.8: clasificar texto libre con un modelo de lenguaje {#sec-clasificar-ia}
+
+La tabla de equivalencias del Ejemplo guiado 8.3 funciona porque las ciudades se escriben de pocas formas: con la frecuencia de cada variante se arma la tabla, y la tabla se revisa a mano. El texto libre no tiene esa propiedad. En `reclamos_2026_t1.csv`, los clientes escribieron 400 reclamos con sus propias palabras, y casi ningún texto se repite. Para saber cuántos reclamos son por entregas tardías y cuántos por cobros, alguien tendría que leerlos todos.
+
+Un **modelo de lenguaje** puede leerlos y proponer una categoría para cada uno. Lo trataremos como lo que es: una fuente de datos más, que se equivoca, y cuyas respuestas se miden antes de usarse. El método tiene cuatro pasos: proteger los datos, preguntar de forma reproducible, medir contra una revisión humana y decidir qué se acepta.
+
+```{r}
+#| label: reclamos-leer
+reclamos <- read_csv("datos/cap08/reclamos_2026_t1.csv", show_col_types = FALSE)
+nrow(reclamos)
+head(reclamos$texto, 4)
+```
+
+**Paso 1: proteger los datos antes de enviarlos.** Enviar un texto a un modelo que corre en un servicio externo es entregarle esos datos a un tercero. Algunos reclamos traen el celular, el correo o la cédula de quien escribe, y nada de eso hace falta para clasificar. Antes de enviar, los ocultamos con las expresiones regulares de la @sec-regex. En Colombia, además, la Ley 1581 de 2012 regula el tratamiento de datos personales; volveremos a ella en la @sec-habeas-data.
+
+::: {.panel-tabset group="lenguaje"}
+
+### R
+
+```{r}
+#| label: reclamos-ocultar
+patrones_personales <- c(
+  correo = r"([\w.+-]+@[\w-]+(\.[\w-]+)+)",
+  celular = r"(\b3\d{9}\b)",
+  cedula = r"(\b\d{1,3}(\.\d{3}){2,3}\b)"
+)
+
+ocultar <- function(texto) {
+  for (tipo in names(patrones_personales)) {
+    texto <- str_replace_all(
+      texto,
+      patrones_personales[[tipo]],
+      paste0("[", tipo, "]")
+    )
+  }
+  texto
+}
+
+reclamos <- mutate(reclamos, texto_envio = ocultar(texto))
+sapply(patrones_personales, \(p) sum(str_detect(reclamos$texto, p)))
+sum(reclamos$texto != reclamos$texto_envio)
+head(reclamos$texto_envio[reclamos$texto != reclamos$texto_envio], 3)
+```
+
+### Python
+
+```{python}
+reclamos = pd.read_csv("datos/cap08/reclamos_2026_t1.csv")
+
+patrones_personales = {
+    "correo": r"[\w.+-]+@[\w-]+(?:\.[\w-]+)+",
+    "celular": r"\b3\d{9}\b",
+    "cedula": r"\b\d{1,3}(?:\.\d{3}){2,3}\b",
+}
+texto_envio = reclamos["texto"]
+for tipo, patron in patrones_personales.items():
+    texto_envio = texto_envio.str.replace(patron, f"[{tipo}]", regex=True)
+reclamos["texto_envio"] = texto_envio
+print((reclamos["texto"] != reclamos["texto_envio"]).sum())
+```
+
+:::
+
+56 reclamos llevaban algún dato personal. El modelo recibirá `texto_envio`, con marcas como `[celular]` en su lugar; el texto original no sale del equipo.
+
+**Paso 2: preguntar de forma reproducible.** El código siguiente envía cada reclamo a un modelo de Anthropic y le pide una respuesta **estructurada**: una sola categoría, tomada de una lista cerrada. Sin esa restricción, el modelo podría responder «parece un problema de entrega» o inventar una categoría nueva, y habría que limpiar también sus respuestas. En R usamos el paquete [ellmer](https://ellmer.tidyverse.org/), que también funciona con modelos de otras empresas; en Python, el SDK oficial de Anthropic (`uv add anthropic`). Los dos necesitan una clave de la API guardada en una variable de entorno, como se explica en la @sec-proteger.
+
+::: {.panel-tabset group="lenguaje"}
+
+### R
+
+```{r}
+#| label: reclamos-llm-r
+#| eval: false
+library(ellmer)
+
+categorias <- c(
+  "entrega_tardia",
+  "producto_danado",
+  "pedido_incompleto",
+  "cobro",
+  "atencion",
+  "otro"
+)
+instrucciones <- paste(
+  "Clasificas reclamos de clientes de una red de distribución.",
+  "Asigna una sola categoría a cada reclamo."
+)
+
+chat <- chat_anthropic(
+  model = "claude-opus-5-5",
+  system_prompt = instrucciones
+)
+tipo_respuesta <- type_object(
+  categoria = type_enum(values = categorias, description = "Categoría")
+)
+
+respuestas <- parallel_chat_structured(
+  chat,
+  as.list(reclamos$texto_envio),
+  type = tipo_respuesta
+)
+
+reclamos |>
+  select(reclamo) |>
+  mutate(
+    categoria_modelo = respuestas$categoria,
+    version_prompt = "v1",
+    consultado = Sys.Date()
+  ) |>
+  write_csv("datos/cap08/reclamos_clasificados.csv")
+```
+
+`parallel_chat_structured()` envía los textos en paralelo, cada uno en una conversación independiente, y devuelve una tabla con una columna por campo de la respuesta.
+
+### Python
+
+```{python}
+#| eval: false
+from typing import Literal
+
+import anthropic
+from pydantic import BaseModel
+
+INSTRUCCIONES = (
+    "Clasificas reclamos de clientes de una red de distribución. "
+    "Asigna una sola categoría a cada reclamo."
+)
+
+
+class Clasificacion(BaseModel):
+    categoria: Literal[
+        "entrega_tardia",
+        "producto_danado",
+        "pedido_incompleto",
+        "cobro",
+        "atencion",
+        "otro",
+    ]
+
+
+cliente = anthropic.Anthropic()  # lee la clave de ANTHROPIC_API_KEY
+
+
+def clasificar(texto):
+    respuesta = cliente.messages.parse(
+        model="claude-opus-5-5",
+        max_tokens=2048,
+        system=INSTRUCCIONES,
+        messages=[{"role": "user", "content": texto}],
+        output_format=Clasificacion,
+        output_config={"effort": "low"},
+    )
+    if respuesta.stop_reason == "refusal":
+        return None
+    return respuesta.parsed_output.categoria
+
+
+clasificados = reclamos[["reclamo"]].assign(
+    categoria_modelo=reclamos["texto_envio"].map(clasificar),
+    version_prompt="v1",
+    consultado=pd.Timestamp.today().date(),
+)
+clasificados.to_csv("datos/cap08/reclamos_clasificados.csv", index=False)
+```
+
+`messages.parse()` valida la respuesta contra la clase `Clasificacion`: si el modelo devolviera una categoría que no está en la lista, el error aparece aquí y no tres pasos después. Antes de leer la respuesta se revisa `stop_reason`, porque el modelo puede negarse a responder. `effort="low"` le pide al modelo que no se extienda razonando: clasificar un texto corto no lo necesita, y cada consulta sale más barata y más rápida.
+
+:::
+
+Tres decisiones hacen que este paso sea reproducible, aunque el modelo no lo sea:
+
+- **Las respuestas se guardan.** El mismo texto puede recibir respuestas distintas en dos consultas, y cada consulta cuesta dinero. Por eso se pregunta una vez, se guarda el resultado en un archivo y el análisis trabaja sobre ese archivo, como trabaja sobre cualquier dato crudo.
+- **El modelo queda escrito en el código**, con su identificador exacto (`claude-opus-5-5`), en lugar de dejar que la herramienta elija uno por defecto que puede cambiar con la próxima versión del paquete.
+- **Las instrucciones tienen versión.** La columna `version_prompt` dice con qué instrucciones se obtuvo cada respuesta. Si mañana se cambian, las respuestas nuevas no se mezclan con las viejas sin saberlo.
+
+Este libro no ejecuta esos bloques al renderizarse, porque requieren una cuenta y una clave. El archivo `reclamos_clasificados.csv` de los materiales trae respuestas **simuladas**, con errores parecidos a los que suelen cometer estos modelos, para que el ejemplo sea reproducible. Con un modelo real las cifras cambian; el método no.
+
+**Paso 3: medir contra una revisión humana.** Una persona clasificó a mano una muestra de 150 reclamos elegidos al azar: es `reclamos_revision.csv`. Esa muestra es la referencia. Sin ella, no hay forma de saber si el modelo acierta.
+
+::: {.panel-tabset group="lenguaje"}
+
+### R
+
+```{r}
+#| label: reclamos-medir
+clasificados <- read_csv(
+  "datos/cap08/reclamos_clasificados.csv",
+  show_col_types = FALSE
+)
+revision <- read_csv(
+  "datos/cap08/reclamos_revision.csv",
+  show_col_types = FALSE
+)
+
+comparar <- revision |>
+  left_join(clasificados, by = "reclamo", relationship = "one-to-one")
+
+mean(comparar$categoria_modelo == comparar$categoria_revisor)
+
+comparar |>
+  summarise(
+    propuestas = n(),
+    correctas = sum(categoria_modelo == categoria_revisor),
+    .by = categoria_modelo
+  ) |>
+  mutate(precision = round(100 * correctas / propuestas)) |>
+  arrange(desc(precision))
+```
+
+### Python
+
+```{python}
+clasificados = pd.read_csv("datos/cap08/reclamos_clasificados.csv")
+revision = pd.read_csv("datos/cap08/reclamos_revision.csv")
+
+comparar = revision.merge(clasificados, on="reclamo", validate="1:1")
+acierto = comparar["categoria_modelo"] == comparar["categoria_revisor"]
+print(round(acierto.mean(), 3))
+
+calidad = (
+    comparar.assign(correcta=acierto)
+    .groupby("categoria_modelo")["correcta"]
+    .agg(propuestas="size", correctas="sum")
+    .assign(
+        precision=lambda d: (100 * d["correctas"] / d["propuestas"]).round()
+    )
+    .sort_values("precision", ascending=False)
+)
+print(calidad)
+```
+
+:::
+
+El modelo acierta en el 86,7 % de la muestra. Parece mucho, pero el promedio esconde lo importante. La **precisión** de cada categoría responde a la pregunta útil: cuando el modelo dice «cobro», ¿cuántas veces tiene razón? En cobros y productos dañados, todas las veces en la muestra. En «otro», apenas la mitad.
+
+Los errores no están repartidos al azar. Leerlos dice por qué:
+
+```{r}
+#| label: reclamos-errores
+errores <- comparar |>
+  filter(categoria_modelo != categoria_revisor) |>
+  left_join(select(reclamos, reclamo, texto_envio), by = "reclamo")
+
+count(errores, categoria_revisor, categoria_modelo, sort = TRUE)
+head(errores$texto_envio, 4)
+```
+
+Dos patrones explican casi todos los errores. Los reclamos **irónicos** («Felicitaciones, récord de lentitud») se clasifican como «otro» o «atención», y los que tienen **dos problemas** («Llegó tarde y sin el aceite») se clasifican como entrega tardía, cuando la regla del negocio dice que lo que falta pesa más que el retraso. El segundo error no es del modelo: nadie le dio esa regla.
+
+**Paso 4: decidir qué se acepta.** La decisión se toma por categoría, con los mismos principios del capítulo:
+
+- Las categorías con precisión alta en la muestra, cobro y producto dañado, se aceptan. Son 141 de los 400 reclamos que nadie tendrá que leer. La muestra es pequeña: 22 aciertos en 22 no garantizan un modelo perfecto, así que conviene revisar una muestra nueva cada trimestre.
+- Las demás van a **cuarentena** para revisión humana, como los registros que no se podían decidir en la limpieza de la cartera.
+- Los errores sistemáticos se corrigen en las instrucciones, no en los datos. Una versión `v2` agregaría la regla «si falta producto, es pedido incompleto aunque haya llegado tarde» y un aviso sobre la ironía. Después se mide otra vez contra la misma muestra, y solo se cambia de versión si mejora.
+
+La pregunta de fondo no es si el modelo es bueno, sino **para qué es suficientemente bueno**. Para contar reclamos por categoría en un informe mensual, un 87 % de acierto con errores conocidos puede bastar. Para decidir a qué cliente se le devuelve dinero, no.
+
 ## Ejercicio 8.1: limpiar los recaudos {#sec-ejercicio-limpiar-recaudos}
 
 En el Ejercicio 6.1 auditaste `datos/cap06/recaudos_2026_t1.parquet`. Ahora límpialo siguiendo los principios del capítulo:
@@ -1162,6 +1312,77 @@ En el Ejercicio 6.1 auditaste `datos/cap06/recaudos_2026_t1.parquet`. Ahora lím
 5. Arma la bitácora y vuelve a auditar con tus reglas del Ejercicio 6.1.
 
 Para comprobar tu resultado: después de quitar las 2 filas idénticas quedan 181 recaudos; la cuarentena por factura inexistente, fecha y valor reúne 7; de las 4 facturas cobradas de más, quedan 2 cuando se eliminan las copias, y esas sí son cobros dobles con identificadores distintos.
+
+## Auditoría 8.1: la limpieza en tres líneas {#sec-auditoria-limpiar}
+
+Como en las auditorías anteriores, el pedido es corto: *«Limpia clientes_crm.csv: quita los duplicados y los registros incompletos, y estandariza las ciudades»*. La respuesta típica también lo es:
+
+::: {.panel-tabset group="lenguaje"}
+
+### R
+
+```{r}
+#| label: auditoria-8-1
+crm_crudo <- read_csv("datos/cap08/clientes_crm.csv", show_col_types = FALSE)
+
+crm_rapido <- crm_crudo |>
+  mutate(ciudad = str_to_title(str_trim(ciudad))) |>
+  na.omit() |>
+  distinct(nit, .keep_all = TRUE)
+
+c(antes = nrow(crm_crudo), despues = nrow(crm_rapido))
+```
+
+### Python
+
+```{python}
+crm_crudo = pd.read_csv("datos/cap08/clientes_crm.csv", dtype=str)
+
+crm_rapido = (
+    crm_crudo.assign(ciudad=crm_crudo["ciudad"].str.strip().str.title())
+    .dropna()
+    .drop_duplicates(subset="nit")
+)
+print(len(crm_crudo), len(crm_rapido))
+```
+
+:::
+
+De 255 registros quedan 198 en R y 186 en Python, sin duplicados y sin vacíos. ¿Cuántos clientes tiene ahora el CRM?
+
+::: {.callout-tip collapse="true"}
+## Solución de la auditoría 8.1
+
+**Todavía hay clientes repetidos.** `distinct(nit)` compara el NIT tal como está escrito, y en el CRM el mismo NIT aparece con puntos, sin el cero inicial o con un espacio. Con el NIT normalizado, como en la @sec-regex, se ve el problema:
+
+```{r}
+#| label: auditoria-8-1-nit
+normalizar_nit <- \(x) str_pad(str_remove_all(x, "[^0-9]"), 10, pad = "0")
+
+c(
+  filas = nrow(crm_rapido),
+  clientes_distintos = n_distinct(normalizar_nit(crm_rapido$nit)),
+  clientes_en_el_crm = n_distinct(normalizar_nit(crm_crudo$nit))
+)
+```
+
+Las 198 filas son 179 clientes: 19 siguen repetidos.
+
+**Y faltan clientes.** `na.omit()` borra una fila si le falta cualquier dato. Muchos clientes no tienen correo o teléfono en algún registro, y si todos sus registros tenían un vacío, el cliente desapareció: de los 200 clientes del CRM quedan 179. El pedido decía «quita los registros incompletos», y el código lo cumplió al pie de la letra. Lo que el negocio necesitaba era otra cosa: consolidar cada cliente con lo mejor de sus registros, como en el Ejemplo guiado 8.4, que conserva los 200. En Python la pérdida es mayor, porque `pandas` lee `N/A` como vacío por defecto y `dropna()` borra todavía más filas: quedan 169 clientes.
+
+**Las ciudades no quedaron estandarizadas.** `str_to_title()` arregla las mayúsculas, pero «Bogota», «Bogotá D.c.» y «B/Quilla» siguen siendo distintas:
+
+```{r}
+#| label: auditoria-8-1-ciudades
+count(crm_rapido, ciudad, sort = TRUE)
+```
+
+Son 18 formas de escribir 8 ciudades. Estandarizarlas exige la tabla de equivalencias del Ejemplo guiado 8.3.
+
+**Lo que no se ve:** cuando hay duplicados, `distinct()` se queda con el primer registro que encuentra, no con el más reciente. Y no hay bitácora: nadie podrá saber después qué filas se borraron ni por qué.
+
+La lección: **una instrucción ambigua produce una limpieza que la cumple al pie de la letra**. «Quitar los incompletos» y «quitar los duplicados» no son reglas, son intenciones. Las reglas de este capítulo dicen qué cuenta como duplicado, qué se hace con cada columna y qué se registra. Definirlas es el trabajo que un asistente no puede hacer por ti, porque depende de lo que el negocio necesita.
+:::
 
 ## Cierre: datos listos para guardar y analizar {#sec-cierre-limpiar}
 

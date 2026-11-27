@@ -8,7 +8,7 @@ Seguimos con el mismo caso, las operaciones comerciales y los recaudos de una re
 ## Antes de empezar
 
 1. Abre de nuevo la carpeta de materiales en Positron para que las rutas relativas `datos/cap04/...` y `datos/cap03/...` funcionen.
-2. Los paquetes de R y de Python son los que instalaste al comienzo del capítulo anterior (@sec-importacion). No necesitas nada nuevo.
+2. Los paquetes de R y de Python son los que instalaste en la @sec-instalar-paquetes. No necesitas nada nuevo.
 3. Para leer Excel desde DuckDB se descarga la extensión `excel` la primera vez que se usa, así que necesitarás conexión a internet en ese paso.
 :::
 
@@ -78,7 +78,7 @@ sucursales
 
 ### Python
 
-```python
+```{python}
 import pandas as pd
 
 ruta_excel = "datos/cap04/catalogo_sucursales.xlsx"
@@ -93,19 +93,6 @@ sucursales = pd.read_excel(
 )
 
 print(sucursales)
-```
-
-```text
-['Portada', 'Sucursales', 'Metas_2026']
-  codigo_sucursal        nombre_sucursal        ciudad codigo_dane    region
-0             S01        Sucursal Bogotá        Bogotá       11001    Andina
-1             S02      Sucursal Medellín      Medellín       05001    Andina
-2             S03          Sucursal Cali          Cali       76001  Pacífico
-3             S04  Sucursal Barranquilla  Barranquilla       08001    Caribe
-4             S05     Sucursal Cartagena     Cartagena       13001    Caribe
-5             S06        Sucursal Cúcuta        Cúcuta       54001    Andina
-6             S07         Sucursal Pasto         Pasto       52001  Pacífico
-7             S08   Sucursal Santa Marta   Santa Marta       47001    Caribe
 ```
 
 `pandas` necesita el paquete `openpyxl` para leer archivos `.xlsx`, que instalamos al inicio del capítulo anterior.
@@ -172,7 +159,7 @@ Nombrar el vector de hojas antes de `map()` tiene un propósito: `list_rbind(nam
 
 ### Python
 
-```python
+```{python}
 import re
 import pandas as pd
 
@@ -194,15 +181,6 @@ ventas_2025 = (
 
 print(ventas_2025.shape)
 print(ventas_2025["hoja"].value_counts().head(3))
-```
-
-```text
-(480, 5)
-hoja
-Ventas_Ene    40
-Ventas_Feb    40
-Ventas_Mar    40
-Name: count, dtype: int64
 ```
 
 Cuando `sheet_name` recibe una lista, `pandas` devuelve un diccionario con una tabla por hoja. `pd.concat()` las apila y usa las llaves del diccionario como columna `hoja`.
@@ -266,7 +244,7 @@ Si todas las hojas compartieran el mismo contrato, bastaría con un vector de no
 
 ### Python
 
-```python
+```{python}
 ruta_excel = "datos/cap04/catalogo_sucursales.xlsx"
 
 contrato_catalogo = {
@@ -281,14 +259,6 @@ catalogo = {
 
 print({nombre: tabla.shape for nombre, tabla in catalogo.items()})
 print(catalogo["metas"].head(3))
-```
-
-```text
-{'sucursales': (8, 5), 'metas': (8, 2)}
-  codigo_sucursal  meta_ventas
-0             S01    565000000
-1             S02    832000000
-2             S03    876000000
 ```
 
 Es la misma idea de la pestaña de R: un diccionario con el contrato de cada hoja y una comprensión de diccionario que lo recorre. `**opciones` pasa el contenido de cada diccionario interno como argumentos de `read_excel()`.
@@ -448,7 +418,7 @@ nrow(diciembre)
 
 ### Python
 
-```python
+```{python}
 ventas_2025["mes"] = ventas_2025["fecha"].dt.month
 
 ventas_2025.to_parquet(
@@ -462,10 +432,6 @@ diciembre = pd.read_parquet(
     "datos/cap04/ventas_2025_particionado", filters=[("mes", "==", 12)]
 )
 print(len(diciembre))
-```
-
-```text
-40
 ```
 
 `partition_cols` crea una carpeta por mes y `filters` lee solo las carpetas que cumplen la condición. La opción `existing_data_behavior="delete_matching"` reemplaza las particiones existentes; sin ella, cada ejecución agregaría archivos nuevos y duplicaría las filas.
@@ -587,7 +553,8 @@ resultados[, c("expression", "min", "median", "mem_alloc")]
 
 ### Python
 
-```python
+```{python}
+#| eval: false
 import statistics
 import time
 from pathlib import Path
@@ -729,7 +696,7 @@ operaciones
 
 ### Python
 
-```python
+```{python}
 import json
 import pandas as pd
 
@@ -743,16 +710,6 @@ operaciones = pd.json_normalize(respuesta["resultados"], sep="_").rename(
 )
 
 print(operaciones.head())
-```
-
-```text
-ok {'pagina': 1, 'por_pagina': 50, 'total': 50}
-   id_operacion       fecha  monto_usd         nit        ciudad
-0             1  2026-01-20    1721.34  0516815654        Bogotá
-1             2  2026-01-14    2875.45  0360653251  Barranquilla
-2             3  2026-01-04     961.34  0277069447        Bogotá
-3             4  2026-01-08     808.72  0128781621        Bogotá
-4             5  2026-01-27    2287.10  0736913884     Cartagena
 ```
 
 `json_normalize()` aplana el objeto anidado: el separador `sep="_"` forma los nombres `cliente_nit` y `cliente_ciudad`.
@@ -806,7 +763,8 @@ writeLines(texto, "datos/cap04/copia_api.json") # copia local
 
 ### Python
 
-```python
+```{python}
+#| eval: false
 import requests
 from pathlib import Path
 
@@ -883,7 +841,7 @@ resumen
 
 ### Python
 
-```python
+```{python}
 import duckdb
 
 con = duckdb.connect("datos/cap04/operaciones.duckdb", read_only=True)
@@ -906,19 +864,6 @@ resumen = con.execute(
 
 con.close()
 print(resumen)
-```
-
-```text
-[('clientes',), ('facturas',)]
-         ciudad  n_facturas  total_facturado
-0          Cali         161     1.617864e+08
-1   Santa Marta         140     1.449221e+08
-2        Cúcuta         127     1.394620e+08
-3  Barranquilla         127     1.379247e+08
-4        Bogotá         117     1.162478e+08
-5     Cartagena         121     1.144355e+08
-6      Medellín         105     1.118805e+08
-7         Pasto         108     1.062495e+08
 ```
 
 :::
@@ -984,7 +929,8 @@ write_parquet(consolidado, "datos/cap04/consolidado_cap04.parquet")
 
 ### Python
 
-```python
+```{python}
+#| eval: false
 import json
 import duckdb
 import pandas as pd

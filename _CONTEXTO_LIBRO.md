@@ -8,7 +8,7 @@
 
 - Los **17 capítulos están redactados y renderizados** en HTML (unas 12.700 líneas de `.qmd`). El render completo funciona con `quarto render --to html` (Quarto 1.11.9) y usa los resultados guardados en `_freeze/`.
 - La etapa actual es la **revisión del libro completo** leyendo el HTML en `_book/index.html`.
-- Rama abierta: `titulo-y-portada` (nuevo título y portada generada con `scripts/portada.R`; se eliminaron `_borradores/` y la portada antigua `cover.png`; el código se formateó con `air` y `ruff`; el Cap. 2 tiene la instalación de paquetes y el Cap. 1 la estructura actualizada). Falta su pull request.
+- **Git al día (27 nov. 2026):** el PR #9 del libro y el PR #2 de materiales están unidos en `main`; no quedan ramas abiertas. `main` de materiales tiene los datos de todos los capítulos. Los dos repositorios tienen activados secret scanning y push protection, y una regla en `main` que exige PR (sin aprobaciones obligatorias).
 - El PDF no se ha probado de punta a punta.
 
 ## Contexto
@@ -121,9 +121,6 @@ Cierra con `references.qmd` («Referencias», a partir de `references.bib`).
 
 **Repositorio de materiales**
 
-- [ ] Unir el PR #2 de materiales (`datos-capitulos-3-a-6`, abierto desde el 25 nov. 2026): mientras no se una, `main` de materiales no tiene datos y la descarga del Cap. 2 no sirve.
-- [ ] Correr `_herramientas/sincronizar_materiales.py --aplicar` después de hacer commit de los reclamos del Cap. 8 (el script solo copia archivos que git sigue).
-- [ ] Hacer commit en materiales de la copia sincronizada el 27 nov. 2026 (capítulos 9, 11 y 13, `reportes/`, `tests/`, scripts del flujo y scripts formateados) y abrir su PR.
 - [ ] Crear los scripts generadores de `datos/cap03/` y `datos/cap04/` (los archivos ya están copiados).
 
 **Verificaciones**
@@ -134,7 +131,5 @@ Cierra con `references.qmd` («Referencias», a partir de `references.bib`).
 
 **Publicación y orden del repositorio**
 
-- [ ] Abrir el PR de la rama `titulo-y-portada`.
 - [ ] Decidir cómo publicar el HTML (por ejemplo GitHub Pages).
-- [ ] Activar secret scanning y push protection en ambos repositorios.
 - [ ] Revisar licencias de imágenes y de otros materiales de terceros.

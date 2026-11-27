@@ -31,9 +31,13 @@ use("DBI", c("dbConnect", "dbGetQuery", "dbExecute", "dbDisconnect"))
 use("duckdb", "duckdb")
 
 con <- dbConnect(duckdb())
-trimestre <- list.files("datos/cap13/entregas", pattern = "\\.csv$", full.names = TRUE)
+trimestre <- list.files(
+  "datos/cap13/entregas",
+  pattern = "\\.csv$",
+  full.names = TRUE
+)
 abril <- "datos/cap13/abril/entregas_2026_04.csv"
-unlink("datos/cap13/salida", recursive = TRUE)     # cada ejecución del capítulo parte de cero
+unlink("datos/cap13/salida", recursive = TRUE) # cada ejecución del capítulo parte de cero
 ```
 
 ## Qué hace reproducible un análisis {#sec-reproducible}
@@ -88,7 +92,11 @@ formals(pasos_entregas$guardar)
 ```{r}
 #| label: flujo-ejecutor
 #| eval: false
-ejecutar_flujo <- function(entrada, pasos, bitacora = "datos/cap13/salida/bitacora.log") {
+ejecutar_flujo <- function(
+  entrada,
+  pasos,
+  bitacora = "datos/cap13/salida/bitacora.log"
+) {
   # ... anotar() escribe una línea con la hora en la bitácora y en la consola
   datos <- entrada
   for (nombre in names(pasos)) {
@@ -97,7 +105,10 @@ ejecutar_flujo <- function(entrada, pasos, bitacora = "datos/cap13/salida/bitaco
       pasos[[nombre]](datos),
       error = function(e) {
         anotar("FALLÓ el paso '%s'", nombre)
-        stop(sprintf("el paso '%s' falló: %s", nombre, conditionMessage(e)), call. = FALSE)
+        stop(
+          sprintf("el paso '%s' falló: %s", nombre, conditionMessage(e)),
+          call. = FALSE
+        )
       }
     )
     # ... anotar() el nombre del paso, las filas y los segundos
@@ -118,7 +129,7 @@ El flujo leyó los tres archivos y produjo 24 filas de indicadores, una por sucu
 
 ### Python
 
-```python
+```{python}
 import sys
 from pathlib import Path
 
@@ -129,20 +140,6 @@ indicadores = ejecutar_flujo(trimestre, PASOS)
 print(indicadores[indicadores["sucursal"] == "S03"])
 ```
 
-```text
-2026-11-25 15:54:13  inicio del flujo: 5 pasos
-2026-11-25 15:54:13  leer         2400 filas   0.05 s
-2026-11-25 15:54:13  armonizar    2400 filas   0.07 s
-2026-11-25 15:54:13  validar      2400 filas   0.01 s
-2026-11-25 15:54:13  resumir        24 filas   0.06 s
-2026-11-25 15:54:13  guardar        24 filas   0.01 s
-2026-11-25 15:54:13  fin del flujo
-        mes sucursal  pedidos  mediana_horas  pct_tardias  pct_devueltos
-2   2026-01      S03      111           5.20         38.7            8.1
-10  2026-02      S03       93           5.70         46.2            4.3
-18  2026-03      S03       80           4.95         30.0            1.2
-```
-
 El flujo de Python tiene la misma forma: un diccionario de pasos y una función que los recorre. La bitácora usa el módulo `logging` de la biblioteca estándar, que escribe cada línea con su hora en un archivo y en la consola a la vez, y que permite distinguir niveles: `log.info()` para lo normal y `log.error()` para los fallos. `raise RuntimeError(...) from e` lanza un error nuevo con el nombre del paso y conserva el original, que Python muestra debajo como la causa.
 
 ### DuckDB
@@ -151,18 +148,24 @@ En SQL, un flujo se puede escribir como una cadena de **vistas**, cada una const
 
 ```{r}
 #| label: duckdb-flujo
-dbExecute(con, r"(
+dbExecute(
+  con,
+  r"(
   CREATE OR REPLACE VIEW crudo AS
   SELECT * FROM read_csv('datos/cap13/entregas/*.csv', filename = true)
-)")
-dbExecute(con, r"(
+)"
+)
+dbExecute(
+  con,
+  r"(
   CREATE OR REPLACE VIEW indicadores AS
   SELECT strftime(fecha, '%Y-%m') AS mes, sucursal, count(*) AS pedidos,
          median(tiempo_entrega_h) AS mediana_horas
   FROM crudo
   WHERE canal <> 'retiro'
   GROUP BY ALL
-)")
+)"
+)
 dbGetQuery(con, "SELECT * FROM indicadores WHERE sucursal = 'S03' ORDER BY mes")
 ```
 
@@ -190,7 +193,12 @@ writeLines('print(nrow(indicadores))', script)
 source(script)
 
 rscript <- file.path(R.home("bin"), "Rscript")
-salida <- suppressWarnings(system2(rscript, script, stdout = TRUE, stderr = TRUE))
+salida <- suppressWarnings(system2(
+  rscript,
+  script,
+  stdout = TRUE,
+  stderr = TRUE
+))
 salida
 ```
 
@@ -200,8 +208,12 @@ salida
 
 ```{r}
 #| label: limpio-rscript
-salida <- system2(rscript, c("scripts/flujo_entregas.R", "datos/cap13/entregas"),
-                  stdout = TRUE, stderr = TRUE)
+salida <- system2(
+  rscript,
+  c("scripts/flujo_entregas.R", "datos/cap13/entregas"),
+  stdout = TRUE,
+  stderr = TRUE
+)
 tail(salida, 3)
 ```
 
@@ -211,25 +223,26 @@ Para que el resultado sea el mismo en otro equipo, falta registrar las versiones
 
 ```{r}
 #| label: limpio-versiones
-c(R = R.version$version.string,
-  sapply(c("dplyr", "readr", "purrr", "duckdb"), \(p) as.character(packageVersion(p))))
+c(
+  R = R.version$version.string,
+  sapply(c("dplyr", "readr", "purrr", "duckdb"), \(p) {
+    as.character(packageVersion(p))
+  })
+)
 ```
 
 ### Python
 
-```python
+```{python}
 import subprocess
 
 resultado = subprocess.run(
     [sys.executable, "-m", "scripts.flujo_entregas", "datos/cap13/entregas"],
-    capture_output=True, text=True)
+    capture_output=True,
+    text=True,
+)
 print(resultado.stdout.strip().splitlines()[-1])
 print("código de salida:", resultado.returncode)
-```
-
-```text
-2026-11-25 15:54:16  fin del flujo
-código de salida: 0
 ```
 
 `subprocess.run()` ejecuta un programa en un proceso nuevo; `sys.executable` es la ruta del Python que estás usando, y `-m scripts.flujo_entregas` ejecuta el archivo como módulo desde la carpeta del proyecto, lo que activa su bloque `if __name__ == "__main__":`. El **código de salida** es 0 cuando el programa terminó bien y otro número cuando falló; es lo que revisan las herramientas que automatizan tareas, como veremos en la @sec-programar.
@@ -271,16 +284,16 @@ paso_si_hace_falta <- function(salida, entradas, calcular) {
 
 pedidos_de <- function(archivos) {
   paso_si_hace_falta(
-    salida   = "datos/cap13/salida/pedidos.parquet",
+    salida = "datos/cap13/salida/pedidos.parquet",
     entradas = archivos,
     calcular = \() armonizar(leer_crudo(archivos)) |> validar()
   )
 }
 
-pedidos <- pedidos_de(trimestre)          # primera vez: se calcula
-pedidos <- pedidos_de(trimestre)          # nada cambió: se lee
-Sys.setFileTime(trimestre[3], Sys.time() + 5)
-pedidos <- pedidos_de(trimestre)          # marzo cambió: se vuelve a calcular
+pedidos <- pedidos_de(trimestre) # primera vez: se calcula
+pedidos <- pedidos_de(trimestre) # nada cambió: se lee
+Sys.setFileTime(trimestre[3], Sys.time())
+pedidos <- pedidos_de(trimestre) # marzo cambió: se vuelve a calcular
 ```
 
 `file.mtime()` devuelve la fecha y hora de la última modificación de un archivo. Si la salida existe y es más reciente que todas sus entradas, el paso está al día y basta leer su resultado guardado. `mmap = FALSE` hace que `read_parquet()` copie el archivo a la memoria y lo suelte, en lugar de dejarlo mapeado: en Windows, un archivo mapeado no se puede volver a escribir en la misma sesión, como vimos en el @sec-guardar-compartir, y este paso escribe sobre su propia salida. `Sys.setFileTime()` simula que el archivo de marzo se modificó, como si la fuente hubiera enviado una corrección, y el paso se rehace. `calcular` es una función sin argumentos que se pasa como argumento: solo se ejecuta si hace falta, una aplicación directa de las funciones de orden superior del @sec-funciones.
@@ -295,10 +308,13 @@ library(targets)
 source("scripts/flujo_entregas.R")
 
 list(
-  tar_target(archivos, list.files("datos/cap13/entregas", full.names = TRUE),
-             format = "file"),
-  tar_target(crudo,       leer_crudo(archivos)),
-  tar_target(pedidos,     validar(armonizar(crudo))),
+  tar_target(
+    archivos,
+    list.files("datos/cap13/entregas", full.names = TRUE),
+    format = "file"
+  ),
+  tar_target(crudo, leer_crudo(archivos)),
+  tar_target(pedidos, validar(armonizar(crudo))),
   tar_target(indicadores, resumir(pedidos))
 )
 ```
@@ -307,12 +323,14 @@ list(
 
 ### Python
 
-```python
+```{python}
 import os
+
 
 def paso_si_hace_falta(salida, entradas, calcular):
     al_dia = os.path.exists(salida) and all(
-        os.path.getmtime(e) <= os.path.getmtime(salida) for e in entradas)
+        os.path.getmtime(e) <= os.path.getmtime(salida) for e in entradas
+    )
     if al_dia:
         print("al día, se lee:", os.path.basename(salida))
         return pd.read_parquet(salida)
@@ -321,6 +339,7 @@ def paso_si_hace_falta(salida, entradas, calcular):
     resultado.to_parquet(salida)
     return resultado
 
+
 import pandas as pd
 from scripts.flujo_entregas import leer_crudo, armonizar, validar
 
@@ -328,11 +347,6 @@ salida = "datos/cap13/salida/pedidos_py.parquet"
 calcular = lambda: validar(armonizar(leer_crudo(trimestre)))
 pedidos = paso_si_hace_falta(salida, trimestre, calcular)
 pedidos = paso_si_hace_falta(salida, trimestre, calcular)
-```
-
-```text
-al día, se lee: pedidos_py.parquet
-al día, se lee: pedidos_py.parquet
 ```
 
 En Python no hay una herramienta tan integrada como `targets`. Las más usadas para flujos de datos son [Snakemake](https://snakemake.readthedocs.io/), muy común en investigación, que declara cada paso con sus archivos de entrada y de salida; y orquestadores como Prefect o Dagster, pensados para flujos que corren en servidores. Y está `make`, la herramienta original de los años setenta, que sigue funcionando para cualquier lenguaje.
@@ -372,8 +386,9 @@ Un mensaje de error tiene tres partes que conviene leer en orden. **Dónde**: la
 
 ```{r}
 #| label: depurar-aislar
-tablas <- map(c(marzo = trimestre[3], abril = abril),
-              \(r) read_csv(r, col_types = cols(.default = "c")))
+tablas <- map(c(marzo = trimestre[3], abril = abril), \(r) {
+  read_csv(r, col_types = cols(.default = "c"))
+})
 
 setdiff(names(tablas$marzo), names(tablas$abril))
 setdiff(names(tablas$abril), names(tablas$marzo))
@@ -392,11 +407,15 @@ Para mirar dentro de una función mientras se ejecuta, R tiene un **depurador**.
 #| error: true
 armonizar_marzo <- function(tablas) {
   list_rbind(tablas, names_to = "archivo") |>
-    dplyr::mutate(fecha = as.Date(fecha, format = "%Y-%m-%d"),
-                  dplyr::across(c(distancia_km, tiempo_entrega_h, unidades, valor_pedido),
-                                as.numeric),
-                  calificacion = as.integer(calificacion),
-                  devuelto = as.logical(devuelto))
+    dplyr::mutate(
+      fecha = as.Date(fecha, format = "%Y-%m-%d"),
+      dplyr::across(
+        c(distancia_km, tiempo_entrega_h, unidades, valor_pedido),
+        as.numeric
+      ),
+      calificacion = as.integer(calificacion),
+      devuelto = as.logical(devuelto)
+    )
 }
 
 pasos_marzo <- pasos_entregas
@@ -418,34 +437,40 @@ indicadores |> count(mes)
 
 ### Python
 
-```python
+```{python}
 import pandas as pd
 
-ingenuo = pd.concat([pd.read_csv(r) for r in trimestre + ["datos/cap13/abril/entregas_2026_04.csv"]])
+ingenuo = pd.concat(
+    [
+        pd.read_csv(r)
+        for r in trimestre + ["datos/cap13/abril/entregas_2026_04.csv"]
+    ]
+)
 print(ingenuo.shape)
-print(ingenuo["tiempo_entrega_h"].isna().sum(), ingenuo["tiempo_entrega_min"].notna().sum())
+print(
+    ingenuo["tiempo_entrega_h"].isna().sum(),
+    ingenuo["tiempo_entrega_min"].notna().sum(),
+)
 print(ingenuo["fecha"].iloc[[0, -1]].tolist())
-```
-
-```text
-(3220, 11)
-1312 628
-['2026-01-02', '30/04/2026']
 ```
 
 En Python, la lectura ingenua **no falla**. `pd.concat()` une las tablas aunque tengan columnas distintas: agrega `tiempo_entrega_min` como una columna nueva, deja `tiempo_entrega_h` vacía en abril y guarda las fechas como texto, con los dos formatos mezclados. Ningún mensaje. Los indicadores calculados con esta tabla tendrían abril con todos los tiempos faltantes, y quizá nadie lo notaría hasta la reunión. Es el caso que la @tbl-guia-explorar llamaba "devolver un resultado equivocado sin quejarse", y es la razón para validar entre pasos aunque el lenguaje no se queje.
 
 Con el flujo y su validación, el mismo archivo produce un error claro, y con la versión corregida de `armonizar()` pasa:
 
-```python
+```{python}
 from scripts.flujo_entregas import ejecutar_flujo, PASOS
 
+
 def armonizar_marzo(tablas):
-    d = pd.concat([t.assign(archivo=a) for a, t in tablas.items()], ignore_index=True)
+    d = pd.concat(
+        [t.assign(archivo=a) for a, t in tablas.items()], ignore_index=True
+    )
     d["fecha"] = pd.to_datetime(d["fecha"], format="%Y-%m-%d", errors="coerce")
     for c in ["distancia_km", "tiempo_entrega_h", "unidades", "valor_pedido"]:
         d[c] = pd.to_numeric(d[c])
     return d
+
 
 todos = trimestre + ["datos/cap13/abril/entregas_2026_04.csv"]
 try:
@@ -455,13 +480,6 @@ except RuntimeError as e:
 
 indicadores = ejecutar_flujo(todos, PASOS)
 print(indicadores["mes"].value_counts().sort_index().to_dict())
-```
-
-```text
-el paso 'validar' falló: los datos no pasan la validación:
-- 820 fechas sin leer en entregas_2026_04.csv
-- 628 entregas a domicilio sin tiempo de entrega
-{'2026-01': 8, '2026-02': 8, '2026-03': 8, '2026-04': 8}
 ```
 
 `{**PASOS, "armonizar": armonizar_marzo}` crea un diccionario nuevo con todos los pasos y reemplaza uno: el desempaque con `**` del @sec-funciones. `errors="coerce"` convierte en faltante lo que no se puede leer como fecha, en lugar de fallar; la validación es la que se encarga de detenerlo.
@@ -475,17 +493,22 @@ DuckDB es, de las tres herramientas, la que mejor explica este error:
 ```{r}
 #| label: duckdb-depurar
 #| error: true
-dbGetQuery(con, r"(
+dbGetQuery(
+  con,
+  r"(
   SELECT count(*) FROM read_csv(['datos/cap13/entregas/entregas_2026_03.csv',
                                  'datos/cap13/abril/entregas_2026_04.csv'])
-)")
+)"
+)
 ```
 
 El mensaje dice qué archivo tiene un esquema distinto, qué columna falta y qué se puede hacer: leer con `union_by_name = true`. Pero ese "arreglo" no corrige nada: alinea las columnas por nombre, así que `tiempo_entrega_h` quedaría vacía en abril y `tiempo_entrega_min` vacía en el trimestre. Un buen mensaje de error dice dónde mirar; la decisión de qué hacer sigue siendo nuestra:
 
 ```{r}
 #| label: duckdb-union
-dbGetQuery(con, r"(
+dbGetQuery(
+  con,
+  r"(
   SELECT parse_filename(filename) AS archivo, count(*) AS filas,
          count(tiempo_entrega_h) AS con_horas, count(tiempo_entrega_min) AS con_minutos
   FROM read_csv(['datos/cap13/entregas/*.csv', 'datos/cap13/abril/*.csv'],
@@ -493,7 +516,8 @@ dbGetQuery(con, r"(
                 all_varchar = true)
   GROUP BY ALL
   ORDER BY archivo
-)")
+)"
+)
 ```
 
 :::
@@ -529,8 +553,12 @@ El flujo ya se ejecuta con un solo comando desde la terminal. El último paso es
 
 ```{r}
 #| label: programar-salida
-sin_archivos <- suppressWarnings(system2(rscript, c("scripts/flujo_entregas.R", "datos/cap13/no-existe"),
-                                         stdout = TRUE, stderr = TRUE))
+sin_archivos <- suppressWarnings(system2(
+  rscript,
+  c("scripts/flujo_entregas.R", "datos/cap13/no-existe"),
+  stdout = TRUE,
+  stderr = TRUE
+))
 tail(sin_archivos, 2)
 attr(sin_archivos, "status")
 ```
@@ -582,7 +610,7 @@ Con el flujo de las entregas:
 #| label: ejercicio-13-1
 #| eval: false
 marcar_atipicos <- function(d) {
-  dplyr::mutate(d, corporativo = ...)                    # TODO
+  dplyr::mutate(d, corporativo = ...) # TODO
 }
 
 pasos <- append(pasos_entregas, list(marcar = marcar_atipicos), after = 3)
@@ -592,13 +620,18 @@ ejecutar_flujo(trimestre, pasos)
 
 ### Python
 
-```python
+```{python}
+#| eval: false
 def marcar_atipicos(d):
-    return d.assign(corporativo=...)                         # TODO
+    return d.assign(corporativo=...)  # TODO
+
 
 nombres = list(PASOS)
-pasos = dict(list(PASOS.items())[:3] + [("marcar", marcar_atipicos)] +
-             list(PASOS.items())[3:])
+pasos = dict(
+    list(PASOS.items())[:3]
+    + [("marcar", marcar_atipicos)]
+    + list(PASOS.items())[3:]
+)
 ejecutar_flujo(trimestre, pasos)
 ```
 

@@ -16,7 +16,7 @@ Este capítulo abre la cuarta parte del libro. Vamos a **explorar**: hacerle pre
 ## Antes de empezar
 
 1. Abre la carpeta de materiales en Positron. Este capítulo usa `datos/cap11/`. Si el archivo no está en tu copia, genéralo con `Rscript scripts/generar_datos_cap11.R`.
-2. En R usamos [ggplot2](https://ggplot2.tidyverse.org/), que se instaló con el `tidyverse`, y `forcats`, para ordenar categorías. En Python usamos [seaborn](https://seaborn.pydata.org/), que trae consigo `matplotlib`. Instálalo en el entorno del libro con `uv pip install seaborn`.
+2. En R usamos [ggplot2](https://ggplot2.tidyverse.org/), que se instaló con el `tidyverse`, y `forcats`, para ordenar categorías. En Python usamos [seaborn](https://seaborn.pydata.org/), que trae consigo `matplotlib`. Todos quedaron instalados en la @sec-instalar-paquetes.
 3. El ejercicio del final usa la cartera analítica del @sec-guardar-compartir (`datos/cap10/cartera_analitica.parquet`).
 :::
 
@@ -24,17 +24,62 @@ Este capítulo abre la cuarta parte del libro. Vamos a **explorar**: hacerle pre
 #| label: paquetes-cap11
 #| message: false
 use("arrow", "read_parquet")
-use("dplyr", c("select", "filter", "arrange", "desc", "mutate", "summarise", "count",
-               "n", "n_distinct", "across", "where", "everything", "if_else",
-               "row_number", "glimpse", "tibble", "pull"))
+use(
+  "dplyr",
+  c(
+    "select",
+    "filter",
+    "arrange",
+    "desc",
+    "mutate",
+    "summarise",
+    "count",
+    "n",
+    "n_distinct",
+    "across",
+    "where",
+    "everything",
+    "if_else",
+    "row_number",
+    "glimpse",
+    "tibble",
+    "pull"
+  )
+)
 use("tidyr", "pivot_longer")
-use("ggplot2", c("ggplot", "aes", "geom_histogram", "geom_violin", "geom_jitter",
-                 "geom_boxplot", "geom_point", "position_jitter", "geom_tile", "geom_col", "geom_text",
-                 "geom_segment", "stat_ecdf", "stat_summary", "facet_wrap",
-                 "coord_polar", "scale_x_log10", "scale_fill_manual",
-                 "scale_color_manual", "labs", "theme_minimal", "theme_void",
-                 "theme_set", "geom_vline", "scale_fill_gradient", "scale_fill_gradient2",
-                 "facet_grid"))
+use(
+  "ggplot2",
+  c(
+    "ggplot",
+    "aes",
+    "geom_histogram",
+    "geom_violin",
+    "geom_jitter",
+    "geom_boxplot",
+    "geom_point",
+    "position_jitter",
+    "geom_tile",
+    "geom_col",
+    "geom_text",
+    "geom_segment",
+    "stat_ecdf",
+    "stat_summary",
+    "facet_wrap",
+    "coord_polar",
+    "scale_x_log10",
+    "scale_fill_manual",
+    "scale_color_manual",
+    "labs",
+    "theme_minimal",
+    "theme_void",
+    "theme_set",
+    "geom_vline",
+    "scale_fill_gradient",
+    "scale_fill_gradient2",
+    "facet_grid",
+    "geom_pointrange"
+  )
+)
 use("forcats", c("fct_reorder", "fct_infreq"))
 use("DBI", c("dbConnect", "dbGetQuery", "dbDisconnect"))
 use("duckdb", "duckdb")
@@ -107,13 +152,15 @@ Para las columnas numéricas, un resumen en una sola tabla. Pasamos las columnas
 entregas |>
   select(where(is.numeric)) |>
   pivot_longer(everything(), names_to = "variable", values_to = "valor") |>
-  summarise(n         = sum(!is.na(valor)),
-            faltantes = sum(is.na(valor)),
-            minimo    = min(valor, na.rm = TRUE),
-            mediana   = median(valor, na.rm = TRUE),
-            media     = mean(valor, na.rm = TRUE),
-            maximo    = max(valor, na.rm = TRUE),
-            .by = variable) |>
+  summarise(
+    n = sum(!is.na(valor)),
+    faltantes = sum(is.na(valor)),
+    minimo = min(valor, na.rm = TRUE),
+    mediana = median(valor, na.rm = TRUE),
+    media = mean(valor, na.rm = TRUE),
+    maximo = max(valor, na.rm = TRUE),
+    .by = variable
+  ) |>
   mutate(across(minimo:maximo, \(x) signif(x, 3)))
 
 entregas |>
@@ -126,7 +173,7 @@ Paquetes como `skimr` hacen este resumen con una sola función, y lo acompañan 
 
 ### Python
 
-```python
+```{python}
 import pandas as pd
 
 entregas = pd.read_parquet("datos/cap11/entregas_2026_t1.parquet")
@@ -135,43 +182,19 @@ entregas.info()
 print(entregas.describe().T.round(1).to_string())
 ```
 
-```text
-(2400, 10) 2400
-<class 'pandas.DataFrame'>
-RangeIndex: 2400 entries, 0 to 2399
-Data columns (total 10 columns):
- #   Column            Non-Null Count  Dtype  
----  ------            --------------  -----  
- 0   pedido            2400 non-null   str    
- 1   fecha             2400 non-null   object 
- 2   sucursal          2400 non-null   str    
- 3   canal             2400 non-null   str    
- 4   distancia_km      1908 non-null   float64
- 5   tiempo_entrega_h  1908 non-null   float64
- 6   unidades          2400 non-null   float64
- 7   valor_pedido      2378 non-null   float64
- 8   calificacion      1992 non-null   float64
- 9   devuelto          2400 non-null   bool   
-dtypes: bool(1), float64(5), object(1), str(3)
-memory usage: 211.6+ KB
-                   count      mean        std      min       25%       50%       75%         max
-distancia_km      1908.0       7.0        4.4      0.9       4.1       5.8       8.8        37.4
-tiempo_entrega_h  1908.0      11.2        5.8      0.7       7.3      10.0      13.6        32.6
-unidades          2400.0       8.5       31.2      1.0       5.0       7.0       9.0       758.0
-valor_pedido      2378.0  276583.7  1065735.5  16400.0  111450.0  175900.0  281875.0  24536000.0
-calificacion      1992.0       4.3        0.8      1.0       4.0       4.0       5.0         5.0
-```
-
 `info()` muestra cada columna con sus valores no faltantes y su tipo, y `describe()` resume las numéricas con el conteo, la media, la desviación estándar y los cuartiles. `.T` transpone la tabla para que cada variable sea una fila, y `to_string()` la imprime completa, sin columnas recortadas. Observa `calificacion`: en R es un entero, pero aquí llega como `float64`, porque `pandas` convierte a decimal un entero que tiene faltantes, como vimos en el @sec-tipos-calidad.
 
 ### DuckDB
 
 ```{r}
 #| label: duckdb-summarize
-dbGetQuery(con, r"(
+dbGetQuery(
+  con,
+  r"(
   SELECT column_name, column_type, min, max, avg, q50, null_percentage
   FROM (SUMMARIZE 'datos/cap11/entregas_2026_t1.parquet')
-)")
+)"
+)
 ```
 
 `SUMMARIZE` resume todas las columnas de una tabla con una sola palabra: tipo, mínimo, máximo, valores distintos aproximados, media, desviación estándar, cuartiles, conteo y porcentaje de faltantes. Es la forma más rápida de un primer contacto con un archivo grande, porque DuckDB lo calcula sin cargar los datos en R. Aquí elegimos algunas de sus columnas.
@@ -197,10 +220,13 @@ Primero, dónde están. Contamos los faltantes por canal:
 ```{r}
 #| label: faltantes-canal
 entregas |>
-  summarise(pedidos = n(),
-            across(c(distancia_km, tiempo_entrega_h, valor_pedido, calificacion),
-                   \(x) sum(is.na(x))),
-            .by = canal)
+  summarise(
+    pedidos = n(),
+    across(c(distancia_km, tiempo_entrega_h, valor_pedido, calificacion), \(x) {
+      sum(is.na(x))
+    }),
+    .by = canal
+  )
 ```
 
 La distancia y el tiempo faltan exactamente en todos los retiros en tienda, y en ningún otro canal: es el faltante estructural. El valor del pedido falta en unos pocos casos repartidos sin patrón por los tres canales. La calificación falta en todos los canales.
@@ -219,8 +245,11 @@ entregas |>
   pivot_longer(-fila, names_to = "columna", values_to = "valor") |>
   ggplot(aes(x = columna, y = fila, fill = is.na(valor))) +
   geom_tile() +
-  scale_fill_manual(values = c("grey85", "black"), labels = c("presente", "faltante"),
-                    name = NULL) +
+  scale_fill_manual(
+    values = c("grey85", "black"),
+    labels = c("presente", "faltante"),
+    name = NULL
+  ) +
   labs(x = NULL, y = "pedido (ordenado por canal)")
 ```
 
@@ -233,10 +262,12 @@ Ahora el porqué de la calificación. ¿Falta al azar, o depende de algo? Compar
 calificacion_por_entrega <- entregas |>
   filter(canal != "retiro") |>
   mutate(entrega = if_else(tiempo_entrega_h > 20, "tardía", "a tiempo")) |>
-  summarise(pedidos          = n(),
-            sin_calificacion = round(mean(is.na(calificacion)), 2),
-            calificacion     = round(mean(calificacion, na.rm = TRUE), 2),
-            .by = entrega)
+  summarise(
+    pedidos = n(),
+    sin_calificacion = round(mean(is.na(calificacion)), 2),
+    calificacion = round(mean(calificacion, na.rm = TRUE), 2),
+    .by = entrega
+  )
 calificacion_por_entrega
 ```
 
@@ -244,16 +275,23 @@ Las entregas tardías dejan la encuesta sin responder tres veces más que las de
 
 ```{r}
 #| label: faltantes-ponderar
-c(promedio_observado = mean(filter(entregas, canal != "retiro")$calificacion, na.rm = TRUE),
-  promedio_ponderado = with(calificacion_por_entrega,
-                            sum(calificacion * pedidos) / sum(pedidos)))
+c(
+  promedio_observado = mean(
+    filter(entregas, canal != "retiro")$calificacion,
+    na.rm = TRUE
+  ),
+  promedio_ponderado = with(
+    calificacion_por_entrega,
+    sum(calificacion * pedidos) / sum(pedidos)
+  )
+)
 ```
 
 La diferencia parece pequeña, pero en una escala de 1 a 5 donde casi todo está entre 4 y 5, es la diferencia entre un indicador que mejora y uno que no. Y la corrección supone que, dentro de cada grupo, quien no respondió se parece a quien sí respondió, un supuesto que los datos no permiten comprobar. **Un faltante informativo no se arregla; se declara**, y cualquier cifra calculada sobre esa columna debe decir cómo se trataron los faltantes.
 
 ### Python
 
-```python
+```{python}
 import seaborn as sns
 import matplotlib.pyplot as plt
 
@@ -261,28 +299,25 @@ columnas = ["distancia_km", "tiempo_entrega_h", "valor_pedido", "calificacion"]
 print(entregas.groupby("canal")[columnas].agg(lambda x: x.isna().sum()))
 
 orden = entregas.sort_values(["canal", "fecha"])
-sns.heatmap(orden[columnas].isna(), cbar=False, cmap="Greys", yticklabels=False)
+sns.heatmap(
+    orden[columnas].isna(), cbar=False, cmap="Greys", yticklabels=False
+)
 plt.show()
 
 a_domicilio = entregas[entregas["canal"] != "retiro"].assign(
-    entrega=lambda d: d["tiempo_entrega_h"].gt(20).map({True: "tardía", False: "a tiempo"}))
-print(a_domicilio.groupby("entrega")
-      .agg(pedidos=("pedido", "size"),
-           sin_calificacion=("calificacion", lambda x: round(x.isna().mean(), 2)),
-           calificacion=("calificacion", "mean"))
-      .round(2))
-```
-
-```text
-           distancia_km  tiempo_entrega_h  valor_pedido  calificacion
-canal                                                                
-domicilio             0                 0             9           178
-retiro              492               492             4            62
-web                   0                 0             9           168
-          pedidos  sin_calificacion  calificacion
-entrega                                          
-a tiempo     1740              0.15          4.33
-tardía        168              0.46          2.81
+    entrega=lambda d: (
+        d["tiempo_entrega_h"].gt(20).map({True: "tardía", False: "a tiempo"})
+    )
+)
+print(
+    a_domicilio.groupby("entrega")
+    .agg(
+        pedidos=("pedido", "size"),
+        sin_calificacion=("calificacion", lambda x: round(x.isna().mean(), 2)),
+        calificacion=("calificacion", "mean"),
+    )
+    .round(2)
+)
 ```
 
 `sns.heatmap()` dibuja la tabla lógica de faltantes como un mapa de celdas, el mismo gráfico de la pestaña de R. La biblioteca `missingno` tiene una versión lista para usar (`msno.matrix()`).
@@ -291,7 +326,9 @@ tardía        168              0.46          2.81
 
 ```{r}
 #| label: duckdb-faltantes
-dbGetQuery(con, r"(
+dbGetQuery(
+  con,
+  r"(
   SELECT CASE WHEN tiempo_entrega_h > 20 THEN 'tardía' ELSE 'a tiempo' END AS entrega,
          count(*) AS pedidos,
          round(avg((calificacion IS NULL)::INTEGER), 2) AS sin_calificacion,
@@ -299,7 +336,8 @@ dbGetQuery(con, r"(
   FROM 'datos/cap11/entregas_2026_t1.parquet'
   WHERE canal <> 'retiro'
   GROUP BY ALL
-)")
+)"
+)
 ```
 
 `(calificacion IS NULL)::INTEGER` convierte la condición en 1 o 0, y su promedio es la proporción de faltantes. `avg()`, como `mean(..., na.rm = TRUE)`, ignora los nulos: en SQL esa decisión no se escribe, se asume, y por eso conviene conocerla.
@@ -334,17 +372,21 @@ Cuando la media y la mediana coinciden, la distribución es más o menos simétr
 v <- entregas$valor_pedido
 
 resumen_valor <- function(v) {
-  c(media           = mean(v, na.rm = TRUE),
+  c(
+    media = mean(v, na.rm = TRUE),
     media_recortada = mean(v, trim = 0.05, na.rm = TRUE),
-    mediana         = median(v, na.rm = TRUE),
-    desviacion      = sd(v, na.rm = TRUE),
-    iqr             = IQR(v, na.rm = TRUE),
-    mad             = mad(v, na.rm = TRUE))
+    mediana = median(v, na.rm = TRUE),
+    desviacion = sd(v, na.rm = TRUE),
+    iqr = IQR(v, na.rm = TRUE),
+    mad = mad(v, na.rm = TRUE)
+  )
 }
 
-tibble(medida      = names(resumen_valor(v)),
-       todos       = round(resumen_valor(v)),
-       sin_grandes = round(resumen_valor(v[v < 1e7]))) |>
+tibble(
+  medida = names(resumen_valor(v)),
+  todos = round(resumen_valor(v)),
+  sin_grandes = round(resumen_valor(v[v < 1e7]))
+) |>
   mutate(cambio_pct = round(100 * (todos / sin_grandes - 1)))
 ```
 
@@ -363,32 +405,31 @@ Entre el percentil 99 y el máximo hay un salto de más de 20 veces. Los pedidos
 
 ### Python
 
-```python
+```{python}
 v = entregas["valor_pedido"].dropna()
+
 
 def resumen_valor(v):
     recortados = v[(v >= v.quantile(0.05)) & (v <= v.quantile(0.95))]
-    return pd.Series({
-        "media": v.mean(), "media_recortada": recortados.mean(),
-        "mediana": v.median(), "desviacion": v.std(),
-        "iqr": v.quantile(0.75) - v.quantile(0.25),
-        "mad": 1.4826 * (v - v.median()).abs().median(),
-    })
+    return pd.Series(
+        {
+            "media": v.mean(),
+            "media_recortada": recortados.mean(),
+            "mediana": v.median(),
+            "desviacion": v.std(),
+            "iqr": v.quantile(0.75) - v.quantile(0.25),
+            "mad": 1.4826 * (v - v.median()).abs().median(),
+        }
+    )
 
-comparacion = pd.DataFrame({"todos": resumen_valor(v),
-                            "sin_grandes": resumen_valor(v[v < 1e7])}).round()
-comparacion["cambio_pct"] = (100 * (comparacion["todos"] / comparacion["sin_grandes"] - 1)).round()
+
+comparacion = pd.DataFrame(
+    {"todos": resumen_valor(v), "sin_grandes": resumen_valor(v[v < 1e7])}
+).round()
+comparacion["cambio_pct"] = (
+    100 * (comparacion["todos"] / comparacion["sin_grandes"] - 1)
+).round()
 print(comparacion)
-```
-
-```text
-                     todos  sin_grandes  cambio_pct
-media             276584.0     224201.0        23.0
-media_recortada   206118.0     205050.0         1.0
-mediana           175900.0     175500.0         0.0
-desviacion       1065735.0     171946.0       520.0
-iqr               170425.0     168850.0         1.0
-mad               112085.0     112010.0         0.0
 ```
 
 `pandas` no tiene media recortada ni MAD robusta, pero se escriben en una línea cada una. La media recortada se calcula aquí con los valores entre los percentiles 5 y 95, que es lo mismo que recorta `mean(trim = 0.05)` de R salvo en los empates. Para la MAD, el factor 1,4826 se escribe a mano. Cuidado con `Series.mad()` en código antiguo: en versiones viejas de `pandas` era la desviación media absoluta, otra medida, y se eliminó en la versión 2.0.
@@ -397,14 +438,17 @@ mad               112085.0     112010.0         0.0
 
 ```{r}
 #| label: duckdb-centro
-dbGetQuery(con, r"(
+dbGetQuery(
+  con,
+  r"(
   SELECT round(avg(valor_pedido))                AS media,
          median(valor_pedido)                    AS mediana,
          round(stddev(valor_pedido))             AS desviacion,
          round(1.4826 * mad(valor_pedido))       AS mad,
          quantile_cont(valor_pedido, [0.25, 0.75, 0.99]) AS cuartiles_y_p99
   FROM 'datos/cap11/entregas_2026_t1.parquet'
-)")
+)"
+)
 ```
 
 `mad()` de DuckDB es la mediana de las distancias **sin** el factor 1,4826; para compararla con la de R hay que multiplicar. `quantile_cont()` recibe una lista de probabilidades y devuelve una lista de cuantiles.
@@ -482,7 +526,10 @@ La ECDF responde preguntas de proporción sin ningún ancho de intervalo:
 #| fig-alt: "Dos curvas escalonadas en forma de S que suben de 0 a 1, una para domicilio y otra para web, casi superpuestas. Una línea vertical en 12 horas cruza ambas curvas cerca de 0,66. Después de las 20 horas las curvas suben despacio hasta llegar a 1 cerca de las 33 horas."
 #| fig-height: 3.5
 #| warning: false
-ggplot(filter(entregas, canal != "retiro"), aes(x = tiempo_entrega_h, color = canal)) +
+ggplot(
+  filter(entregas, canal != "retiro"),
+  aes(x = tiempo_entrega_h, color = canal)
+) +
   stat_ecdf() +
   geom_vline(xintercept = 12, linetype = "dashed") +
   labs(x = "horas", y = "proporción acumulada de pedidos", color = NULL)
@@ -496,15 +543,19 @@ Donde la curva corta la línea de 12 horas se lee directamente la proporción de
 
 ### Python
 
-```python
+```{python}
 fig, ejes = plt.subplots(1, 2, figsize=(10, 3.5))
 sns.histplot(entregas, x="valor_pedido", bins=40, ax=ejes[0])
 sns.histplot(entregas, x="valor_pedido", bins=40, log_scale=True, ax=ejes[1])
 plt.show()
 
 fig, ejes = plt.subplots(1, 2, figsize=(10, 3.5))
-sns.histplot(entregas, x="tiempo_entrega_h", binwidth=8, binrange=(0, 40), ax=ejes[0])
-sns.histplot(entregas, x="tiempo_entrega_h", binwidth=1, binrange=(0, 40), ax=ejes[1])
+sns.histplot(
+    entregas, x="tiempo_entrega_h", binwidth=8, binrange=(0, 40), ax=ejes[0]
+)
+sns.histplot(
+    entregas, x="tiempo_entrega_h", binwidth=1, binrange=(0, 40), ax=ejes[1]
+)
 plt.show()
 
 a_domicilio = entregas[entregas["canal"] != "retiro"]
@@ -512,14 +563,11 @@ sns.ecdfplot(a_domicilio, x="tiempo_entrega_h", hue="canal")
 plt.axvline(12, linestyle="--")
 plt.show()
 
-print(a_domicilio.groupby("canal")["tiempo_entrega_h"].apply(lambda x: (x <= 12).mean()).round(2))
-```
-
-```text
-canal
-domicilio    0.66
-web          0.66
-Name: tiempo_entrega_h, dtype: float64
+print(
+    a_domicilio.groupby("canal")["tiempo_entrega_h"]
+    .apply(lambda x: (x <= 12).mean())
+    .round(2)
+)
 ```
 
 `plt.subplots(1, 2)` crea una figura con dos paneles, y el argumento `ax` de cada función de `seaborn` dice en cuál dibujar. `log_scale=True` pone el eje en escala logarítmica, y `ecdfplot()` dibuja la ECDF. Los gráficos son los mismos de la pestaña de R.
@@ -530,7 +578,9 @@ SQL no dibuja, pero DuckDB tiene una función, `bar()`, que convierte un número
 
 ```{r}
 #| label: duckdb-histograma
-dbGetQuery(con, r"(
+dbGetQuery(
+  con,
+  r"(
   SELECT floor(tiempo_entrega_h / 2) * 2 AS desde_hora,
          count(*) AS pedidos,
          bar(count(*), 0, 450, 40) AS histograma
@@ -538,7 +588,8 @@ dbGetQuery(con, r"(
   WHERE tiempo_entrega_h IS NOT NULL
   GROUP BY ALL
   ORDER BY desde_hora
-)")
+)"
+)
 ```
 
 `floor(x / 2) * 2` agrupa los tiempos en intervalos de 2 horas, y `bar(valor, mínimo, máximo, ancho)` dibuja una barra proporcional al valor. No reemplaza a un gráfico, pero sirve para mirar una distribución dentro de una consulta, sobre un archivo que no cabría en la memoria de R.
@@ -552,12 +603,20 @@ En 1973, el estadístico Francis Anscombe construyó cuatro conjuntos de datos c
 ```{r}
 #| label: anscombe-resumen
 cuarteto <- anscombe |>
-  pivot_longer(everything(), names_to = c(".value", "conjunto"), names_pattern = "(.)(.)")
+  pivot_longer(
+    everything(),
+    names_to = c(".value", "conjunto"),
+    names_pattern = "(.)(.)"
+  )
 
 cuarteto |>
-  summarise(media_x = mean(x), media_y = round(mean(y), 2),
-            de_y = round(sd(y), 2), correlacion = round(cor(x, y), 3),
-            .by = conjunto)
+  summarise(
+    media_x = mean(x),
+    media_y = round(mean(y), 2),
+    de_y = round(sd(y), 2),
+    correlacion = round(cor(x, y), 3),
+    .by = conjunto
+  )
 ```
 
 ```{r}
@@ -567,7 +626,7 @@ cuarteto |>
 #| fig-height: 4
 ggplot(cuarteto, aes(x, y)) +
   geom_point() +
-  facet_wrap(~ conjunto, nrow = 1)
+  facet_wrap(~conjunto, nrow = 1)
 ```
 
 `pivot_longer()` con `names_pattern` separa cada nombre, como `x1` o `y3`, en la variable (`x` o `y`) y el conjunto (`1` a `4`), y `.value` hace que la variable se convierta en columna. Es el formato largo del @sec-transformar aplicado a un caso con dos datos en el nombre.
@@ -617,10 +676,17 @@ pedidos_por_sucursal <- entregas |>
 
 ggplot(entregas, aes(x = sucursal, y = tiempo_entrega_h)) +
   geom_violin(fill = "grey90", color = NA) +
-  geom_point(position = position_jitter(width = 0.15, height = 0, seed = 2026),
-             alpha = 0.25, size = 0.8) +
+  geom_point(
+    position = position_jitter(width = 0.15, height = 0, seed = 2026),
+    alpha = 0.25,
+    size = 0.8
+  ) +
   stat_summary(fun = median, geom = "point", shape = 95, size = 10) +
-  geom_text(data = pedidos_por_sucursal, aes(y = 42, label = paste0("n=", n)), size = 3) +
+  geom_text(
+    data = pedidos_por_sucursal,
+    aes(y = 42, label = paste0("n=", n)),
+    size = 3
+  ) +
   labs(x = NULL, y = "horas")
 ```
 
@@ -634,28 +700,44 @@ Hay más variantes de la misma idea, en paquetes que vale la pena conocer. El **
 
 ### Python
 
-```python
+```{python}
 fig, ejes = plt.subplots(1, 2, figsize=(12, 4), sharey=True)
 orden = sorted(entregas["sucursal"].unique())
 
-sns.boxplot(entregas, x="sucursal", y="tiempo_entrega_h", order=orden, ax=ejes[0])
+sns.boxplot(
+    entregas, x="sucursal", y="tiempo_entrega_h", order=orden, ax=ejes[0]
+)
 
-sns.violinplot(entregas, x="sucursal", y="tiempo_entrega_h", order=orden,
-               inner=None, color="0.9", linewidth=0, cut=0, ax=ejes[1])
-sns.stripplot(entregas, x="sucursal", y="tiempo_entrega_h", order=orden,
-              jitter=0.15, alpha=0.25, size=2, color="black", ax=ejes[1])
+sns.violinplot(
+    entregas,
+    x="sucursal",
+    y="tiempo_entrega_h",
+    order=orden,
+    inner=None,
+    color="0.9",
+    linewidth=0,
+    cut=0,
+    ax=ejes[1],
+)
+sns.stripplot(
+    entregas,
+    x="sucursal",
+    y="tiempo_entrega_h",
+    order=orden,
+    jitter=0.15,
+    alpha=0.25,
+    size=2,
+    color="black",
+    ax=ejes[1],
+)
 plt.show()
 
-print(entregas.groupby("sucursal")["tiempo_entrega_h"]
-      .agg(["count", "median", "mean"]).round(1).loc[["S02", "S03", "S07"]])
-```
-
-```text
-          count  median  mean
-sucursal                     
-S02         343    10.1  10.7
-S03         284     5.2  12.9
-S07           9    12.6  12.8
+print(
+    entregas.groupby("sucursal")["tiempo_entrega_h"]
+    .agg(["count", "median", "mean"])
+    .round(1)
+    .loc[["S02", "S03", "S07"]]
+)
 ```
 
 `sns.stripplot()` es el `geom_jitter()` de `seaborn`, y `violinplot()` con `inner=None` dibuja solo la forma, sin la caja interna que trae por defecto. `cut=0` evita que el violín se extienda más allá del dato mínimo y máximo. `seaborn` también tiene `swarmplot()`, la versión en enjambre.
@@ -666,7 +748,9 @@ Sin gráficos, la bimodalidad de `S03` se puede ver con el histograma de texto d
 
 ```{r}
 #| label: duckdb-s03
-dbGetQuery(con, r"(
+dbGetQuery(
+  con,
+  r"(
   SELECT floor(tiempo_entrega_h / 3) * 3 AS desde_hora,
          count(*) AS pedidos,
          bar(count(*), 0, 120, 30) AS histograma
@@ -674,12 +758,111 @@ dbGetQuery(con, r"(
   WHERE sucursal = 'S03' AND tiempo_entrega_h IS NOT NULL
   GROUP BY ALL
   ORDER BY desde_hora
-)")
+)"
+)
 ```
 
 El hueco entre las 9 y las 18 horas se ve en la columna de barras: entre esos dos tiempos hay un solo pedido. La lección vale para cualquier herramienta: un resumen por grupo (media, mediana, desviación) debe ir acompañado de una mirada a la distribución completa de cada grupo, aunque sea en texto.
 
 :::
+
+### ¿Cuánto se puede confiar en una mediana? Remuestrear {#sec-remuestreo}
+
+El ejemplo anterior dejó una advertencia: con 9 pedidos, la mediana de `S07` es frágil. Pero ¿qué tan frágil? «Pocos datos» no es una medida. Para comparar sucursales con algo más que intuición, necesitamos saber **cuánto cambiaría la mediana si los datos hubieran sido otros**, sacados del mismo proceso.
+
+No tenemos otros datos, pero podemos simularlos con los que tenemos. Es la idea del **remuestreo** (*bootstrap*), que propuso Bradley Efron [-@efron1979]:
+
+1. De los pedidos de una sucursal, se saca una muestra **del mismo tamaño, con reemplazo**: cada pedido puede salir una vez, varias veces o ninguna.
+2. Se calcula la mediana de esa muestra.
+3. Se repite muchas veces, por ejemplo 2.000.
+
+Las 2.000 medianas muestran cuánto se mueve el resumen de una muestra a otra. Si casi no se mueven, la mediana es firme. Si saltan, no lo es. El rango que deja por fuera el 2,5 % más bajo y el 2,5 % más alto de esas medianas es un **intervalo del 95 %**: una medida práctica de la incertidumbre de la cifra.
+
+::: {.panel-tabset group="lenguaje"}
+
+### R
+
+```{r}
+#| label: remuestreo-medianas
+remuestrear_mediana <- function(x, veces = 2000) {
+  x <- x[!is.na(x)]
+  replicate(veces, median(sample(x, replace = TRUE)))
+}
+
+set.seed(2026)
+intervalos <- entregas |>
+  summarise(
+    pedidos = sum(!is.na(tiempo_entrega_h)),
+    mediana = median(tiempo_entrega_h, na.rm = TRUE),
+    desde = quantile(remuestrear_mediana(tiempo_entrega_h), 0.025),
+    hasta = quantile(remuestrear_mediana(tiempo_entrega_h), 0.975),
+    .by = sucursal
+  ) |>
+  arrange(sucursal)
+intervalos
+```
+
+```{r}
+#| label: fig-remuestreo
+#| fig-cap: "Mediana del tiempo de entrega por sucursal, con su intervalo del 95 % por remuestreo."
+#| fig-alt: "Ocho sucursales en el eje vertical. Cada una tiene un punto en su mediana y una línea horizontal con su intervalo. Seis sucursales tienen medianas entre 9,5 y 10,6 horas con líneas cortas, de menos de una hora y media. S03 tiene la mediana más baja, 5,2 horas, con una línea corta. S07 tiene la mediana más alta, 12,6 horas, pero su línea es larga: va de 9,3 a 15,8 horas y se superpone con las de todas las demás sucursales salvo S03."
+#| fig-height: 3
+ggplot(intervalos, aes(y = sucursal, x = mediana, xmin = desde, xmax = hasta)) +
+  geom_pointrange() +
+  labs(x = "mediana del tiempo de entrega (horas)", y = NULL)
+```
+
+`replicate()` repite la expresión las veces indicadas y devuelve un vector con los resultados. `sample(x, replace = TRUE)` es el paso 1: una muestra del mismo tamaño que `x`, con reemplazo. R trae además el paquete `boot`, que hace lo mismo con más opciones; para entender la idea, cuatro líneas bastan.
+
+### Python
+
+```{python}
+import numpy as np
+
+rng = np.random.default_rng(2026)
+
+
+def remuestrear_mediana(x, veces=2000):
+    x = x.dropna().to_numpy()
+    muestras = rng.choice(x, size=(veces, len(x)), replace=True)
+    return np.median(muestras, axis=1)
+
+
+intervalos = (
+    entregas.groupby("sucursal")["tiempo_entrega_h"]
+    .agg(
+        pedidos="count",
+        mediana="median",
+        desde=lambda x: np.quantile(remuestrear_mediana(x), 0.025),
+        hasta=lambda x: np.quantile(remuestrear_mediana(x), 0.975),
+    )
+    .round(1)
+)
+print(intervalos)
+```
+
+`rng.choice()` saca las 2.000 muestras de una vez, como una matriz de 2.000 filas, y `np.median(..., axis=1)` calcula la mediana de cada fila. Para el gráfico, `ax.errorbar()` de `matplotlib` dibuja los puntos con sus intervalos.
+
+:::
+
+Ahora la fragilidad tiene tamaño. La mediana de `S02`, con 343 pedidos, está entre 9,6 y 10,5 horas: un intervalo de menos de una hora. La de `S07` está entre 9,3 y 15,8: más de seis horas de incertidumbre. ¿Es `S07` más lenta que `S02`? Se puede remuestrear también la diferencia entre las dos medianas:
+
+```{r}
+#| label: remuestreo-diferencia
+set.seed(2026)
+tiempos <- split(entregas$tiempo_entrega_h, entregas$sucursal)
+diferencia <- remuestrear_mediana(tiempos$S07) -
+  remuestrear_mediana(tiempos$S02)
+quantile(diferencia, c(0.025, 0.975))
+```
+
+El intervalo va desde alrededor de cero hasta más de cuatro horas. Con la semilla de R, el extremo inferior es negativo; con la de Python, levemente positivo. Que la conclusión cambie con el azar de la simulación es la respuesta: **con 9 pedidos no se puede afirmar que `S07` sea más lenta**. Hay que esperar más datos antes de llevar esa conclusión a una reunión.
+
+Tres advertencias sobre el remuestreo:
+
+- **Mide la precisión, no la pertinencia.** El intervalo de `S03` es angosto, de 4,9 a 6,0 horas, pero la mediana de una distribución con dos grupos separados describe mal a los dos. Un resumen preciso puede ser un mal resumen.
+- **No corrige los datos.** Si los pedidos de `S07` no representan su operación normal, por ejemplo porque son de una semana atípica, remuestrearlos reproduce el sesgo con toda precisión.
+- **No es una prueba formal.** Es una forma honesta de mostrar cuánto se mueve una cifra. Las pruebas de hipótesis y los modelos que comparan grupos con rigor son tema de un libro de inferencia estadística, que este no es.
 
 ## Categorías: comparar longitudes, no ángulos {#sec-categorias-graficos}
 
@@ -741,24 +924,18 @@ Cada fila suma 100 %, porque la proporción se calculó dentro de cada sucursal 
 
 ### Python
 
-```python
+```{python}
 por_sucursal = entregas["sucursal"].value_counts().sort_values()
 plt.hlines(por_sucursal.index, 0, por_sucursal.values)
 plt.plot(por_sucursal.values, por_sucursal.index, "o")
 plt.show()
 
-proporciones = pd.crosstab(entregas["sucursal"], entregas["canal"], normalize="index")
+proporciones = pd.crosstab(
+    entregas["sucursal"], entregas["canal"], normalize="index"
+)
 sns.heatmap(proporciones, annot=True, fmt=".0%", cmap="Greys", cbar=False)
 plt.show()
 print(proporciones.round(2).head(3))
-```
-
-```text
-canal     domicilio  retiro   web
-sucursal                         
-S01            0.43     0.2  0.36
-S02            0.45     0.2  0.36
-S03            0.45     0.2  0.35
 ```
 
 `value_counts()` cuenta y ordena de mayor a menor; con `sort_values()` lo dejamos de menor a mayor, porque en un gráfico horizontal el primer valor queda abajo. `pd.crosstab(..., normalize="index")` arma la tabla cruzada con proporciones por fila, y `heatmap(annot=True)` escribe el valor en cada celda.
@@ -767,12 +944,15 @@ S03            0.45     0.2  0.35
 
 ```{r}
 #| label: duckdb-categorias
-dbGetQuery(con, r"(
+dbGetQuery(
+  con,
+  r"(
   SELECT sucursal, count(*) AS pedidos, bar(count(*), 0, 450, 30) AS barra
   FROM 'datos/cap11/entregas_2026_t1.parquet'
   GROUP BY ALL
   ORDER BY pedidos DESC
-)")
+)"
+)
 ```
 
 Un gráfico de barras ordenado, en texto. Al ordenar por `pedidos DESC`, la categoría rara aparece al final y se ve de inmediato.
@@ -800,20 +980,30 @@ Cuando las dos coinciden, la relación es aproximadamente lineal. Cuando difiere
 #| fig-alt: "Una nube de puntos grises que sube de izquierda a derecha: a más distancia, más horas, con una franja ancha entre 5 y 20 horas. Los puntos de S03, en negro, no siguen la nube: forman dos franjas horizontales, una alrededor de 4 horas y otra alrededor de 26, sin importar la distancia."
 #| fig-height: 4
 #| warning: false
-ggplot(entregas, aes(x = distancia_km, y = tiempo_entrega_h,
-                     color = sucursal == "S03")) +
+ggplot(
+  entregas,
+  aes(x = distancia_km, y = tiempo_entrega_h, color = sucursal == "S03")
+) +
   geom_point(alpha = 0.4) +
-  scale_color_manual(values = c("grey60", "black"), labels = c("otras", "S03"),
-                     name = NULL) +
+  scale_color_manual(
+    values = c("grey60", "black"),
+    labels = c("otras", "S03"),
+    name = NULL
+  ) +
   scale_x_log10() +
   labs(x = "distancia (km, escala logarítmica)", y = "horas")
 
 entregas |>
   filter(!is.na(tiempo_entrega_h)) |>
   mutate(grupo = if_else(sucursal == "S03", "S03", "otras")) |>
-  summarise(pearson  = round(cor(distancia_km, tiempo_entrega_h), 2),
-            spearman = round(cor(distancia_km, tiempo_entrega_h, method = "spearman"), 2),
-            .by = grupo)
+  summarise(
+    pearson = round(cor(distancia_km, tiempo_entrega_h), 2),
+    spearman = round(
+      cor(distancia_km, tiempo_entrega_h, method = "spearman"),
+      2
+    ),
+    .by = grupo
+  )
 ```
 
 En las demás sucursales, el tiempo crece con la distancia, con una correlación moderada. En `S03` la distancia no explica nada: sus pedidos forman dos franjas horizontales, una por cada clase de entrega. Si se calcula una sola correlación para toda la red, `S03` la diluye. Es el mismo hallazgo del ejemplo anterior, visto desde otro ángulo, y es una buena señal: un patrón real aparece por varios caminos.
@@ -822,23 +1012,30 @@ Con decenas de miles de puntos, la nube se vuelve una mancha negra en la que no 
 
 ### Python
 
-```python
-entregas["grupo"] = entregas["sucursal"].eq("S03").map({True: "S03", False: "otras"})
+```{python}
+entregas["grupo"] = (
+    entregas["sucursal"].eq("S03").map({True: "S03", False: "otras"})
+)
 
-sns.scatterplot(entregas, x="distancia_km", y="tiempo_entrega_h", hue="grupo",
-                palette={"otras": "0.6", "S03": "black"}, alpha=0.4)
+sns.scatterplot(
+    entregas,
+    x="distancia_km",
+    y="tiempo_entrega_h",
+    hue="grupo",
+    palette={"otras": "0.6", "S03": "black"},
+    alpha=0.4,
+)
 plt.xscale("log")
 plt.show()
 
-for grupo, datos in entregas.dropna(subset=["tiempo_entrega_h"]).groupby("grupo"):
+for grupo, datos in entregas.dropna(subset=["tiempo_entrega_h"]).groupby(
+    "grupo"
+):
     pearson = datos["distancia_km"].corr(datos["tiempo_entrega_h"])
-    spearman = datos["distancia_km"].rank().corr(datos["tiempo_entrega_h"].rank())
+    spearman = (
+        datos["distancia_km"].rank().corr(datos["tiempo_entrega_h"].rank())
+    )
     print(grupo, round(pearson, 2), round(spearman, 2))
-```
-
-```text
-S03 -0.05 -0.09
-otras 0.57 0.52
 ```
 
 `corr()` calcula la correlación de Pearson. Para la de Spearman, `pandas` tiene `corr(method="spearman")`, pero necesita la biblioteca `scipy`; sin ella da un error. La alternativa es aplicar la definición: `rank()` convierte cada valor en su posición, y la correlación de Pearson de los rangos es la de Spearman. `plt.xscale("log")` pone el eje horizontal en escala logarítmica.
@@ -847,7 +1044,9 @@ otras 0.57 0.52
 
 ```{r}
 #| label: duckdb-correlacion
-dbGetQuery(con, r"(
+dbGetQuery(
+  con,
+  r"(
   SELECT sucursal = 'S03' AS es_s03,
          round(corr(distancia_km, tiempo_entrega_h), 2) AS pearson,
          round(corr(rank_d, rank_t), 2) AS spearman
@@ -859,7 +1058,8 @@ dbGetQuery(con, r"(
     WHERE tiempo_entrega_h IS NOT NULL
   )
   GROUP BY ALL
-)")
+)"
+)
 ```
 
 DuckDB tiene `corr()` para la correlación de Pearson. La de Spearman se construye con su definición: los rangos de cada variable dentro de cada grupo, con `rank()` como función de ventana, y la correlación de Pearson sobre esos rangos. Con empates, `rank()` asigna el mismo rango a los valores iguales de forma distinta a como lo hacen R y `pandas`, así que el resultado puede diferir en el segundo decimal.
@@ -896,7 +1096,7 @@ En el Ejemplo 11.4, el histograma de toda la red dejaba una pista débil: una co
 #| warning: false
 ggplot(entregas, aes(x = tiempo_entrega_h)) +
   geom_histogram(binwidth = 1, boundary = 0) +
-  facet_wrap(~ sucursal, nrow = 2) +
+  facet_wrap(~sucursal, nrow = 2) +
   labs(x = "horas", y = "pedidos")
 ```
 
@@ -926,14 +1126,29 @@ La cuadrícula responde una pregunta que quedaba abierta: las dos clases de entr
 
 ### Python
 
-```python
-g = sns.displot(entregas, x="tiempo_entrega_h", col="sucursal", col_wrap=4,
-                binwidth=1, height=2, col_order=sorted(entregas["sucursal"].unique()))
+```{python}
+g = sns.displot(
+    entregas,
+    x="tiempo_entrega_h",
+    col="sucursal",
+    col_wrap=4,
+    binwidth=1,
+    height=2,
+    col_order=sorted(entregas["sucursal"].unique()),
+)
 plt.show()
 
 a_domicilio = entregas[entregas["canal"] != "retiro"]
-g = sns.relplot(a_domicilio, x="distancia_km", y="tiempo_entrega_h",
-                row="grupo", col="canal", alpha=0.3, s=10, height=2.5)
+g = sns.relplot(
+    a_domicilio,
+    x="distancia_km",
+    y="tiempo_entrega_h",
+    row="grupo",
+    col="canal",
+    alpha=0.3,
+    s=10,
+    height=2.5,
+)
 g.set(xscale="log")
 plt.show()
 ```
@@ -959,10 +1174,15 @@ pares <- entregas |>
   filter(canal != "retiro", !is.na(valor_pedido), valor_pedido < 1e7) |>
   mutate(log_valor = log10(valor_pedido))
 
-pairs(pares[c("distancia_km", "tiempo_entrega_h", "unidades", "log_valor")],
-      labels = c("distancia", "tiempo", "unidades", "log10 valor"),
-      col = if_else(pares$sucursal == "S03", "black", "grey70"),
-      pch = 20, cex = 0.4, gap = 0.3, upper.panel = NULL)
+pairs(
+  pares[c("distancia_km", "tiempo_entrega_h", "unidades", "log_valor")],
+  labels = c("distancia", "tiempo", "unidades", "log10 valor"),
+  col = if_else(pares$sucursal == "S03", "black", "grey70"),
+  pch = 20,
+  cex = 0.4,
+  gap = 0.3,
+  upper.panel = NULL
+)
 ```
 
 `upper.panel = NULL` deja solo la mitad inferior, porque la superior repite los mismos pares con los ejes invertidos. Quitamos los seis pedidos corporativos, que aplastarían los paneles del valor, y en cada panel `S03` va en negro. La matriz confirma en un vistazo lo que encontramos paso a paso: la distancia se relaciona con el tiempo, salvo en `S03`. Y muestra algo que no buscábamos: **las unidades y el valor del pedido no se relacionan**. Un pedido con más unidades debería valer más; que no sea así es raro. Puede que el valor incluya el flete y no los productos, que las unidades cuenten cajas y no artículos, o que una de las dos columnas venga de otro sistema. Los datos no lo responden: es una pregunta para quien los entrega, y una buena razón para no usar el valor del pedido como medida del tamaño de un pedido hasta tener la respuesta. Así se ve un hallazgo de exploración: no una conclusión, sino una pregunta concreta.
@@ -974,15 +1194,30 @@ El paquete `GGally` tiene `ggpairs()`, una versión con `ggplot2` que además po
 #| fig-cap: "Correlaciones de Spearman entre las variables numéricas."
 #| fig-alt: "Una cuadrícula de cinco por cinco con las variables en ambos ejes y la correlación escrita en cada celda. La diagonal vale 1. La celda más oscura fuera de la diagonal es distancia con tiempo, 0,38; tiempo con calificación es negativa, -0,14. Las demás celdas, incluida unidades con valor, están cerca de cero."
 #| fig-height: 4
-variables <- c("distancia_km", "tiempo_entrega_h", "unidades", "valor_pedido", "calificacion")
-correlaciones <- cor(entregas[variables], method = "spearman", use = "pairwise.complete.obs")
+variables <- c(
+  "distancia_km",
+  "tiempo_entrega_h",
+  "unidades",
+  "valor_pedido",
+  "calificacion"
+)
+correlaciones <- cor(
+  entregas[variables],
+  method = "spearman",
+  use = "pairwise.complete.obs"
+)
 
 as.data.frame(as.table(correlaciones)) |>
   ggplot(aes(x = Var1, y = Var2, fill = Freq)) +
   geom_tile(color = "white") +
   geom_text(aes(label = round(Freq, 2))) +
-  scale_fill_gradient2(low = "grey40", mid = "white", high = "grey40", limits = c(-1, 1),
-                       guide = "none") +
+  scale_fill_gradient2(
+    low = "grey40",
+    mid = "white",
+    high = "grey40",
+    limits = c(-1, 1),
+    guide = "none"
+  ) +
   labs(x = NULL, y = NULL)
 ```
 
@@ -992,30 +1227,36 @@ El mapa de calor resume la matriz de pares en números: una sola relación clara
 
 ### Python
 
-```python
+```{python}
 import numpy as np
 
-pares = entregas[(entregas["canal"] != "retiro") & (entregas["valor_pedido"] < 1e7)].assign(
-    log_valor=lambda d: np.log10(d["valor_pedido"]))
-sns.pairplot(pares[["distancia_km", "tiempo_entrega_h", "unidades", "log_valor", "grupo"]],
-             hue="grupo", palette={"otras": "0.7", "S03": "black"},
-             corner=True, plot_kws={"alpha": 0.3, "s": 8})
+pares = entregas[
+    (entregas["canal"] != "retiro") & (entregas["valor_pedido"] < 1e7)
+].assign(log_valor=lambda d: np.log10(d["valor_pedido"]))
+sns.pairplot(
+    pares[
+        ["distancia_km", "tiempo_entrega_h", "unidades", "log_valor", "grupo"]
+    ],
+    hue="grupo",
+    palette={"otras": "0.7", "S03": "black"},
+    corner=True,
+    plot_kws={"alpha": 0.3, "s": 8},
+)
 plt.show()
 
-variables = ["distancia_km", "tiempo_entrega_h", "unidades", "valor_pedido", "calificacion"]
+variables = [
+    "distancia_km",
+    "tiempo_entrega_h",
+    "unidades",
+    "valor_pedido",
+    "calificacion",
+]
 correlaciones = entregas[variables].rank().corr()
-sns.heatmap(correlaciones, annot=True, fmt=".2f", cmap="Greys", vmin=-1, vmax=1)
+sns.heatmap(
+    correlaciones, annot=True, fmt=".2f", cmap="Greys", vmin=-1, vmax=1
+)
 plt.show()
 print(correlaciones.round(2).loc["tiempo_entrega_h"])
-```
-
-```text
-distancia_km        0.38
-tiempo_entrega_h    1.00
-unidades           -0.02
-valor_pedido        0.06
-calificacion       -0.15
-Name: tiempo_entrega_h, dtype: float64
 ```
 
 `sns.pairplot()` es la matriz de pares de `seaborn`: con `hue` colorea por grupo, con `corner=True` dibuja solo la mitad inferior, y en la diagonal pone la distribución de cada variable. Para la matriz de Spearman, `rank()` convierte cada columna en rangos y `corr()` calcula Pearson sobre ellos, sin necesitar `scipy`. `corr()` también usa, para cada par, las filas con datos en las dos columnas. `numpy` calcula el logaritmo.
@@ -1039,8 +1280,13 @@ dias_semana <- c("lun", "mar", "mié", "jue", "vie", "sáb", "dom")
 
 entregas |>
   count(fecha) |>
-  mutate(semana = as.integer(format(fecha, "%V")),
-         dia    = factor(dias_semana[as.integer(format(fecha, "%u"))], levels = rev(dias_semana))) |>
+  mutate(
+    semana = as.integer(format(fecha, "%V")),
+    dia = factor(
+      dias_semana[as.integer(format(fecha, "%u"))],
+      levels = rev(dias_semana)
+    )
+  ) |>
   ggplot(aes(x = semana, y = dia, fill = n)) +
   geom_tile(color = "white") +
   scale_fill_gradient(low = "grey95", high = "grey20", name = "pedidos") +
@@ -1051,21 +1297,19 @@ entregas |>
 
 ### Python
 
-```python
+```{python}
 por_dia = entregas.groupby("fecha").size().rename("pedidos").reset_index()
 fechas = pd.to_datetime(por_dia["fecha"])
 por_dia["semana"] = fechas.dt.isocalendar().week.astype(int)
-por_dia["dia"] = fechas.dt.dayofweek          # 0 es lunes
+por_dia["dia"] = fechas.dt.dayofweek  # 0 es lunes
 
-calendario = por_dia.pivot_table(index="dia", columns="semana", values="pedidos")
+calendario = por_dia.pivot_table(
+    index="dia", columns="semana", values="pedidos"
+)
 calendario.index = ["lun", "mar", "mié", "jue", "vie", "sáb", "dom"]
 sns.heatmap(calendario, cmap="Greys", linewidths=1)
 plt.show()
 print(por_dia.groupby("dia")["pedidos"].mean().round(1).tolist())
-```
-
-```text
-[27.8, 31.4, 30.8, 28.2, 29.3, 31.5, 10.2]
 ```
 
 `isocalendar()` devuelve el año, la semana y el día según la norma ISO, y `pivot_table()` arma la tabla de días por semanas que `heatmap()` dibuja. La última línea es el promedio de pedidos por día de la semana, de lunes a domingo.
@@ -1093,26 +1337,90 @@ Con la cartera analítica del @sec-guardar-compartir (`datos/cap10/cartera_anali
 cartera <- read_parquet("datos/cap10/cartera_analitica.parquet")
 
 pagadas <- cartera |>
-  filter(...) |>                                            # TODO
-  mutate(dias_pago = as.integer(...))                       # TODO
+  filter(...) |> # TODO
+  mutate(dias_pago = as.integer(...)) # TODO
 
 ggplot(pagadas, aes(x = region, y = dias_pago)) +
-  geom_violin(...) +                                        # TODO
-  geom_jitter(...)                                          # TODO
+  geom_violin(...) + # TODO
+  geom_jitter(...) # TODO
 ```
 
 ### Python
 
-```python
+```{python}
+#| eval: false
 cartera = pd.read_parquet("datos/cap10/cartera_analitica.parquet")
-pagadas = cartera[...].assign(dias_pago=...)                # TODO
-sns.violinplot(...)                                         # TODO
-sns.stripplot(...)                                          # TODO
+pagadas = cartera[...].assign(dias_pago=...)  # TODO
+sns.violinplot(...)  # TODO
+sns.stripplot(...)  # TODO
 ```
 
 :::
 
 Para comprobar tu resultado: la cartera tiene 379 facturas, todas distintas; `fecha_pago` falta en 201 facturas, las que no se han pagado, así que es un faltante de "no aplica" que a la vez es informativo sobre el estado de la factura. Las 178 facturas pagadas tardaron una mediana de 18 días y una media de 19,3, entre 3 y 44 días: una distribución casi simétrica, en la que la media y la mediana dicen lo mismo. En el valor de las facturas, la escala logarítmica deja ver una factura de 98,5 millones, la que el @sec-limpiar aceptó y marcó para revisar. Las tres regiones tienen entre 51 y 76 facturas pagadas, suficientes para comparar.
+
+## Auditoría 11.1: el ranking de sucursales {#sec-auditoria-explorar}
+
+El pedido: *«Con entregas_2026_t1.parquet, haz un ranking de sucursales de peor a mejor tiempo de entrega, para el comité de operaciones»*. La respuesta típica:
+
+::: {.panel-tabset group="lenguaje"}
+
+### R
+
+```{r}
+#| label: auditoria-11-1
+entregas |>
+  summarise(
+    tiempo_promedio = round(mean(tiempo_entrega_h, na.rm = TRUE), 1),
+    .by = sucursal
+  ) |>
+  arrange(desc(tiempo_promedio))
+```
+
+### Python
+
+```{python}
+promedio = (
+    entregas.groupby("sucursal")["tiempo_entrega_h"]
+    .mean()
+    .round(1)
+    .sort_values(ascending=False)
+)
+print(promedio)
+```
+
+:::
+
+`S03` y `S07` son las peores, y el resto de la red está parejo. Con lo que viste en este capítulo, ¿qué le dirías al comité?
+
+::: {.callout-tip collapse="true"}
+## Solución de la auditoría 11.1
+
+**El promedio describe un pedido que no existe.** En el Ejemplo guiado 11.5 vimos que `S03` tiene dos clases de entrega, una alrededor de 4 horas y otra alrededor de 26. Su promedio, 12,9 horas, cae en el hueco entre las dos. Según la mediana, `S03` es la sucursal **más rápida** de la red; según el promedio, la más lenta. Ninguna de las dos cifras responde bien la pregunta.
+
+**`S07` no se puede ordenar.** Tiene 9 entregas con tiempo. La @sec-remuestreo mostró que su mediana podría estar en cualquier punto entre 9,3 y 15,8 horas, así que su segundo lugar es casi un sorteo. Un ranking que no muestra cuántos datos tiene cada fila esconde esto.
+
+**«Peor» no está definido.** Para el comité, una entrega lenta probablemente importa más que el promedio. Si la pregunta es cuántos pedidos tardan más de un día, el resultado es muy distinto:
+
+```{r}
+#| label: auditoria-11-1-corregida
+entregas |>
+  filter(!is.na(tiempo_entrega_h)) |>
+  summarise(
+    pedidos = n(),
+    mediana = median(tiempo_entrega_h),
+    mas_de_24_h = round(100 * mean(tiempo_entrega_h > 24), 1),
+    .by = sucursal
+  ) |>
+  arrange(desc(mas_de_24_h))
+```
+
+El 28,2 % de los pedidos de `S03` tarda más de 24 horas; en ninguna otra sucursal pasa del 2 %. Ese es el problema real de `S03`, y no aparecía en el ranking: el promedio lo mezclaba con las entregas rápidas.
+
+**Lo que no se ve: los faltantes.** `na.rm = TRUE` descartó en silencio 492 pedidos sin tiempo. Aquí la decisión es correcta, porque son todos de retiro en tienda y no tienen entrega (@sec-explorar-faltantes), pero el código no lo dice. Un análisis que descarta datos debe decir cuántos y por qué.
+
+Lo que se le lleva al comité no es un ranking, sino tres frases: `S03` tiene dos clases de entrega y más de una cuarta parte de sus pedidos tarda más de un día; `S07` tiene muy pocos datos para concluir algo; el resto de la red está pareja, con medianas entre 9,5 y 10,6 horas.
+:::
 
 ## Cierre: preguntas antes que respuestas {#sec-cierre-explorar}
 

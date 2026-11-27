@@ -10,22 +10,40 @@ Este capítulo cierra la comunicación con esos tres formatos. Los tres salen de
 ## Antes de empezar
 
 1. Este capítulo usa el flujo de entregas del @sec-flujos y la carpeta `reportes/` del @sec-reportes, donde están la presentación y el tablero.
-2. Para Excel, en R usamos `openxlsx2`, que ya conoces del @sec-importacion-fuentes. En Python, `XlsxWriter`: `uv pip install xlsxwriter`.
+2. Para Excel, en R usamos `openxlsx2`, que ya conoces del @sec-importacion-fuentes. En Python, `XlsxWriter`, instalado en la @sec-instalar-paquetes.
 3. DuckDB no tiene pestaña: los tres formatos reciben tablas pequeñas, ya calculadas.
 :::
 
 ```{r}
 #| label: paquetes-cap16
 #| message: false
-use("openxlsx2", c("wb_workbook", "wb_add_worksheet", "wb_add_data", "wb_add_font",
-                   "wb_add_fill", "wb_add_numfmt", "wb_add_formula", "wb_set_col_widths",
-                   "wb_freeze_pane", "wb_add_dxfs_style", "wb_add_conditional_formatting",
-                   "wb_color", "wb_save", "wb_load", "wb_to_df"))
+use(
+  "openxlsx2",
+  c(
+    "wb_workbook",
+    "wb_add_worksheet",
+    "wb_add_data",
+    "wb_add_font",
+    "wb_add_fill",
+    "wb_add_numfmt",
+    "wb_add_formula",
+    "wb_set_col_widths",
+    "wb_freeze_pane",
+    "wb_add_dxfs_style",
+    "wb_add_conditional_formatting",
+    "wb_color",
+    "wb_save",
+    "wb_load",
+    "wb_to_df"
+  )
+)
 use("dplyr", c("filter", "select"))
 
 source("scripts/flujo_entregas.R")
-rutas <- c(list.files("datos/cap13/entregas", pattern = "\\.csv$", full.names = TRUE),
-           "datos/cap13/abril/entregas_2026_04.csv")
+rutas <- c(
+  list.files("datos/cap13/entregas", pattern = "\\.csv$", full.names = TRUE),
+  "datos/cap13/abril/entregas_2026_04.csv"
+)
 indicadores <- leer_crudo(rutas) |> armonizar() |> validar() |> resumir()
 quarto <- Sys.which("quarto")
 dir.create("reportes/salida", showWarnings = FALSE)
@@ -54,16 +72,25 @@ Y un sexto elemento, cuando ayuda: **formato condicional**, que resalta las celd
 abril <- indicadores |>
   filter(mes == "2026-04") |>
   select(sucursal, pedidos, mediana_horas, pct_tardias, pct_devueltos)
-ultima <- 3 + nrow(abril)                         # fila de la última sucursal
+ultima <- 3 + nrow(abril) # fila de la última sucursal
 
 notas <- data.frame(
-  campo = c("Fuente", "Generado", "pedidos", "mediana_horas", "pct_tardias", "pct_devueltos"),
-  descripcion = c("Flujo de entregas (capítulo 13), pedidos a domicilio de abril de 2026",
-                  format(Sys.Date(), "%d/%m/%Y"),
-                  "Pedidos a domicilio del mes; no incluye retiros en tienda",
-                  "Mediana de horas entre el pedido y la entrega",
-                  "% de entregas que tardaron más de 20 horas",
-                  "% de pedidos devueltos")
+  campo = c(
+    "Fuente",
+    "Generado",
+    "pedidos",
+    "mediana_horas",
+    "pct_tardias",
+    "pct_devueltos"
+  ),
+  descripcion = c(
+    "Flujo de entregas (capítulo 13), pedidos a domicilio de abril de 2026",
+    format(Sys.Date(), "%d/%m/%Y"),
+    "Pedidos a domicilio del mes; no incluye retiros en tienda",
+    "Mediana de horas entre el pedido y la entrega",
+    "% de entregas que tardaron más de 20 horas",
+    "% de pedidos devueltos"
+  )
 )
 
 libro <- wb_workbook() |>
@@ -75,13 +102,23 @@ libro <- wb_workbook() |>
   wb_add_font(dims = "A3:E3", color = wb_color("FFFFFF"), bold = TRUE) |>
   wb_add_numfmt(dims = sprintf("C4:E%d", ultima), numfmt = "0.0") |>
   wb_add_data(x = "Total", dims = sprintf("A%d", ultima + 1)) |>
-  wb_add_formula(x = sprintf("SUM(B4:B%d)", ultima), dims = sprintf("B%d", ultima + 1)) |>
+  wb_add_formula(
+    x = sprintf("SUM(B4:B%d)", ultima),
+    dims = sprintf("B%d", ultima + 1)
+  ) |>
   wb_add_font(dims = sprintf("A%d:B%d", ultima + 1, ultima + 1), bold = TRUE) |>
   wb_set_col_widths(cols = 1:5, widths = c(11, 10, 15, 13, 14)) |>
   wb_freeze_pane(first_active_row = 4) |>
-  wb_add_dxfs_style(name = "alto", bg_fill = wb_color("BFBFBF"), text_bold = TRUE) |>
-  wb_add_conditional_formatting(dims = sprintf("D4:D%d", ultima), rule = ">10",
-                                style = "alto") |>
+  wb_add_dxfs_style(
+    name = "alto",
+    bg_fill = wb_color("BFBFBF"),
+    text_bold = TRUE
+  ) |>
+  wb_add_conditional_formatting(
+    dims = sprintf("D4:D%d", ultima),
+    rule = ">10",
+    style = "alto"
+  ) |>
   wb_add_worksheet("Notas") |>
   wb_add_data(x = notas) |>
   wb_set_col_widths(cols = 1:2, widths = c(16, 70))
@@ -91,7 +128,8 @@ wb_save(libro, ruta_excel)
 
 revisado <- wb_load(ruta_excel)
 revisado$get_sheet_names()
-wb_to_df(revisado, sheet = "Indicadores", start_row = 3, show_formula = TRUE) |> tail(3)
+wb_to_df(revisado, sheet = "Indicadores", start_row = 3, show_formula = TRUE) |>
+  tail(3)
 ```
 
 `openxlsx2` construye el libro con una cadena de funciones `wb_*()`, cada una sobre un rango de celdas que se indica con `dims`, en la notación de Excel (`"A3:E3"`). Las piezas más importantes:
@@ -105,7 +143,7 @@ La comprobación lee el archivo escrito, como en el @sec-guardar-compartir: tien
 
 ### Python
 
-```python
+```{python}
 from pathlib import Path
 
 import pandas as pd
@@ -114,7 +152,8 @@ from openpyxl import load_workbook
 from scripts.flujo_entregas import leer_crudo, armonizar, validar, resumir
 
 rutas = sorted(str(p) for p in Path("datos/cap13/entregas").glob("*.csv")) + [
-    "datos/cap13/abril/entregas_2026_04.csv"]
+    "datos/cap13/abril/entregas_2026_04.csv"
+]
 indicadores = resumir(validar(armonizar(leer_crudo(rutas))))
 
 abril = indicadores[indicadores["mes"] == "2026-04"].drop(columns="mes")
@@ -126,7 +165,9 @@ with pd.ExcelWriter(ruta, engine="xlsxwriter") as escritor:
     libro = escritor.book
     hoja = escritor.sheets["Indicadores"]
     titulo = libro.add_format({"bold": True, "font_size": 14})
-    encabezado = libro.add_format({"bold": True, "font_color": "white", "bg_color": "#1A1A1A"})
+    encabezado = libro.add_format(
+        {"bold": True, "font_color": "white", "bg_color": "#1A1A1A"}
+    )
     decimal = libro.add_format({"num_format": "0.0"})
     alto = libro.add_format({"bg_color": "#BFBFBF", "bold": True})
 
@@ -137,25 +178,30 @@ with pd.ExcelWriter(ruta, engine="xlsxwriter") as escritor:
     hoja.set_column("B:B", 10)
     hoja.set_column("C:E", 14, decimal)
     hoja.write(ultima, 0, "Total", libro.add_format({"bold": True}))
-    hoja.write_formula(ultima, 1, f"=SUM(B4:B{ultima})", libro.add_format({"bold": True}))
+    hoja.write_formula(
+        ultima, 1, f"=SUM(B4:B{ultima})", libro.add_format({"bold": True})
+    )
     hoja.freeze_panes(3, 0)
-    hoja.conditional_format(f"D4:D{ultima}", {"type": "cell", "criteria": ">",
-                                              "value": 10, "format": alto})
+    hoja.conditional_format(
+        f"D4:D{ultima}",
+        {"type": "cell", "criteria": ">", "value": 10, "format": alto},
+    )
     hoja.hide_gridlines(2)
 
-    notas = pd.DataFrame({
-        "campo": ["Fuente", "pct_tardias"],
-        "descripcion": ["Flujo de entregas (capítulo 13), pedidos a domicilio de abril de 2026",
-                        "% de entregas que tardaron más de 20 horas"]})
+    notas = pd.DataFrame(
+        {
+            "campo": ["Fuente", "pct_tardias"],
+            "descripcion": [
+                "Flujo de entregas (capítulo 13), pedidos a domicilio de abril de 2026",
+                "% de entregas que tardaron más de 20 horas",
+            ],
+        }
+    )
     notas.to_excel(escritor, sheet_name="Notas", index=False)
     escritor.sheets["Notas"].set_column("B:B", 70)
 
 revisado = load_workbook(ruta)
 print(revisado.sheetnames, revisado["Indicadores"][f"B{ultima + 1}"].value)
-```
-
-```text
-['Indicadores', 'Notas'] =SUM(B4:B11)
 ```
 
 Con `engine="xlsxwriter"`, `pandas` escribe la tabla y deja disponibles el libro y la hoja de `XlsxWriter` para darles formato. Una diferencia con R: en `XlsxWriter` las filas y columnas se cuentan **desde cero** cuando se usan números (`write(2, col, ...)` es la fila 3 de Excel), pero los rangos en texto, como `"D4:D11"`, usan la notación de Excel. Mezclar las dos es la fuente de errores más común. Y como `XlsxWriter` solo escribe, la comprobación usa `openpyxl`, que lee el archivo y muestra la fórmula del total tal como quedó guardada.
@@ -173,7 +219,10 @@ Con Quarto, una presentación es un documento como el reporte del @sec-reportes,
 #| echo: false
 #| output: asis
 cat("````{.markdown filename=\"reportes/presentacion_entregas.qmd\"}\n")
-cat(readLines("reportes/presentacion_entregas.qmd", encoding = "UTF-8"), sep = "\n")
+cat(
+  readLines("reportes/presentacion_entregas.qmd", encoding = "UTF-8"),
+  sep = "\n"
+)
 cat("\n````\n")
 ```
 
@@ -184,15 +233,24 @@ Tiene tres diapositivas de contenido, cada una con una idea. Tres herramientas d
 generar <- function(archivo, ...) {
   anterior <- setwd("reportes")
   on.exit(setwd(anterior))
-  estado <- system2(quarto, c("render", archivo, ...), stdout = FALSE, stderr = FALSE)
-  if (estado != 0) stop("no se pudo generar ", archivo, call. = FALSE)
+  estado <- system2(
+    quarto,
+    c("render", archivo, ...),
+    stdout = FALSE,
+    stderr = FALSE
+  )
+  if (estado != 0) {
+    stop("no se pudo generar ", archivo, call. = FALSE)
+  }
   invisible(estado)
 }
 
 generar("presentacion_entregas.qmd")
 generar("presentacion_entregas.qmd", "--to", "pptx")
-file.exists(c("reportes/salida/presentacion_entregas.html",
-              "reportes/salida/presentacion_entregas.pptx"))
+file.exists(c(
+  "reportes/salida/presentacion_entregas.html",
+  "reportes/salida/presentacion_entregas.pptx"
+))
 ```
 
 La misma fuente produce dos presentaciones. La de `revealjs` es una página web: se proyecta desde el navegador, se avanza con las flechas y se envía como un archivo. La de `--to pptx` es un PowerPoint editable, para cuando la presentación tiene que terminar dentro de la plantilla de la empresa o alguien más la va a completar. Como con el Word del @sec-reportes, en cuanto alguien la edita a mano deja de estar conectada con los datos.

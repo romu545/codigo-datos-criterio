@@ -15,7 +15,7 @@ Cada uno de esos problemas apareció al **ejecutar** el código, y ninguno al le
 ## Antes de empezar
 
 1. Las pruebas del capítulo están en `tests/`: `tests/testthat/test-flujo.R` para R y `tests/test_flujo.py` para Python. Prueban las funciones del flujo del @sec-flujos.
-2. En R usamos `testthat` (`install.packages("testthat")`); en Python, `pytest` (`uv pip install pytest`).
+2. En R usamos `testthat`; en Python, `pytest`. Los dos quedaron instalados en la @sec-instalar-paquetes.
 3. Ningún paso del capítulo necesita una cuenta en un servicio externo. Los ejemplos de publicación muestran los archivos y los comandos, sin ejecutarlos.
 :::
 
@@ -82,7 +82,10 @@ armonizar_simplificada <- function(tablas) {
 }
 
 test_that("armonizar convierte los minutos a horas", {
-  abril <- data.frame(pedido = c("P1", "P2"), tiempo_entrega_min = c("600", "1800"))
+  abril <- data.frame(
+    pedido = c("P1", "P2"),
+    tiempo_entrega_min = c("600", "1800")
+  )
   resultado <- armonizar_simplificada(list(abril = abril))
   expect_equal(resultado$tiempo_entrega_h, c(10, 30))
 })
@@ -94,17 +97,16 @@ La versión simplificada ni siquiera tiene la columna de horas cuando el archivo
 
 ### Python
 
-```python
+```{python}
 import subprocess
 import sys
 
-resultado = subprocess.run([sys.executable, "-m", "pytest", "tests", "-q", "-p", "no:cacheprovider"],
-                           capture_output=True, text=True)
+resultado = subprocess.run(
+    [sys.executable, "-m", "pytest", "tests", "-q", "-p", "no:cacheprovider"],
+    capture_output=True,
+    text=True,
+)
 print(resultado.stdout.strip().splitlines()[-1])
-```
-
-```text
-4 passed in 1.52s
 ```
 
 En `pytest`, cada prueba es una función cuyo nombre empieza por `test_`, en un archivo cuyo nombre empieza por `test_`, y la expectativa es un simple `assert`: si la condición es falsa, la prueba falla. Para comprobar que una función lanza un error, `pytest.raises(ValueError, match="fechas sin leer")` funciona como `expect_error()` de R. Desde la terminal, `uv run pytest tests` las ejecuta todas y muestra un resumen; `-q` lo hace más breve.
@@ -115,10 +117,13 @@ En SQL, una prueba es una consulta que debe devolver cero filas: las que violan 
 
 ```{r}
 #| label: duckdb-prueba
-dbGetQuery(con, r"(
+dbGetQuery(
+  con,
+  r"(
   WITH casos(parte, total, esperado) AS (VALUES (1, 4, 25.0), (0, 10, 0.0), (3, 3, 100.0))
   SELECT * FROM casos WHERE round(100 * parte / total, 1) <> esperado
-)")
+)"
+)
 ```
 
 Cero filas: todos los casos se cumplen. Herramientas como `dbt`, muy usadas en equipos de ingeniería de datos, organizan este tipo de pruebas para proyectos completos en SQL.
@@ -144,8 +149,12 @@ El lugar de las claves son las **variables de entorno**, que el sistema operativ
 clave_api <- function(nombre = "CLAVE_API_TRM") {
   clave <- Sys.getenv(nombre)
   if (clave == "") {
-    stop("falta la variable de entorno ", nombre,
-         "; agrégala al archivo .Renviron del proyecto y reinicia R", call. = FALSE)
+    stop(
+      "falta la variable de entorno ",
+      nombre,
+      "; agrégala al archivo .Renviron del proyecto y reinicia R",
+      call. = FALSE
+    )
   }
   clave
 }
@@ -157,23 +166,23 @@ La función no muestra la clave ni la devuelve impresa; la entrega a quien la ne
 
 ### Python
 
-```python
+```{python}
 import os
+
 
 def clave_api(nombre="CLAVE_API_TRM"):
     clave = os.environ.get(nombre)
     if not clave:
-        raise RuntimeError(f"falta la variable de entorno {nombre}; agrégala al archivo .env")
+        raise RuntimeError(
+            f"falta la variable de entorno {nombre}; agrégala al archivo .env"
+        )
     return clave
+
 
 try:
     clave_api()
 except RuntimeError as e:
     print(e)
-```
-
-```text
-falta la variable de entorno CLAVE_API_TRM; agrégala al archivo .env
 ```
 
 `os.environ.get()` devuelve `None` si la variable no existe, en lugar de fallar. Con `python-dotenv`, una línea al principio del programa, `load_dotenv()`, lee el archivo `.env` y agrega sus variables a `os.environ`.
@@ -186,7 +195,7 @@ DuckDB guarda credenciales con `CREATE SECRET`, por ejemplo para leer archivos d
 
 ### Los datos de las personas
 
-Los datos de este libro son sintéticos, pero la cartera tiene NIT y razones sociales, y los datos reales de una empresa tienen nombres, teléfonos y documentos de identidad de personas. En Colombia, la Ley 1581 de 2012 regula el tratamiento de los datos personales, y casi todos los países tienen una norma equivalente. Para un analista, se traduce en tres hábitos:
+Los datos de este libro son sintéticos, pero la cartera tiene NIT y razones sociales, y los datos reales de una empresa tienen nombres, teléfonos y documentos de identidad de personas. En Colombia, la Ley 1581 de 2012 regula el tratamiento de los datos personales (@sec-habeas-data), y casi todos los países tienen una norma equivalente. Para un analista, se traduce en tres hábitos:
 
 - **Usar solo lo necesario.** Si el análisis es por sucursal, el nombre del cliente no tiene que salir de la capa limpia. Es la selección temprana de columnas del @sec-importacion, por una razón distinta a la memoria.
 - **Compartir a cada quien lo suyo**, como en el @sec-guardar-compartir: el archivo de Cali no lleva clientes de Bogotá.
@@ -194,15 +203,41 @@ Los datos de este libro son sintéticos, pero la cartera tiene NIT y razones soc
 
 ```{r}
 #| label: proteger-seudonimo
-Sys.setenv(SAL_SEUDONIMOS = "sal-de-ejemplo")       # en un proyecto real, en .Renviron
+Sys.setenv(SAL_SEUDONIMOS = "sal-de-ejemplo") # en un proyecto real, en .Renviron
 
-dbGetQuery(con, r"(
+dbGetQuery(
+  con,
+  r"(
   SELECT nit, left(sha256(concat(?, nit)), 12) AS seudonimo
   FROM (VALUES ('0726262541'), ('0971663263'), ('0726262541')) AS t(nit)
-)", params = list(Sys.getenv("SAL_SEUDONIMOS")))
+)",
+  params = list(Sys.getenv("SAL_SEUDONIMOS"))
+)
 ```
 
 `sha256()` es una **función de resumen** (*hash*): convierte cualquier texto en una cadena fija de la que no se puede volver al original, y el mismo texto produce siempre el mismo resultado. Por eso el primer y el tercer NIT, que son iguales, tienen el mismo seudónimo, y se pueden seguir uniendo y contando. La **sal** es un texto secreto que se agrega antes de calcular el resumen; sin ella, cualquiera podría calcular el resumen de todos los NIT posibles y descubrir cuál es cuál. Como es secreta, R la lee de una variable de entorno y se la pasa a la consulta como **parámetro**: el `?` del SQL se reemplaza por el valor de `params`, sin que la sal quede escrita en el código ni en la consulta. En el ejemplo la definimos con `Sys.setenv()` para que el capítulo se pueda ejecutar; en un proyecto real va en `.Renviron`. En Python, `hashlib.sha256()` hace lo mismo. Un detalle de criterio: seudonimizar no es anonimizar. Quien tenga la sal, o combine el seudónimo con la ciudad y la fecha, puede volver a identificar a una persona. Los datos seudonimizados siguen siendo datos personales y se tratan como tales.
+
+### Lo que pide la ley en Colombia {#sec-habeas-data}
+
+La Ley 1581 de 2012 desarrolla el derecho de *habeas data*: el derecho de cada persona a conocer, actualizar y rectificar la información que se tiene sobre ella. Para la ley, un **dato personal** es cualquier información vinculada o que pueda asociarse a una persona natural determinada o determinable, y **tratamiento** es cualquier operación sobre esos datos, incluidos recogerlos, guardarlos, usarlos y hacerlos circular. Un análisis de datos es tratamiento. La vigilancia está a cargo de la Superintendencia de Industria y Comercio, a través de su Delegatura para la Protección de Datos Personales.
+
+No hace falta ser abogado para trabajar dentro de la ley, pero sí conocer los principios de su artículo 4 que tocan el trabajo diario. Cuatro de ellos se traducen directamente en decisiones de análisis:
+
+| Principio | Lo que dice, en resumen | Lo que significa al analizar |
+|---|---|---|
+| Finalidad | El tratamiento debe tener un propósito legítimo, informado al titular. | Los datos recogidos para facturar no se reutilizan para cualquier otro fin sin revisar si ese uso está cubierto. |
+| Libertad | Se requiere autorización previa, expresa e informada del titular, salvo mandato legal o judicial. | Antes de cruzar una base con otra, preguntar si la autorización cubre ese cruce. |
+| Acceso y circulación restringida | Solo acceden las personas autorizadas. | Cada archivo compartido lleva solo lo que su destinatario puede ver, como en el @sec-guardar-compartir. |
+| Seguridad | Se toman medidas que eviten la pérdida, la consulta o el uso no autorizado. | Claves fuera del código, datos personales fuera de los repositorios, seudónimos con sal secreta. |
+
+: Principios de la Ley 1581 de 2012 que afectan el análisis de datos {#tbl-principios-1581}
+
+Dos puntos merecen atención especial:
+
+- **Los datos sensibles** (artículo 5) son los que afectan la intimidad de la persona o cuyo uso indebido puede generar discriminación: origen racial o étnico, orientación política, convicciones religiosas, pertenencia a sindicatos, datos de salud, de vida sexual y biométricos. Su tratamiento está prohibido salvo excepciones, como la autorización explícita del titular o los fines estadísticos con supresión de la identidad (artículo 6). Si una base los contiene, la regla de usar solo lo necesario se vuelve estricta.
+- **Enviar datos fuera del país.** El artículo 26 prohíbe transferir datos personales a países que no ofrezcan un nivel adecuado de protección, salvo excepciones. Muchos servicios en la nube y de inteligencia artificial procesan los datos en otros países. Antes de enviar a uno de ellos textos de clientes, como los reclamos del Ejemplo guiado 8.8, la pregunta no es técnica sino jurídica: si el envío está permitido y bajo qué contrato. Por eso, en ese ejemplo, los datos personales se ocultaron antes de enviar el texto: lo que no sale no hay que justificarlo.
+
+Este resumen orienta las decisiones de análisis; no reemplaza la asesoría jurídica de la organización, que es quien responde por el tratamiento. El texto completo de la ley está publicado en el [Régimen Legal de Bogotá](https://www.alcaldiabogota.gov.co/sisjur/normas/Norma1.jsp?i=49981).
 
 ## Publicar {#sec-publicar}
 

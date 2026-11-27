@@ -9,13 +9,16 @@ knitr:
   opts_chunk: 
     comment: "#>"
     collapse: true
+    jupyter_compat: true # en Python, solo se imprime la última expresión, como en Jupyter
 
 
 
 book:
-  title: "Código, datos y criterio"
+  title: "Datos, código y criterio"
   subtitle: "Un libro sobre análisis de datos con R y Python"
   author: "Rafael Mendoza"
+  cover-image: imagenes/portada.png
+  cover-image-alt: "Portada del libro. El título está escrito como un flujo de código, en letra grande: datos, con dos filas crudas de un CSV; código, con el flujo que las lee y las mismas filas ya ordenadas; y criterio, con un gráfico de violín de los tiempos de entrega por sucursal, donde un solo punto está marcado en negro con el comentario: 32,6 horas, ¿qué pasó en S03? Abajo, en una franja negra, el subtítulo y el autor."
   date: today
   language: es
   repo-url: https://github.com/romu545/codigo-datos-criterio

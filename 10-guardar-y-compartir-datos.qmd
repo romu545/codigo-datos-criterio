@@ -29,18 +29,59 @@ El formato de los archivos ya lo discutimos en el @sec-importacion-fuentes, con 
 ```{r}
 #| label: paquetes-cap10
 #| message: false
-use("arrow", c("read_parquet", "write_parquet", "write_dataset", "open_dataset",
-               "arrow_table"))
-use("readr", c("read_csv", "write_csv", "write_excel_csv2", "read_delim", "locale", "cols",
-               "col_character", "col_date", "col_integer"))
-use("dplyr", c("select", "filter", "arrange", "desc", "mutate", "summarise", "count", "n",
-               "left_join", "case_when", "group_by", "tibble", "collect", "pull"))
+use(
+  "arrow",
+  c(
+    "read_parquet",
+    "write_parquet",
+    "write_dataset",
+    "open_dataset",
+    "arrow_table"
+  )
+)
+use(
+  "readr",
+  c(
+    "read_csv",
+    "write_csv",
+    "write_excel_csv2",
+    "read_delim",
+    "locale",
+    "cols",
+    "col_character",
+    "col_date",
+    "col_integer"
+  )
+)
+use(
+  "dplyr",
+  c(
+    "select",
+    "filter",
+    "arrange",
+    "desc",
+    "mutate",
+    "summarise",
+    "count",
+    "n",
+    "left_join",
+    "case_when",
+    "group_by",
+    "tibble",
+    "collect",
+    "pull"
+  )
+)
 use("tidyr", c("nest", "pivot_wider"))
-use("purrr", c("map", "map_int", "map_dbl", "map_chr", "map_lgl", "walk", "iwalk",
-               "pwalk"))
+use(
+  "purrr",
+  c("map", "map_int", "map_dbl", "map_chr", "map_lgl", "walk", "iwalk", "pwalk")
+)
 use("openxlsx2", c("write_xlsx", "wb_load"))
-use("DBI", c("dbConnect", "dbGetQuery", "dbExecute", "dbDisconnect",
-             "dbWithTransaction"))
+use(
+  "DBI",
+  c("dbConnect", "dbGetQuery", "dbExecute", "dbDisconnect", "dbWithTransaction")
+)
 use("duckdb", c("duckdb", "duckdb_register", "duckdb_unregister"))
 
 con <- dbConnect(duckdb())
@@ -75,19 +116,19 @@ sucursales <- read_csv("datos/cap07/sucursales.csv", show_col_types = FALSE)
 
 cartera <- read_parquet("datos/cap08/cartera_2026_t1_limpia.parquet") |>
   left_join(
-    sucursales, 
-    by = "ciudad", 
+    sucursales,
+    by = "ciudad",
     relationship = "many-to-one"
   ) |>
   select(
     factura,
-    nit, 
-    sucursal, 
+    nit,
+    sucursal,
     ciudad,
     region,
-    fecha_emision, 
+    fecha_emision,
     fecha_vencimiento,
-    fecha_pago, 
+    fecha_pago,
     valor_factura,
     pagada,
     revisar
@@ -107,16 +148,19 @@ write_csv(cartera, "datos/cap10/prueba_ida_vuelta.csv")
 write_parquet(cartera, "datos/cap10/prueba_ida_vuelta.parquet")
 
 desde_parquet <- read_parquet("datos/cap10/prueba_ida_vuelta.parquet")
-desde_readr   <- read_csv("datos/cap10/prueba_ida_vuelta.csv", show_col_types = FALSE)
-desde_base    <- read.csv("datos/cap10/prueba_ida_vuelta.csv")
+desde_readr <- read_csv(
+  "datos/cap10/prueba_ida_vuelta.csv",
+  show_col_types = FALSE
+)
+desde_base <- read.csv("datos/cap10/prueba_ida_vuelta.csv")
 
 all.equal(cartera, desde_parquet)
 
 tibble(
-  columna  = names(cartera),
+  columna = names(cartera),
   original = map_chr(cartera, \(x) class(x)[1]),
-  readr    = map_chr(desde_readr, \(x) class(x)[1]),
-  base     = map_chr(desde_base, \(x) class(x)[1])
+  readr = map_chr(desde_readr, \(x) class(x)[1]),
+  base = map_chr(desde_base, \(x) class(x)[1])
 ) |>
   filter(original != readr | original != base)
 
@@ -131,24 +175,28 @@ Un archivo guardado también debería explicarse solo. Parquet admite **metadato
 #| label: analitica-metadatos
 tabla <- arrow_table(cartera)
 tabla$metadata$fuente <- "datos/cap08/cartera_2026_t1_limpia.parquet"
-tabla$metadata$corte  <- "2026-03-31"
+tabla$metadata$corte <- "2026-03-31"
 tabla$metadata$script <- "10-guardar-y-compartir-datos.qmd"
 write_parquet(tabla, "datos/cap10/cartera_analitica.parquet")
 
-metadatos <- read_parquet("datos/cap10/cartera_analitica.parquet", as_data_frame = FALSE)$metadata
+metadatos <- read_parquet(
+  "datos/cap10/cartera_analitica.parquet",
+  as_data_frame = FALSE
+)$metadata
 unlist(metadatos[c("fuente", "corte", "script")])
 
 diccionario <- tibble(
-  columna     = names(cartera),
-  tipo        = map_chr(cartera, \(x) class(x)[1]),
-  faltantes   = map_int(cartera, \(x) sum(is.na(x))),
+  columna = names(cartera),
+  tipo = map_chr(cartera, \(x) class(x)[1]),
+  faltantes = map_int(cartera, \(x) sum(is.na(x))),
   descripcion = c(
     "Número de la factura; clave de la tabla",
     "NIT del cliente, texto de 10 dígitos con ceros iniciales",
     "Código de la sucursal (S01 a S08)",
     "Ciudad de la sucursal, estandarizada en el capítulo 8",
     "Región de la sucursal",
-    "Fecha de emisión", "Fecha de vencimiento",
+    "Fecha de emisión",
+    "Fecha de vencimiento",
     "Fecha de pago; vacía si la factura no se ha pagado",
     "Valor de la factura en pesos",
     "TRUE si la factura está pagada",
@@ -169,16 +217,29 @@ head(diccionario, 4)
 
 ### Python
 
-```python
+```{python}
 import pandas as pd
 import pyarrow as pa
 import pyarrow.parquet as pq
 
 sucursales = pd.read_csv("datos/cap07/sucursales.csv")
-cartera = (pd.read_parquet("datos/cap08/cartera_2026_t1_limpia.parquet")
-           .merge(sucursales, on="ciudad", how="left", validate="m:1")
-           [["factura", "nit", "sucursal", "ciudad", "region", "fecha_emision",
-             "fecha_vencimiento", "fecha_pago", "valor_factura", "pagada", "revisar"]])
+cartera = pd.read_parquet("datos/cap08/cartera_2026_t1_limpia.parquet").merge(
+    sucursales, on="ciudad", how="left", validate="m:1"
+)[
+    [
+        "factura",
+        "nit",
+        "sucursal",
+        "ciudad",
+        "region",
+        "fecha_emision",
+        "fecha_vencimiento",
+        "fecha_pago",
+        "valor_factura",
+        "pagada",
+        "revisar",
+    ]
+]
 
 cartera.to_csv("datos/cap10/cartera_analitica_py.csv", index=False)
 cartera.to_parquet("datos/cap10/cartera_analitica_py.parquet", index=False)
@@ -187,36 +248,31 @@ desde_csv = pd.read_csv("datos/cap10/cartera_analitica_py.csv")
 desde_parquet = pd.read_parquet("datos/cap10/cartera_analitica_py.parquet")
 
 print(cartera.equals(desde_parquet))
-tipos = pd.DataFrame({"original": cartera.dtypes, "csv": desde_csv.dtypes}).astype(str)
+tipos = pd.DataFrame(
+    {"original": cartera.dtypes, "csv": desde_csv.dtypes}
+).astype(str)
 print(tipos[tipos["original"] != tipos["csv"]])
-```
-
-```text
-True
-                  original    csv
-nit                    str  int64
-fecha_emision       object    str
-fecha_vencimiento   object    str
-fecha_pago          object    str
 ```
 
 En `pandas` el viaje por CSV es peor que en R: además del NIT, las tres fechas vuelven como texto, porque `read_csv()` no reconoce fechas si no se le pide. El Parquet vuelve idéntico (`equals()` da `True`). Las fechas aparecen como `object` porque `pandas` lee las columnas de tipo fecha de Parquet como objetos `date` de Python, como vimos en el @sec-tipos-calidad.
 
 Los metadatos se escriben con `pyarrow`, la biblioteca sobre la que `pandas` lee y escribe Parquet:
 
-```python
+```{python}
 tabla = pa.Table.from_pandas(cartera, preserve_index=False)
-tabla = tabla.replace_schema_metadata({
-    **tabla.schema.metadata,
-    b"fuente": b"datos/cap08/cartera_2026_t1_limpia.parquet",
-    b"corte": b"2026-03-31",
-})
+tabla = tabla.replace_schema_metadata(
+    {
+        **tabla.schema.metadata,
+        b"fuente": b"datos/cap08/cartera_2026_t1_limpia.parquet",
+        b"corte": b"2026-03-31",
+    }
+)
 pq.write_table(tabla, "datos/cap10/cartera_analitica_py.parquet")
-print(pq.read_schema("datos/cap10/cartera_analitica_py.parquet").metadata[b"corte"])
-```
-
-```text
-b'2026-03-31'
+print(
+    pq.read_schema("datos/cap10/cartera_analitica_py.parquet").metadata[
+        b"corte"
+    ]
+)
 ```
 
 Los metadatos de Parquet se guardan como bytes, por eso las claves y los valores llevan el prefijo `b`. `**tabla.schema.metadata` conserva los metadatos que `pandas` ya había guardado (los tipos originales de cada columna) y agrega los nuevos.
@@ -225,19 +281,25 @@ Los metadatos de Parquet se guardan como bytes, por eso las claves y los valores
 
 ```{r}
 #| label: duckdb-metadatos
-dbExecute(con, r"(
+dbExecute(
+  con,
+  r"(
   COPY (
     SELECT c.*, s.sucursal, s.region
     FROM 'datos/cap08/cartera_2026_t1_limpia.parquet' AS c
     LEFT JOIN 'datos/cap07/sucursales.csv' AS s USING (ciudad)
   ) TO 'datos/cap10/cartera_analitica_duckdb.parquet'
   (KV_METADATA {fuente: 'datos/cap08/cartera_2026_t1_limpia.parquet', corte: '2026-03-31'})
-)")
+)"
+)
 
-dbGetQuery(con, r"(
+dbGetQuery(
+  con,
+  r"(
   SELECT decode(key) AS clave, decode(value) AS valor
   FROM parquet_kv_metadata('datos/cap10/cartera_analitica_duckdb.parquet')
-)")
+)"
+)
 ```
 
 `KV_METADATA` agrega los metadatos al escribir, y `parquet_kv_metadata()` los lee sin abrir los datos. `decode()` convierte los bytes en texto. `DESCRIBE SELECT * FROM 'archivo'` muestra los tipos de cada columna, el equivalente de comparar los tipos en R.
@@ -280,22 +342,22 @@ foto_cartera <- function(cartera, corte) {
       corte = corte,
       dias_vencida = as.integer(corte - fecha_vencimiento),
       edad = case_when(
-        dias_vencida <= 0  ~ "al día",
+        dias_vencida <= 0 ~ "al día",
         dias_vencida <= 15 ~ "1 a 15",
         dias_vencida <= 30 ~ "16 a 30",
         .default = "más de 30"
-        )
+      )
     ) |>
     select(
       corte,
       factura,
-      nit, 
-      sucursal, 
-      valor_factura, 
+      nit,
+      sucursal,
+      valor_factura,
       fecha_vencimiento,
       dias_vencida,
       edad
-      )
+    )
 }
 
 cortes <- as.Date(c("2026-01-31", "2026-02-28", "2026-03-31"))
@@ -308,10 +370,12 @@ Primero, la forma frágil: agregar cada mes al final de un CSV, y volver a corre
 ```{r}
 #| label: cierres-agregar
 ruta_mal <- "datos/cap10/cierres_agregados.csv"
-if (file.exists(ruta_mal)) file.remove(ruta_mal)
+if (file.exists(ruta_mal)) {
+  file.remove(ruta_mal)
+}
 
 walk(fotos, \(foto) write_csv(foto, ruta_mal, append = file.exists(ruta_mal)))
-write_csv(fotos[[3]], ruta_mal, append = TRUE)    # se vuelve a cargar marzo
+write_csv(fotos[[3]], ruta_mal, append = TRUE) # se vuelve a cargar marzo
 
 read_csv(ruta_mal, show_col_types = FALSE) |> count(corte)
 ```
@@ -321,12 +385,16 @@ Marzo quedó dos veces, y nada lo advierte. Ahora la forma repetible: un conjunt
 ```{r}
 #| label: cierres-particion
 guardar_cierre <- function(foto, ruta = "datos/cap10/cierres") {
-  write_dataset(foto, ruta, partitioning = "corte",
-                existing_data_behavior = "delete_matching")
+  write_dataset(
+    foto,
+    ruta,
+    partitioning = "corte",
+    existing_data_behavior = "delete_matching"
+  )
 }
 
 walk(fotos, guardar_cierre)
-guardar_cierre(fotos[[3]])                         # se vuelve a cargar marzo
+guardar_cierre(fotos[[3]]) # se vuelve a cargar marzo
 
 list.files("datos/cap10/cierres")
 cierres <- open_dataset("datos/cap10/cierres") |> collect()
@@ -340,43 +408,65 @@ Fíjate en la última línea: `corte` volvió como texto, no como fecha. El valo
 
 ### Python
 
-```python
+```{python}
 import pyarrow.dataset as ds
+
 
 def foto_cartera(cartera, corte):
     corte = pd.Timestamp(corte).date()
     pendiente = (cartera["fecha_emision"] <= corte) & (
-        cartera["fecha_pago"].isna() | (cartera["fecha_pago"] > corte))
+        cartera["fecha_pago"].isna() | (cartera["fecha_pago"] > corte)
+    )
     foto = cartera[pendiente].assign(corte=str(corte))
-    foto["dias_vencida"] = [(corte - f).days for f in foto["fecha_vencimiento"]]
-    foto["edad"] = pd.cut(foto["dias_vencida"], bins=[-10_000, 0, 15, 30, 10_000],
-                          labels=["al día", "1 a 15", "16 a 30", "más de 30"]).astype(str)
-    return foto[["corte", "factura", "nit", "sucursal", "valor_factura",
-                 "fecha_vencimiento", "dias_vencida", "edad"]]
+    foto["dias_vencida"] = [
+        (corte - f).days for f in foto["fecha_vencimiento"]
+    ]
+    foto["edad"] = pd.cut(
+        foto["dias_vencida"],
+        bins=[-10_000, 0, 15, 30, 10_000],
+        labels=["al día", "1 a 15", "16 a 30", "más de 30"],
+    ).astype(str)
+    return foto[
+        [
+            "corte",
+            "factura",
+            "nit",
+            "sucursal",
+            "valor_factura",
+            "fecha_vencimiento",
+            "dias_vencida",
+            "edad",
+        ]
+    ]
 
-fotos = [foto_cartera(cartera, c) for c in ["2026-01-31", "2026-02-28", "2026-03-31"]]
+
+fotos = [
+    foto_cartera(cartera, c)
+    for c in ["2026-01-31", "2026-02-28", "2026-03-31"]
+]
 print([len(f) for f in fotos])
 
+
 def guardar_cierre(foto, ruta="datos/cap10/cierres_py"):
-    ds.write_dataset(pa.Table.from_pandas(foto, preserve_index=False), ruta,
-                     format="parquet", partitioning=["corte"],
-                     partitioning_flavor="hive",
-                     existing_data_behavior="delete_matching")
+    ds.write_dataset(
+        pa.Table.from_pandas(foto, preserve_index=False),
+        ruta,
+        format="parquet",
+        partitioning=["corte"],
+        partitioning_flavor="hive",
+        existing_data_behavior="delete_matching",
+    )
+
 
 for foto in fotos:
     guardar_cierre(foto)
-guardar_cierre(fotos[2])                           # se vuelve a cargar marzo
+guardar_cierre(fotos[2])  # se vuelve a cargar marzo
 
-print(pd.read_parquet("datos/cap10/cierres_py")["corte"].value_counts().sort_index())
-```
-
-```text
-[94, 141, 201]
-corte
-2026-01-31     94
-2026-02-28    141
-2026-03-31    201
-Name: count, dtype: int64
+print(
+    pd.read_parquet("datos/cap10/cierres_py")["corte"]
+    .value_counts()
+    .sort_index()
+)
 ```
 
 Las fechas de la cartera son objetos `date` de Python (columnas `object`), así que la diferencia de días se calcula con una comprensión de listas sobre cada fecha. `partitioning_flavor="hive"` nombra las carpetas `corte=2026-01-31`, igual que `arrow` en R. Como en R, el valor de la partición vuelve como categoría de texto al leer.
@@ -389,27 +479,36 @@ Con DuckDB, la alternativa a las carpetas es una **base de datos en un archivo**
 #| label: duckdb-almacen
 almacen <- dbConnect(duckdb(), dbdir = "datos/cap10/almacen.duckdb")
 
-dbExecute(almacen, r"(
+dbExecute(
+  almacen,
+  r"(
   CREATE TABLE IF NOT EXISTS cierres (
     corte DATE, factura VARCHAR, nit VARCHAR, sucursal VARCHAR,
     valor_factura DOUBLE, fecha_vencimiento DATE, dias_vencida INTEGER, edad VARCHAR,
     PRIMARY KEY (corte, factura)
   )
-)")
+)"
+)
 
 cargar_cierre <- function(con, foto) {
   duckdb_register(con, "foto", foto)
   on.exit(duckdb_unregister(con, "foto"))
   dbWithTransaction(con, {
-    dbExecute(con, "DELETE FROM cierres WHERE corte IN (SELECT DISTINCT corte FROM foto)")
+    dbExecute(
+      con,
+      "DELETE FROM cierres WHERE corte IN (SELECT DISTINCT corte FROM foto)"
+    )
     dbExecute(con, "INSERT INTO cierres BY NAME SELECT * FROM foto")
   })
 }
 
 walk(fotos, \(foto) cargar_cierre(almacen, foto))
-cargar_cierre(almacen, fotos[[3]])                 # se vuelve a cargar marzo
+cargar_cierre(almacen, fotos[[3]]) # se vuelve a cargar marzo
 
-dbGetQuery(almacen, "SELECT corte, count(*) AS facturas FROM cierres GROUP BY ALL ORDER BY corte")
+dbGetQuery(
+  almacen,
+  "SELECT corte, count(*) AS facturas FROM cierres GROUP BY ALL ORDER BY corte"
+)
 ```
 
 `cargar_cierre()` hace lo mismo que `delete_matching`: borra el corte que va a cargar y lo inserta de nuevo. Las dos sentencias van dentro de una **transacción** (`dbWithTransaction()`): o se ejecutan las dos, o ninguna. Si la inserción falla, el borrado se deshace y el mes anterior queda como estaba. `duckdb_register()` deja ver la tabla de R desde SQL sin copiarla, e `INSERT ... BY NAME` empareja las columnas por nombre y no por posición.
@@ -441,8 +540,10 @@ open_dataset("datos/cap10/cierres") |>
   group_by(corte, edad) |>
   summarise(valor = sum(valor_factura), .groups = "drop") |>
   collect() |>
-  mutate(valor = round(valor / 1e6, 1),
-         edad  = factor(edad, levels = c("al día", "1 a 15", "16 a 30", "más de 30"))) |>
+  mutate(
+    valor = round(valor / 1e6, 1),
+    edad = factor(edad, levels = c("al día", "1 a 15", "16 a 30", "más de 30"))
+  ) |>
   arrange(edad) |>
   pivot_wider(names_from = edad, values_from = valor, values_fill = 0) |>
   arrange(corte)
@@ -458,28 +559,31 @@ vencidas_febrero <- cierres |>
   filter(corte == "2026-02-28", dias_vencida > 0) |>
   left_join(select(cartera, factura, fecha_pago), by = "factura")
 
-c(vencidas_en_febrero = nrow(vencidas_febrero),
-  pagadas_en_marzo    = sum(!is.na(vencidas_febrero$fecha_pago)))
+c(
+  vencidas_en_febrero = nrow(vencidas_febrero),
+  pagadas_en_marzo = sum(!is.na(vencidas_febrero$fecha_pago))
+)
 ```
 
 De las facturas que estaban vencidas al cierre de febrero, una parte se pagó en marzo. En una tabla que se sobrescribe cada mes, a 31 de marzo esas facturas ya no aparecerían como pendientes, y no habría forma de saber que estuvieron vencidas ni cuánto tardaron en pagarse.
 
 ### Python
 
-```python
-historia = (pd.read_parquet("datos/cap10/cierres_py")
-            .pivot_table(index="corte", columns="edad", values="valor_factura",
-                         aggfunc="sum", fill_value=0, observed=True)
-            .div(1e6).round(1))
+```{python}
+historia = (
+    pd.read_parquet("datos/cap10/cierres_py")
+    .pivot_table(
+        index="corte",
+        columns="edad",
+        values="valor_factura",
+        aggfunc="sum",
+        fill_value=0,
+        observed=True,
+    )
+    .div(1e6)
+    .round(1)
+)
 print(historia[["al día", "1 a 15", "16 a 30", "más de 30"]])
-```
-
-```text
-edad        al día  1 a 15  16 a 30  más de 30
-corte                                         
-2026-01-31   559.3     0.0      0.0        0.0
-2026-02-28   479.8   218.2     69.4        0.0
-2026-03-31   548.6   145.4    123.5      266.8
 ```
 
 `pivot_table()` resume y pasa a ancho en un solo paso. `observed=True` evita que aparezcan combinaciones vacías de las categorías, porque la columna de partición se lee como categoría.
@@ -488,12 +592,15 @@ corte
 
 ```{r}
 #| label: duckdb-historia
-dbGetQuery(almacen, r"(
+dbGetQuery(
+  almacen,
+  r"(
   PIVOT (SELECT corte, edad, valor_factura FROM cierres)
   ON edad IN ('al día', '1 a 15', '16 a 30', 'más de 30')
   USING round(coalesce(sum(valor_factura), 0) / 1e6, 1)
   ORDER BY corte
-)")
+)"
+)
 ```
 
 La tabla de cierres de la base es la misma historia, con la ventaja de que la consulta no tiene que recorrer carpetas: todo está en un archivo, `almacen.duckdb`, que también se puede abrir desde Python o desde la terminal de DuckDB.
@@ -555,12 +662,21 @@ Cada jefe de sucursal debe recibir las facturas pendientes de sus clientes al ci
 
 ```{r}
 #| label: repartir-preparar
-clientes <- read_parquet("datos/cap06/clientes.parquet") |> select(nit, razon_social)
+clientes <- read_parquet("datos/cap06/clientes.parquet") |>
+  select(nit, razon_social)
 
 pendiente <- fotos[[3]] |>
   left_join(clientes, by = "nit", relationship = "many-to-one") |>
-  select(sucursal, factura, nit, razon_social, valor_factura, fecha_vencimiento,
-         dias_vencida, edad) |>
+  select(
+    sucursal,
+    factura,
+    nit,
+    razon_social,
+    valor_factura,
+    fecha_vencimiento,
+    dias_vencida,
+    edad
+  ) |>
   arrange(sucursal, desc(dias_vencida))
 
 nrow(pendiente)
@@ -593,7 +709,7 @@ list.files("datos/cap10/por_sucursal")
 ```{r}
 #| label: repartir-envios
 responsables <- tibble(
-  sucursal    = sprintf("S%02d", 1:8),
+  sucursal = sprintf("S%02d", 1:8),
   responsable = c(
     "Laura Gómez",
     "Andrés Mejía",
@@ -609,9 +725,14 @@ responsables <- tibble(
 envios <- pendiente |>
   nest(.by = sucursal) |>
   left_join(responsables, by = "sucursal") |>
-  mutate(ruta     = sprintf("datos/cap10/por_sucursal/cartera_%s_2026-03-31.csv", sucursal),
-         facturas = map_int(data, nrow),
-         valor    = map_dbl(data, \(d) sum(d$valor_factura)))
+  mutate(
+    ruta = sprintf(
+      "datos/cap10/por_sucursal/cartera_%s_2026-03-31.csv",
+      sucursal
+    ),
+    facturas = map_int(data, nrow),
+    valor = map_dbl(data, \(d) sum(d$valor_factura))
+  )
 
 pwalk(select(envios, sucursal, data, ruta), \(sucursal, data, ruta) {
   write_excel_csv2(mutate(data, sucursal = sucursal, .before = 1), ruta)
@@ -630,11 +751,19 @@ Ahora las comprobaciones. Que las partes sumen el todo, y que cada archivo, leí
 
 ```{r}
 #| label: repartir-controles
-c(facturas = sum(manifiesto$facturas) == nrow(pendiente),
-  valor    = sum(manifiesto$valor) == sum(pendiente$valor_factura))
+c(
+  facturas = sum(manifiesto$facturas) == nrow(pendiente),
+  valor = sum(manifiesto$valor) == sum(pendiente$valor_factura)
+)
 
-leer_entrega <- \(ruta) read_delim(ruta, delim = ";", show_col_types = FALSE,
-                                   locale = locale(decimal_mark = ","))
+leer_entrega <- \(ruta) {
+  read_delim(
+    ruta,
+    delim = ";",
+    show_col_types = FALSE,
+    locale = locale(decimal_mark = ",")
+  )
+}
 
 solo_su_sucursal <- map_lgl(seq_len(nrow(envios)), \(i) {
   leido <- leer_entrega(envios$ruta[i])
@@ -652,15 +781,28 @@ La comprobación de la sucursal usa `identical(unique(...), ...)` y no `all(leid
 
 ### Python
 
-```python
+```{python}
 from pathlib import Path
 
-clientes = pd.read_parquet("datos/cap06/clientes.parquet")[["nit", "razon_social"]]
-pendiente = (fotos[2]
-             .merge(clientes, on="nit", how="left", validate="m:1")
-             [["sucursal", "factura", "nit", "razon_social", "valor_factura",
-               "fecha_vencimiento", "dias_vencida", "edad"]]
-             .sort_values(["sucursal", "dias_vencida"], ascending=[True, False]))
+clientes = pd.read_parquet("datos/cap06/clientes.parquet")[
+    ["nit", "razon_social"]
+]
+pendiente = (
+    fotos[2]
+    .merge(clientes, on="nit", how="left", validate="m:1")[
+        [
+            "sucursal",
+            "factura",
+            "nit",
+            "razon_social",
+            "valor_factura",
+            "fecha_vencimiento",
+            "dias_vencida",
+            "edad",
+        ]
+    ]
+    .sort_values(["sucursal", "dias_vencida"], ascending=[True, False])
+)
 
 carpeta = Path("datos/cap10/por_sucursal_py")
 carpeta.mkdir(exist_ok=True)
@@ -669,21 +811,21 @@ manifiesto = []
 for sucursal, tabla in pendiente.groupby("sucursal"):
     ruta = carpeta / f"cartera_{sucursal}_2026-03-31.csv"
     tabla.to_csv(ruta, index=False, sep=";", decimal=",", encoding="utf-8-sig")
-    manifiesto.append({"sucursal": sucursal, "archivo": ruta.name,
-                       "facturas": len(tabla), "valor": tabla["valor_factura"].sum()})
+    manifiesto.append(
+        {
+            "sucursal": sucursal,
+            "archivo": ruta.name,
+            "facturas": len(tabla),
+            "valor": tabla["valor_factura"].sum(),
+        }
+    )
 
 manifiesto = pd.DataFrame(manifiesto)
 print(manifiesto.head(3).to_string(float_format="%.0f"))
-print(manifiesto["facturas"].sum() == len(pendiente),
-      manifiesto["valor"].sum() == pendiente["valor_factura"].sum())
-```
-
-```text
-  sucursal                     archivo  facturas     valor
-0      S01  cartera_S01_2026-03-31.csv        25 125655942
-1      S02  cartera_S02_2026-03-31.csv        17  63356408
-2      S03  cartera_S03_2026-03-31.csv        29 129715972
-True True
+print(
+    manifiesto["facturas"].sum() == len(pendiente),
+    manifiesto["valor"].sum() == pendiente["valor_factura"].sum(),
+)
 ```
 
 En Python, el bucle sobre `groupby()` cumple las dos funciones: cada vuelta entrega el nombre del grupo y su tabla, y el manifiesto se arma en el mismo bucle con una lista de diccionarios. `encoding="utf-8-sig"` agrega la marca para Excel, y `sep=";"` con `decimal=","` dan el formato del Excel en español, como `write_excel_csv2()`.
@@ -694,19 +836,25 @@ En Python, el bucle sobre `groupby()` cumple las dos funciones: cada vuelta entr
 #| label: duckdb-particion
 duckdb_register(con, "pendiente", pendiente)
 
-dbExecute(con, r"(
+dbExecute(
+  con,
+  r"(
   COPY pendiente TO 'datos/cap10/por_sucursal_duckdb'
   (FORMAT csv, HEADER, DELIMITER ';', PARTITION_BY (sucursal), OVERWRITE_OR_IGNORE)
-)")
+)"
+)
 list.files("datos/cap10/por_sucursal_duckdb", recursive = TRUE) |> head(3)
 
-dbGetQuery(con, r"(
+dbGetQuery(
+  con,
+  r"(
   SELECT sucursal, count(*) AS facturas, sum(valor_factura) AS valor
   FROM read_csv('datos/cap10/por_sucursal_duckdb/*/*.csv', hive_partitioning = true)
   GROUP BY ALL
   ORDER BY sucursal
   LIMIT 3
-)")
+)"
+)
 ```
 
 `PARTITION_BY` reparte la tabla en una carpeta por sucursal en una sola sentencia, y `OVERWRITE_OR_IGNORE` permite escribir sobre una carpeta que ya existe. La consulta siguiente es el manifiesto: lee todos los archivos con `hive_partitioning`, que recupera la sucursal desde el nombre de cada carpeta. Como con `write_dataset()`, es una entrega para herramientas, no para personas.
@@ -742,19 +890,21 @@ Excel impone límites que conviene recordar al nombrar las hojas desde los datos
 
 ### Python
 
-```python
+```{python}
 resumen = manifiesto[["sucursal", "facturas", "valor"]]
 
-with pd.ExcelWriter("datos/cap10/cartera_pendiente_py_2026-03-31.xlsx") as libro:
+with pd.ExcelWriter(
+    "datos/cap10/cartera_pendiente_py_2026-03-31.xlsx"
+) as libro:
     resumen.to_excel(libro, sheet_name="resumen", index=False)
     for sucursal, tabla in pendiente.groupby("sucursal"):
         tabla.to_excel(libro, sheet_name=sucursal, index=False)
 
-print(pd.ExcelFile("datos/cap10/cartera_pendiente_py_2026-03-31.xlsx").sheet_names)
-```
-
-```text
-['resumen', 'S01', 'S02', 'S03', 'S04', 'S05', 'S06', 'S07', 'S08']
+print(
+    pd.ExcelFile(
+        "datos/cap10/cartera_pendiente_py_2026-03-31.xlsx"
+    ).sheet_names
+)
 ```
 
 `pd.ExcelWriter` abre el libro y cada `to_excel()` agrega una hoja. El bloque `with` cierra y guarda el archivo al terminar. `pandas` usa `openpyxl` por debajo; para escribir libros con mucho formato, `XlsxWriter` es la alternativa más completa en Python.
@@ -768,10 +918,13 @@ La extensión `excel` de DuckDB escribe archivos `.xlsx`, pero **una sola hoja p
 #| output: false
 dbExecute(con, "INSTALL excel")
 dbExecute(con, "LOAD excel")
-dbExecute(con, r"(
+dbExecute(
+  con,
+  r"(
   COPY (SELECT * FROM pendiente WHERE sucursal = 'S01')
   TO 'datos/cap10/cartera_S01_duckdb.xlsx' (FORMAT xlsx, HEADER true, SHEET 'S01')
-)")
+)"
+)
 ```
 
 Para un libro con varias hojas, el patrón híbrido del libro: DuckDB prepara las tablas y R o Python escriben el libro.
@@ -807,13 +960,16 @@ El contrato se comprueba como se comprobó al guardar: leyendo el archivo **con 
 
 ```{r}
 #| label: contrato-validar
-leido <- read_csv(ruta_contable, col_types = cols(
-  factura           = col_character(),
-  nit               = col_character(),
-  fecha_vencimiento = col_date("%Y-%m-%d"),
-  valor             = col_integer(),
-  dias_vencida      = col_integer()
-))
+leido <- read_csv(
+  ruta_contable,
+  col_types = cols(
+    factura = col_character(),
+    nit = col_character(),
+    fecha_vencimiento = col_date("%Y-%m-%d"),
+    valor = col_integer(),
+    dias_vencida = col_integer()
+  )
+)
 all.equal(contable, leido, check.attributes = FALSE)
 names(leido)
 ```
@@ -822,22 +978,17 @@ names(leido)
 
 ### Python
 
-```python
-contable = pendiente.assign(valor=lambda d: d["valor_factura"].round().astype("int64"))[
-    ["factura", "nit", "fecha_vencimiento", "valor", "dias_vencida"]]
+```{python}
+contable = pendiente.assign(
+    valor=lambda d: d["valor_factura"].round().astype("int64")
+)[["factura", "nit", "fecha_vencimiento", "valor", "dias_vencida"]]
 contable.to_csv("datos/cap10/cartera_contable_py_2026-03-31.csv", index=False)
 
 print(pendiente["valor_factura"].head(1).to_csv(index=False))
-with open("datos/cap10/cartera_contable_py_2026-03-31.csv", encoding="utf-8") as f:
+with open(
+    "datos/cap10/cartera_contable_py_2026-03-31.csv", encoding="utf-8"
+) as f:
     print(f.readline() + f.readline())
-```
-
-```text
-valor_factura
-8560042.83
-
-factura,nit,fecha_vencimiento,valor,dias_vencida
-FV-20009,0686665203,2026-02-04,8560043,55
 ```
 
 La primera salida muestra lo que escribiría `pandas` sin la conversión: el valor con sus centavos, `8560042.83`, que un sistema que espera pesos enteros rechazaría. Y aunque una columna decimal no tenga centavos, `pandas` la escribe con `.0` al final (`3818152.0`), con el mismo resultado. Redondear y convertir a entero con `round().astype("int64")` antes de escribir resuelve los dos casos. Las fechas, que son objetos `date`, se escriben en formato ISO.
@@ -846,14 +997,17 @@ La primera salida muestra lo que escribiría `pandas` sin la conversión: el val
 
 ```{r}
 #| label: duckdb-contrato
-dbExecute(con, r"(
+dbExecute(
+  con,
+  r"(
   COPY (
     SELECT factura, nit, fecha_vencimiento,
            CAST(round(valor_factura) AS BIGINT) AS valor, dias_vencida
     FROM pendiente
   ) TO 'datos/cap10/cartera_contable_duckdb_2026-03-31.csv'
   (HEADER, DELIMITER ',', DATEFORMAT '%Y-%m-%d')
-)")
+)"
+)
 readLines("datos/cap10/cartera_contable_duckdb_2026-03-31.csv", n = 2)
 ```
 
@@ -885,28 +1039,33 @@ Con `datos/cap07/ventas_2026_t1.parquet` y `datos/cap07/sucursales.csv`:
 #| label: ejercicio-10-1
 #| eval: false
 ventas <- read_parquet("datos/cap07/ventas_2026_t1.parquet") |>
-  mutate(...) |>                                            # TODO
-  left_join(...)                                            # TODO
+  mutate(...) |> # TODO
+  left_join(...) # TODO
 
-write_dataset(ventas, ..., partitioning = ..., existing_data_behavior = ...)  # TODO
+write_dataset(ventas, ..., partitioning = ..., existing_data_behavior = ...) # TODO
 
 por_region <- split(ventas, ventas$region)
 iwalk(por_region, \(tabla, region) {
-  hojas <- split(...)                                       # TODO
+  hojas <- split(...) # TODO
   write_xlsx(hojas, sprintf("datos/cap10/ventas_%s_2026_t1.xlsx", region))
 })
 ```
 
 ### Python
 
-```python
-ventas = ...                                                # TODO
-ds.write_dataset(..., partitioning=["mes"], partitioning_flavor="hive",
-                 existing_data_behavior=...)                # TODO
+```{python}
+#| eval: false
+ventas = ...  # TODO
+ds.write_dataset(
+    ...,
+    partitioning=["mes"],
+    partitioning_flavor="hive",
+    existing_data_behavior=...,
+)  # TODO
 
 for region, tabla_region in ventas.groupby("region"):
     with pd.ExcelWriter(f"datos/cap10/ventas_{region}_2026_t1.xlsx") as libro:
-        for sucursal, tabla in ...:                         # TODO
+        for sucursal, tabla in ...:  # TODO
             ...
 ```
 

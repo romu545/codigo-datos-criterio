@@ -4,7 +4,7 @@ En el @sec-tipos-calidad auditamos la cartera del trimestre y encontramos 55 fac
 
 Limpiar no es "arreglar lo que se vea raro". Es aplicar, en un orden conocido, reglas que se pueden explicar y repetir, y dejar constancia de lo que cambió. Por eso empezamos con unos principios, después vemos las técnicas una a una (texto, expresiones regulares, categorías, duplicados, faltantes, valores imposibles y atípicos) y al final las reunimos en una limpieza completa de la cartera que termina como empezó el @sec-tipos-calidad: con un reporte de calidad.
 
-Usaremos dos fuentes. Para las técnicas de texto, una exportación del sistema de gestión de clientes (CRM), `clientes_crm.csv`, con los problemas típicos de un registro hecho a mano por muchas personas. Para la limpieza completa, la cartera del @sec-tipos-calidad. El capítulo está pensado para una sesión de unas dos horas.
+Usaremos dos fuentes. Para las técnicas de texto, una exportación del sistema de gestión de clientes (CRM), `clientes_crm.csv`, con los problemas típicos de un registro hecho a mano por muchas personas. Para la limpieza completa, la cartera del @sec-tipos-calidad.
 
 ::: {.callout-tip}
 ## Antes de empezar
@@ -12,7 +12,7 @@ Usaremos dos fuentes. Para las técnicas de texto, una exportación del sistema 
 1. Abre la carpeta de materiales en Positron. Este capítulo usa `datos/cap08/` y también la cartera y los clientes de `datos/cap06/`.
 2. Usamos `stringr` y `stringi`, que se instalaron con el `tidyverse`.
 3. Las reglas de calidad del @sec-tipos-calidad están guardadas en `scripts/auditoria_cartera.R` y `scripts/auditoria_cartera.py`, para volver a auditar después de limpiar.
-4. Si `datos/cap08/clientes_crm.csv` no está en tu copia, genéralo con `Rscript scripts/generar_datos_cap08.R`.
+4. Si `datos/cap08/clientes_crm.csv` no está en tu copia, genéralo con `Rscript scripts/generar_datos_cap08.R`. Los reclamos del Ejemplo guiado 8.8 se generan con `Rscript scripts/generar_datos_cap08_reclamos.R`.
 :::
 
 ```{r}
@@ -20,11 +20,42 @@ Usaremos dos fuentes. Para las técnicas de texto, una exportación del sistema 
 #| message: false
 use("arrow", c("read_parquet", "write_parquet"))
 use("readr", c("read_csv", "write_csv", "cols"))
-use("dplyr", c("select", "filter", "arrange", "desc", "mutate", "if_else", "case_when",
-               "coalesce", "across", "summarise", "count", "n", "left_join",
-               "distinct", "tribble"))
-use("stringr", c("str_squish", "str_trim", "str_to_title", "str_to_lower", "str_to_upper",
-                 "str_remove", "str_remove_all", "str_detect", "str_pad"))
+use(
+  "dplyr",
+  c(
+    "select",
+    "filter",
+    "arrange",
+    "desc",
+    "mutate",
+    "if_else",
+    "case_when",
+    "coalesce",
+    "across",
+    "summarise",
+    "count",
+    "n",
+    "left_join",
+    "distinct",
+    "n_distinct",
+    "tribble"
+  )
+)
+use(
+  "stringr",
+  c(
+    "str_squish",
+    "str_trim",
+    "str_to_title",
+    "str_to_lower",
+    "str_to_upper",
+    "str_remove",
+    "str_remove_all",
+    "str_detect",
+    "str_replace_all",
+    "str_pad"
+  )
+)
 use("stringi", "stri_trans_general")
 use("DBI", c("dbConnect", "dbGetQuery", "dbExecute", "dbDisconnect"))
 use("duckdb", "duckdb")
@@ -69,9 +100,12 @@ Leemos el CRM todo como texto. Con `trim_ws = FALSE` le pedimos a `readr` que no
 
 ```{r}
 #| label: texto-r
-crm <- read_csv("datos/cap08/clientes_crm.csv",
-                col_types = cols(.default = "c", actualizado = "D"),
-                na = c("", "N/A"), trim_ws = FALSE)
+crm <- read_csv(
+  "datos/cap08/clientes_crm.csv",
+  col_types = cols(.default = "c", actualizado = "D"),
+  na = c("", "N/A"),
+  trim_ws = FALSE
+)
 nrow(crm)
 count(crm, contacto, sort = TRUE) |> head(8)
 ```
@@ -81,9 +115,11 @@ Diez personas aparecen escritas de varias formas. `str_squish()` quita los espac
 ```{r}
 #| label: texto-r-limpio
 crm <- crm |>
-  mutate(contacto     = str_to_title(str_squish(contacto)),
-         razon_social = str_squish(razon_social),
-         correo       = str_to_lower(str_trim(correo)))
+  mutate(
+    contacto = str_to_title(str_squish(contacto)),
+    razon_social = str_squish(razon_social),
+    correo = str_to_lower(str_trim(correo))
+  )
 
 count(crm, contacto, sort = TRUE)
 ```
@@ -92,53 +128,28 @@ Ahora son exactamente diez personas. A la razón social solo le quitamos espacio
 
 ### Python
 
-```python
+```{python}
 import pandas as pd
 
-crm = pd.read_csv("datos/cap08/clientes_crm.csv", dtype=str,
-                  keep_default_na=False, na_values=["", "N/A"])
+crm = pd.read_csv(
+    "datos/cap08/clientes_crm.csv",
+    dtype=str,
+    keep_default_na=False,
+    na_values=["", "N/A"],
+)
 crm["actualizado"] = pd.to_datetime(crm["actualizado"])
 print(len(crm))
 print(crm["contacto"].value_counts().head(8))
 ```
 
-```text
-255
-contacto
-Luisa Fernández    18
-Natalia Ríos       17
-Jorge Ramírez      16
-Julián Peña        15
-Paula Ortiz        14
-Camila Díaz        14
-MARÍA PÉREZ        12
-Óscar Muñoz        12
-Name: count, dtype: int64
-```
-
 `keep_default_na=False` desactiva la lista larga de faltantes de `pandas` y `na_values` declara solo las dos marcas que queremos.
 
-```python
+```{python}
 crm["contacto"] = crm["contacto"].str.split().str.join(" ").str.title()
 crm["razon_social"] = crm["razon_social"].str.split().str.join(" ")
 crm["correo"] = crm["correo"].str.strip().str.lower()
 
 print(crm["contacto"].value_counts())
-```
-
-```text
-contacto
-Luisa Fernández    36
-Jorge Ramírez      30
-Paula Ortiz        27
-María Pérez        27
-Julián Peña        26
-Andrés Gómez       25
-Óscar Muñoz        23
-Natalia Ríos       22
-Camila Díaz        21
-Felipe Castaño     18
-Name: count, dtype: int64
 ```
 
 `str.split()` sin argumentos parte por cualquier cantidad de espacios y descarta los de los extremos; `str.join(" ")` vuelve a unir con un solo espacio. Es el `str_squish()` de `pandas`.
@@ -147,13 +158,18 @@ Name: count, dtype: int64
 
 ```{r}
 #| label: texto-duckdb
-dbExecute(con, r"(
+dbExecute(
+  con,
+  r"(
   CREATE VIEW crm AS
   SELECT * FROM read_csv('datos/cap08/clientes_crm.csv',
                          all_varchar = true, nullstr = ['', 'N/A'])
-)")
+)"
+)
 
-dbGetQuery(con, r"(
+dbGetQuery(
+  con,
+  r"(
   SELECT array_to_string(
            list_transform(string_split(lower(trim(regexp_replace(contacto, '\s+', ' ', 'g'))), ' '),
                           lambda palabra: upper(palabra[1]) || palabra[2:]),
@@ -162,7 +178,8 @@ dbGetQuery(con, r"(
   FROM crm
   GROUP BY ALL
   ORDER BY registros DESC
-)")
+)"
+)
 ```
 
 DuckDB no tiene una función para poner mayúscula inicial en cada palabra, pero se puede construir: `string_split()` parte el texto en una lista de palabras, `list_transform()` aplica a cada una la función `lambda palabra: upper(palabra[1]) || palabra[2:]` (la primera letra en mayúscula y el resto igual; la sintaxis `lambda` es la de DuckDB 2.0, que reemplazó a la flecha `palabra -> ...` de versiones anteriores) y `array_to_string()` las vuelve a unir. Es un buen ejemplo de que SQL moderno trabaja también con listas; para presentación, de todas formas, suele ser más sencillo hacerlo en R o en Python.
@@ -228,9 +245,16 @@ Todos los NIT, una vez limpios, existen en la tabla de clientes. En el teléfono
 #| label: regex-r-validar
 crm <- crm |>
   mutate(
-    telefono = if_else(str_detect(digitos, "^(60\\d|3\\d{2})\\d{7}$"), digitos, NA),
-    correo   = if_else(str_detect(correo, "^[a-z0-9._-]+@[a-z0-9-]+(\\.[a-z0-9-]+)+$"),
-                       correo, NA)
+    telefono = if_else(
+      str_detect(digitos, "^(60\\d|3\\d{2})\\d{7}$"),
+      digitos,
+      NA
+    ),
+    correo = if_else(
+      str_detect(correo, "^[a-z0-9._-]+@[a-z0-9-]+(\\.[a-z0-9-]+)+$"),
+      correo,
+      NA
+    )
   )
 
 colSums(is.na(crm[, c("telefono", "correo")]))
@@ -240,42 +264,31 @@ Diez correos no tenían dominio completo, como `cartera@costena089sas`, y quedar
 
 ### Python
 
-```python
+```{python}
 crm["nit"] = crm["nit"].str.replace(r"\D", "", regex=True).str.zfill(10)
 
 clientes = pd.read_parquet("datos/cap06/clientes.parquet")
 print((~crm["nit"].isin(clientes["nit"])).sum())
 
-digitos = (crm["telefono"]
-           .str.replace(r"\D", "", regex=True)
-           .str.replace(r"^57(?=\d{10}$)", "", regex=True))
+digitos = (
+    crm["telefono"]
+    .str.replace(r"\D", "", regex=True)
+    .str.replace(r"^57(?=\d{10}$)", "", regex=True)
+)
 print(digitos.str.len().value_counts(dropna=False))
-```
-
-```text
-0
-telefono
-10.0    210
-7.0      26
-NaN      19
-Name: count, dtype: int64
 ```
 
 `str.zfill(10)` completa con ceros a la izquierda hasta diez caracteres. Con texto crudo (`r"\D"`) la barra invertida se escribe una sola vez.
 
-```python
+```{python}
 telefono_ok = digitos.str.fullmatch(r"(60\d|3\d{2})\d{7}")
-correo_ok = crm["correo"].str.fullmatch(r"[a-z0-9._-]+@[a-z0-9-]+(\.[a-z0-9-]+)+")
+correo_ok = crm["correo"].str.fullmatch(
+    r"[a-z0-9._-]+@[a-z0-9-]+(\.[a-z0-9-]+)+"
+)
 
 crm["telefono"] = digitos.where(telefono_ok == True)
 crm["correo"] = crm["correo"].where(correo_ok == True)
 print(crm[["telefono", "correo"]].isna().sum())
-```
-
-```text
-telefono    45
-correo      40
-dtype: int64
 ```
 
 `where()` conserva el valor donde la condición es verdadera y pone faltante en el resto. Comparamos con `== True` porque `fullmatch()` devuelve faltante cuando el texto es faltante, y `where()` necesita una condición sin faltantes. `fullmatch()` exige que el patrón cubra todo el texto, así que no hacen falta `^` ni `$`.
@@ -284,7 +297,9 @@ dtype: int64
 
 ```{r}
 #| label: regex-duckdb
-dbGetQuery(con, r"(
+dbGetQuery(
+  con,
+  r"(
   WITH limpio AS (
     SELECT lpad(regexp_replace(nit, '\D', '', 'g'), 10, '0') AS nit,
            regexp_replace(telefono, '\D', '', 'g')          AS digitos
@@ -302,7 +317,8 @@ dbGetQuery(con, r"(
   FROM telefonos
   GROUP BY ALL
   ORDER BY longitud
-)")
+)"
+)
 ```
 
 DuckDB usa la biblioteca de expresiones regulares RE2, que no admite búsquedas hacia adelante como `(?=...)`. Por eso quitamos el `57` con un `CASE`: si el número tiene doce dígitos y empieza por `57`, nos quedamos desde el tercero. `lpad()` completa con ceros a la izquierda, como `str_pad()`.
@@ -360,8 +376,10 @@ pendientes <- variantes |>
 
 distancias <- adist(pendientes$clave, clave(catalogo_ciudades))
 pendientes |>
-  mutate(sugerencia = catalogo_ciudades[apply(distancias, 1, which.min)],
-         distancia  = apply(distancias, 1, min))
+  mutate(
+    sugerencia = catalogo_ciudades[apply(distancias, 1, which.min)],
+    distancia = apply(distancias, 1, min)
+  )
 ```
 
 `adist()`, de R base, calcula la **distancia de Levenshtein**: cuántas letras hay que insertar, borrar o cambiar para pasar de un texto a otro. `BARRANQILLA` está a una letra de `BARRANQUILLA`: es un error de digitación y la sugerencia es buena. `BOGOTA DC` está a tres letras de `BOGOTA`, y la sugerencia también sirve. Pero `B/quilla`, `Cartagena de Indias` y `Santiago de Cali` están lejos de todo: son abreviaturas y nombres oficiales, y la distancia de edición no los reconoce: `BQUILLA` está a cinco letras de Barranquilla, de Bogotá y de Cúcuta por igual, y que la sugerencia sea Barranquilla es solo porque aparece primero en el catálogo. Esos los decide una persona, y la decisión se escribe como datos:
@@ -369,12 +387,12 @@ pendientes |>
 ```{r}
 #| label: estandarizar-manual
 manual <- tribble(
-  ~canonica,             ~corregida,
-  "Barranqilla",         "Barranquilla",   # error de digitación, distancia 1
-  "Bogotá D.C.",         "Bogotá",         # nombre oficial
-  "B/quilla",            "Barranquilla",   # abreviatura
-  "Cartagena de Indias", "Cartagena",      # nombre oficial
-  "Santiago de Cali",    "Cali"            # nombre oficial
+  ~canonica             , ~corregida     ,
+  "Barranqilla"         , "Barranquilla" , # error de digitación, distancia 1
+  "Bogotá D.C."         , "Bogotá"       , # nombre oficial
+  "B/quilla"            , "Barranquilla" , # abreviatura
+  "Cartagena de Indias" , "Cartagena"    , # nombre oficial
+  "Santiago de Cali"    , "Cali" # nombre oficial
 )
 
 equivalencias <- variantes |>
@@ -385,7 +403,11 @@ equivalencias <- variantes |>
 write_csv(equivalencias, "datos/cap08/equivalencias_ciudad.csv")
 
 crm <- crm |>
-  left_join(equivalencias, by = c("ciudad" = "variante"), relationship = "many-to-one") |>
+  left_join(
+    equivalencias,
+    by = c("ciudad" = "variante"),
+    relationship = "many-to-one"
+  ) |>
   mutate(ciudad = canonica) |>
   select(-canonica)
 
@@ -398,65 +420,63 @@ Fíjate en dónde se hizo el trabajo costoso: quitar espacios, quitar tildes y a
 
 ### Python
 
-```python
+```{python}
 import difflib
 
-def clave(serie):
-    return (serie.str.split().str.join(" ")
-            .str.normalize("NFKD").str.encode("ascii", "ignore").str.decode("ascii")
-            .str.upper()
-            .str.replace(r"[^A-Z ]", "", regex=True))
 
-variantes = (crm["ciudad"].value_counts().rename("registros").reset_index()
-             .assign(clave=lambda d: clave(d["ciudad"])))
+def clave(serie):
+    return (
+        serie.str.split()
+        .str.join(" ")
+        .str.normalize("NFKD")
+        .str.encode("ascii", "ignore")
+        .str.decode("ascii")
+        .str.upper()
+        .str.replace(r"[^A-Z ]", "", regex=True)
+    )
+
+
+variantes = (
+    crm["ciudad"]
+    .value_counts()
+    .rename("registros")
+    .reset_index()
+    .assign(clave=lambda d: clave(d["ciudad"]))
+)
 mas_frecuente = variantes.groupby("clave")["registros"].idxmax()
 variantes["canonica"] = variantes["clave"].map(
-    variantes.loc[mas_frecuente].set_index("clave")["ciudad"])
+    variantes.loc[mas_frecuente].set_index("clave")["ciudad"]
+)
 
 catalogo = sorted(clientes["ciudad"].unique())
 claves_catalogo = dict(zip(clave(pd.Series(catalogo)), catalogo))
-pendientes = variantes.loc[~variantes["canonica"].isin(catalogo),
-                           ["clave", "canonica"]].drop_duplicates()
+pendientes = variantes.loc[
+    ~variantes["canonica"].isin(catalogo), ["clave", "canonica"]
+].drop_duplicates()
 pendientes["sugerencia"] = pendientes["clave"].map(
-    lambda c: [claves_catalogo[s] for s in
-               difflib.get_close_matches(c, claves_catalogo, n=1, cutoff=0.8)])
+    lambda c: [
+        claves_catalogo[s]
+        for s in difflib.get_close_matches(c, claves_catalogo, n=1, cutoff=0.8)
+    ]
+)
 print(pendientes)
-```
-
-```text
-                  clave             canonica      sugerencia
-9               BQUILLA             B/quilla              []
-12            BOGOTA DC          Bogotá D.C.        [Bogotá]
-14  CARTAGENA DE INDIAS  Cartagena de Indias              []
-24     SANTIAGO DE CALI     Santiago de Cali              []
-27          BARRANQILLA          Barranqilla  [Barranquilla]
 ```
 
 `str.normalize("NFKD")` separa cada letra de su tilde y `encode("ascii", "ignore")` descarta las tildes, como en el @sec-limpieza-temprana. `idxmax()` devuelve, para cada clave, la fila con más registros. `difflib.get_close_matches()`, de la biblioteca estándar de Python, sugiere los textos más parecidos por encima de un umbral (`cutoff`): con 0,8 solo propone `Barranquilla` y `Bogotá`, y deja sin sugerencia los casos que necesitan una persona.
 
-```python
-manual = {"Barranqilla": "Barranquilla", "Bogotá D.C.": "Bogotá",
-          "B/quilla": "Barranquilla", "Cartagena de Indias": "Cartagena",
-          "Santiago de Cali": "Cali"}
+```{python}
+manual = {
+    "Barranqilla": "Barranquilla",
+    "Bogotá D.C.": "Bogotá",
+    "B/quilla": "Barranquilla",
+    "Cartagena de Indias": "Cartagena",
+    "Santiago de Cali": "Cali",
+}
 variantes["canonica"] = variantes["canonica"].replace(manual)
 equivalencias = dict(zip(variantes["ciudad"], variantes["canonica"]))
 
 crm["ciudad"] = crm["ciudad"].map(equivalencias)
 print(crm["ciudad"].value_counts(dropna=False))
-```
-
-```text
-ciudad
-Cali            37
-Cartagena       36
-Barranquilla    36
-Bogotá          32
-Cúcuta          31
-Santa Marta     29
-Pasto           26
-Medellín        22
-NaN              6
-Name: count, dtype: int64
 ```
 
 En `pandas`, la tabla de equivalencias puede ser un diccionario y `map()` la aplica.
@@ -465,7 +485,9 @@ En `pandas`, la tabla de equivalencias puede ser un diccionario y `map()` la apl
 
 ```{r}
 #| label: estandarizar-duckdb
-dbGetQuery(con, r"(
+dbGetQuery(
+  con,
+  r"(
   WITH conteo AS (
     SELECT ciudad, count(*) AS registros,
            regexp_replace(upper(strip_accents(trim(regexp_replace(ciudad, '\s+', ' ', 'g')))),
@@ -487,7 +509,8 @@ dbGetQuery(con, r"(
   GROUP BY ALL
   HAVING distancia_minima > 0
   ORDER BY distancia_minima
-)")
+)"
+)
 ```
 
 `arg_max(ciudad, registros)` devuelve la ciudad del registro con más conteo: la forma canónica en una sola función. `levenshtein()` calcula la distancia de edición, y la unión cruzada (`CROSS JOIN`) compara cada clave con cada ciudad del catálogo. DuckDB tiene también `jaro_winkler_similarity()`, otra medida de parecido que da más peso al inicio del texto.
@@ -518,41 +541,48 @@ count(crm, nit, name = "registros") |> count(registros, name = "clientes")
 
 consolidado <- crm |>
   arrange(nit, desc(actualizado)) |>
-  summarise(across(c(ciudad, telefono, correo, contacto), \(x) x[!is.na(x)][1]),
-            actualizado = max(actualizado),
-            registros   = n(),
-            .by = nit) |>
-  left_join(select(clientes, nit, razon_social), by = "nit",
-            relationship = "one-to-one")
+  summarise(
+    across(c(ciudad, telefono, correo, contacto), \(x) x[!is.na(x)][1]),
+    actualizado = max(actualizado),
+    registros = n(),
+    .by = nit
+  ) |>
+  left_join(
+    select(clientes, nit, razon_social),
+    by = "nit",
+    relationship = "one-to-one"
+  )
 
 nrow(consolidado)
-c(sin_correo_con_un_registro_cualquiera = sum(is.na(crm$correo[!duplicated(crm$nit)])),
-  sin_correo_con_la_regla              = sum(is.na(consolidado$correo)))
+c(
+  sin_correo_con_un_registro_cualquiera = sum(is.na(crm$correo[
+    !duplicated(crm$nit)
+  ])),
+  sin_correo_con_la_regla = sum(is.na(consolidado$correo))
+)
 ```
 
 46 clientes tienen dos o tres registros. Ordenamos de más reciente a más antiguo y, para cada columna, `x[!is.na(x)][1]` toma el primer valor no faltante: el más reciente que exista. Así, si el registro más nuevo no tiene correo pero uno anterior sí, el correo se conserva. La razón social, en cambio, la tomamos de la tabla maestra de clientes, que es la referencia: así no importa cómo la escribió cada asesor.
 
 ### Python
 
-```python
+```{python}
 print(crm["nit"].value_counts().value_counts().sort_index())
 
-consolidado = (crm.sort_values(["nit", "actualizado"], ascending=[True, False])
-               .groupby("nit", as_index=False)
-               .agg(ciudad=("ciudad", "first"), telefono=("telefono", "first"),
-                    correo=("correo", "first"), contacto=("contacto", "first"),
-                    actualizado=("actualizado", "max"), registros=("nit", "size"))
-               .merge(clientes[["nit", "razon_social"]], on="nit", validate="1:1"))
+consolidado = (
+    crm.sort_values(["nit", "actualizado"], ascending=[True, False])
+    .groupby("nit", as_index=False)
+    .agg(
+        ciudad=("ciudad", "first"),
+        telefono=("telefono", "first"),
+        correo=("correo", "first"),
+        contacto=("contacto", "first"),
+        actualizado=("actualizado", "max"),
+        registros=("nit", "size"),
+    )
+    .merge(clientes[["nit", "razon_social"]], on="nit", validate="1:1")
+)
 print(len(consolidado), consolidado["correo"].isna().sum())
-```
-
-```text
-count
-1    154
-2     37
-3      9
-Name: count, dtype: int64
-200 27
 ```
 
 En `pandas`, `first` dentro de `groupby()` ya devuelve el primer valor **no faltante** de cada grupo, así que la regla "el más reciente que exista" sale directa después de ordenar. Con la regla, 27 clientes quedan sin correo; si nos quedáramos con un registro cualquiera de cada cliente, serían 31.
@@ -561,7 +591,9 @@ En `pandas`, `first` dentro de `groupby()` ya devuelve el primer valor **no falt
 
 ```{r}
 #| label: duplicados-duckdb
-dbGetQuery(con, r"(
+dbGetQuery(
+  con,
+  r"(
   WITH limpio AS (
     SELECT lpad(regexp_replace(nit, '\D', '', 'g'), 10, '0') AS nit,
            lower(trim(correo)) AS correo, actualizado
@@ -574,7 +606,8 @@ dbGetQuery(con, r"(
     FROM limpio
     GROUP BY nit
   )
-)")
+)"
+)
 ```
 
 `first(correo ORDER BY actualizado DESC)` toma el correo del registro más reciente, y `FILTER (WHERE correo IS NOT NULL)` descarta antes los faltantes: la misma regla, en una sola expresión. Aquí hay más clientes con correo que en R y en Python porque esta consulta no aplica la validación de formato del Ejemplo 8.2.
@@ -631,21 +664,19 @@ Las cuatro facturas sin ciudad tienen un NIT que está en la tabla de clientes, 
 
 ### Python
 
-```python
+```{python}
 cartera = pd.read_parquet("datos/cap06/cartera_2026_t1.parquet")
-sin_ciudad = (cartera.loc[cartera["ciudad"].isna(), ["factura", "nit", "ciudad"]]
-              .merge(clientes[["nit", "ciudad"]].rename(columns={"ciudad": "ciudad_cliente"}),
-                     on="nit", how="left"))
-sin_ciudad["ciudad"] = sin_ciudad["ciudad"].fillna(sin_ciudad["ciudad_cliente"])
+sin_ciudad = cartera.loc[
+    cartera["ciudad"].isna(), ["factura", "nit", "ciudad"]
+].merge(
+    clientes[["nit", "ciudad"]].rename(columns={"ciudad": "ciudad_cliente"}),
+    on="nit",
+    how="left",
+)
+sin_ciudad["ciudad"] = sin_ciudad["ciudad"].fillna(
+    sin_ciudad["ciudad_cliente"]
+)
 print(sin_ciudad)
-```
-
-```text
-    factura         nit       ciudad ciudad_cliente
-0  FV-20151  0386563911  Santa Marta    Santa Marta
-1  FV-20322  0957136273         Cali           Cali
-2  FV-20374  0869228052       Cúcuta         Cúcuta
-3  FV-20398  0379203925       Bogotá         Bogotá
 ```
 
 `fillna()` con una serie es el `coalesce()` de `pandas`: completa cada faltante con el valor de la misma fila en la otra serie.
@@ -654,12 +685,15 @@ print(sin_ciudad)
 
 ```{r}
 #| label: faltantes-duckdb
-dbGetQuery(con, r"(
+dbGetQuery(
+  con,
+  r"(
   SELECT f.factura, f.nit, coalesce(f.ciudad, c.ciudad) AS ciudad
   FROM 'datos/cap06/cartera_2026_t1.parquet' AS f
   LEFT JOIN 'datos/cap06/clientes.parquet' AS c USING (nit)
   WHERE f.ciudad IS NULL
-)")
+)"
+)
 ```
 
 :::
@@ -691,12 +725,18 @@ Todas las facturas menos una vencen 30 días después de emitirse, y la excepci�
 ```{r}
 #| label: atipicos-r
 cuartiles <- quantile(cartera$valor_factura, c(0.25, 0.75))
-iqr <- IQR(cartera$valor_factura)   # tercer cuartil menos el primero
-limites <- c(inferior = cuartiles[[1]] - 1.5 * iqr, superior = cuartiles[[2]] + 1.5 * iqr)
+iqr <- IQR(cartera$valor_factura) # tercer cuartil menos el primero
+limites <- c(
+  inferior = cuartiles[[1]] - 1.5 * iqr,
+  superior = cuartiles[[2]] + 1.5 * iqr
+)
 limites
 
 cartera |>
-  filter(valor_factura < limites[["inferior"]] | valor_factura > limites[["superior"]]) |>
+  filter(
+    valor_factura < limites[["inferior"]] |
+      valor_factura > limites[["superior"]]
+  ) |>
   select(factura, nit, valor_factura)
 ```
 
@@ -704,9 +744,10 @@ La regla del IQR marca tres facturas. Dos son negativas, valores imposibles que 
 
 ### Python
 
-```python
-cartera[["fecha_emision", "fecha_vencimiento"]] = (
-    cartera[["fecha_emision", "fecha_vencimiento"]].apply(pd.to_datetime))
+```{python}
+cartera[["fecha_emision", "fecha_vencimiento"]] = cartera[
+    ["fecha_emision", "fecha_vencimiento"]
+].apply(pd.to_datetime)
 dias = (cartera["fecha_vencimiento"] - cartera["fecha_emision"]).dt.days
 print(dias.value_counts())
 
@@ -716,21 +757,13 @@ atipicas = ~cartera["valor_factura"].between(q1 - 1.5 * iqr, q3 + 1.5 * iqr)
 print(cartera.loc[atipicas, ["factura", "nit", "valor_factura"]])
 ```
 
-```text
- 30       405
--13119      1
-Name: count, dtype: int64
-      factura         nit  valor_factura
-47   FV-20047  0523027606    98500000.00
-180  FV-20179  0391295313    -6226332.66
-383  FV-20379  0913010509    -5811791.75
-```
-
 ### DuckDB
 
 ```{r}
 #| label: atipicos-duckdb
-dbGetQuery(con, r"(
+dbGetQuery(
+  con,
+  r"(
   WITH limites AS (
     SELECT quantile_cont(valor_factura, 0.25) AS q1,
            quantile_cont(valor_factura, 0.75) AS q3
@@ -739,7 +772,8 @@ dbGetQuery(con, r"(
   SELECT factura, nit, valor_factura
   FROM 'datos/cap06/cartera_2026_t1.parquet', limites
   WHERE valor_factura NOT BETWEEN q1 - 1.5 * (q3 - q1) AND q3 + 1.5 * (q3 - q1)
-)")
+)"
+)
 ```
 
 `quantile_cont()` calcula el cuantil con interpolación, igual que el método por defecto de R y de `pandas`.
@@ -763,8 +797,11 @@ Ahora reunimos todo en un solo proceso, en el orden de la @fig-flujo-limpieza. C
 ```{r}
 #| label: limpieza-completa-r
 corte <- as.Date("2026-03-31")
-equivalencias <- read_csv("datos/cap08/equivalencias_ciudad.csv", show_col_types = FALSE,
-                          trim_ws = FALSE)
+equivalencias <- read_csv(
+  "datos/cap08/equivalencias_ciudad.csv",
+  show_col_types = FALSE,
+  trim_ws = FALSE
+)
 
 # 1. Filas idénticas
 limpia <- distinct(cartera)
@@ -775,32 +812,50 @@ n_nit <- sum(nchar(limpia$nit) == 9, na.rm = TRUE)
 n_ciudad <- sum(!limpia$ciudad %in% catalogo_ciudades & !is.na(limpia$ciudad))
 n_ciudad_faltante <- sum(is.na(limpia$ciudad))
 n_anio <- sum(limpia$fecha_emision > corte)
-n_calificacion <- sum(!limpia$calificacion %in% 1:5 & !is.na(limpia$calificacion))
+n_calificacion <- sum(
+  !limpia$calificacion %in% 1:5 & !is.na(limpia$calificacion)
+)
 
 limpia <- limpia |>
   mutate(nit = if_else(nchar(nit) == 9, str_pad(nit, 10, pad = "0"), nit)) |>
-  left_join(equivalencias, by = c("ciudad" = "variante"), relationship = "many-to-one") |>
+  left_join(
+    equivalencias,
+    by = c("ciudad" = "variante"),
+    relationship = "many-to-one"
+  ) |>
   mutate(ciudad = coalesce(canonica, ciudad)) |>
   select(-canonica) |>
-  left_join(select(clientes, nit, ciudad_cliente = ciudad), by = "nit",
-            relationship = "many-to-one") |>
-  mutate(ciudad        = coalesce(ciudad, ciudad_cliente),
-         fecha_emision = if_else(fecha_emision > corte, fecha_vencimiento - 30, fecha_emision),
-         calificacion  = if_else(calificacion %in% 1:5, calificacion, NA)) |>
+  left_join(
+    select(clientes, nit, ciudad_cliente = ciudad),
+    by = "nit",
+    relationship = "many-to-one"
+  ) |>
+  mutate(
+    ciudad = coalesce(ciudad, ciudad_cliente),
+    fecha_emision = if_else(
+      fecha_emision > corte,
+      fecha_vencimiento - 30,
+      fecha_emision
+    ),
+    calificacion = if_else(calificacion %in% 1:5, calificacion, NA)
+  ) |>
   select(-ciudad_cliente)
 
 # 3. Cuarentena: lo que no tiene una regla de corrección
 limpia <- limpia |>
-  mutate(motivo = case_when(
-    n() > 1                         ~ "factura con dos versiones",
-    is.na(nit)                      ~ "NIT faltante",
-    !nit %in% clientes$nit          ~ "NIT que no está en clientes",
-    valor_factura <= 0              ~ "valor cero o negativo",
-    fecha_pago < fecha_emision      ~ "pago anterior a la emisión",
-    pagada != !is.na(fecha_pago)    ~ "pagada y fecha de pago no coinciden",
-    pagada & saldo != 0             ~ "pagada con saldo pendiente",
-    saldo > valor_factura           ~ "saldo mayor que el valor"
-  ), .by = factura)
+  mutate(
+    motivo = case_when(
+      n() > 1 ~ "factura con dos versiones",
+      is.na(nit) ~ "NIT faltante",
+      !nit %in% clientes$nit ~ "NIT que no está en clientes",
+      valor_factura <= 0 ~ "valor cero o negativo",
+      fecha_pago < fecha_emision ~ "pago anterior a la emisión",
+      pagada != !is.na(fecha_pago) ~ "pagada y fecha de pago no coinciden",
+      pagada & saldo != 0 ~ "pagada con saldo pendiente",
+      saldo > valor_factura ~ "saldo mayor que el valor"
+    ),
+    .by = factura
+  )
 
 cuarentena <- filter(limpia, !is.na(motivo))
 limpia <- limpia |> filter(is.na(motivo)) |> select(-motivo)
@@ -818,15 +873,15 @@ La bitácora reúne los conteos de cada paso, y la auditoría usa las mismas reg
 ```{r}
 #| label: bitacora-r
 bitacora <- tribble(
-  ~paso,                                ~accion,                         ~filas,
-  "Filas idénticas",                    "eliminar la copia",             n_copias,
-  "NIT de nueve dígitos",               "completar el cero inicial",     n_nit,
-  "Ciudad escrita de otra forma",       "tabla de equivalencias",        n_ciudad,
-  "Ciudad faltante",                    "completar desde clientes",      n_ciudad_faltante,
-  "Emisión posterior al corte",         "vencimiento menos 30 días",     n_anio,
-  "Calificación fuera de 1 a 5",        "convertir en faltante",         n_calificacion,
-  "Problema sin regla de corrección",   "cuarentena",                    nrow(cuarentena),
-  "Valor mayor a 50 millones",          "aceptar y marcar para revisar", sum(limpia$revisar)
+  ~paso                              , ~accion                         , ~filas              ,
+  "Filas idénticas"                  , "eliminar la copia"             , n_copias            ,
+  "NIT de nueve dígitos"             , "completar el cero inicial"     , n_nit               ,
+  "Ciudad escrita de otra forma"     , "tabla de equivalencias"        , n_ciudad            ,
+  "Ciudad faltante"                  , "completar desde clientes"      , n_ciudad_faltante   ,
+  "Emisión posterior al corte"       , "vencimiento menos 30 días"     , n_anio              ,
+  "Calificación fuera de 1 a 5"      , "convertir en faltante"         , n_calificacion      ,
+  "Problema sin regla de corrección" , "cuarentena"                    , nrow(cuarentena)    ,
+  "Valor mayor a 50 millones"        , "aceptar y marcar para revisar" , sum(limpia$revisar)
 )
 bitacora
 
@@ -845,7 +900,7 @@ La auditoría solo encuentra la factura de 98,5 millones, una regla que advierte
 
 ### Python
 
-```python
+```{python}
 from scripts.auditoria_cartera import reglas_cartera, auditar
 
 equivalencias = pd.read_csv("datos/cap08/equivalencias_ciudad.csv")
@@ -859,59 +914,72 @@ n_copias = len(cartera) - len(limpia)
 # 2. Correcciones con regla clara
 nit_corto = limpia["nit"].str.len() == 9
 anio_mal = limpia["fecha_emision"] > corte
-calificacion_mal = limpia["calificacion"].notna() & ~limpia["calificacion"].between(1, 5)
-ciudad_por_cliente = limpia["nit"].str.zfill(10).map(clientes.set_index("nit")["ciudad"])
+calificacion_mal = limpia["calificacion"].notna() & ~limpia[
+    "calificacion"
+].between(1, 5)
+ciudad_por_cliente = (
+    limpia["nit"].str.zfill(10).map(clientes.set_index("nit")["ciudad"])
+)
 bitacora = {
     "NIT de nueve dígitos": int(nit_corto.sum()),
-    "Ciudad escrita de otra forma": int((limpia["ciudad"].notna()
-                                         & ~limpia["ciudad"].isin(catalogo)).sum()),
+    "Ciudad escrita de otra forma": int(
+        (limpia["ciudad"].notna() & ~limpia["ciudad"].isin(catalogo)).sum()
+    ),
     "Ciudad faltante": int(limpia["ciudad"].isna().sum()),
     "Emisión posterior al corte": int(anio_mal.sum()),
     "Calificación fuera de 1 a 5": int(calificacion_mal.sum()),
 }
 
 limpia.loc[nit_corto, "nit"] = limpia.loc[nit_corto, "nit"].str.zfill(10)
-limpia["ciudad"] = (limpia["ciudad"]
-                    .map(dict(zip(equivalencias["variante"], equivalencias["canonica"])))
-                    .fillna(ciudad_por_cliente))
-limpia.loc[anio_mal, "fecha_emision"] = (limpia.loc[anio_mal, "fecha_vencimiento"]
-                                         - pd.Timedelta(days=30))
-limpia["calificacion"] = limpia["calificacion"].where(~calificacion_mal).astype("Int64")
+limpia["ciudad"] = (
+    limpia["ciudad"]
+    .map(dict(zip(equivalencias["variante"], equivalencias["canonica"])))
+    .fillna(ciudad_por_cliente)
+)
+limpia.loc[anio_mal, "fecha_emision"] = limpia.loc[
+    anio_mal, "fecha_vencimiento"
+] - pd.Timedelta(days=30)
+limpia["calificacion"] = (
+    limpia["calificacion"].where(~calificacion_mal).astype("Int64")
+)
 
 # 3. Cuarentena
-motivo = pd.Series(pd.NA, index=limpia.index, dtype="str").case_when([
-    (limpia["factura"].duplicated(keep=False), "factura con dos versiones"),
-    (limpia["nit"].isna(), "NIT faltante"),
-    (~limpia["nit"].isin(clientes["nit"]), "NIT que no está en clientes"),
-    (limpia["valor_factura"] <= 0, "valor cero o negativo"),
-    (limpia["fecha_pago"] < limpia["fecha_emision"], "pago anterior a la emisión"),
-    (limpia["pagada"] != limpia["fecha_pago"].notna(), "pagada y fecha de pago no coinciden"),
-    (limpia["pagada"] & (limpia["saldo"] != 0), "pagada con saldo pendiente"),
-    (limpia["saldo"] > limpia["valor_factura"], "saldo mayor que el valor"),
-])
+motivo = pd.Series(pd.NA, index=limpia.index, dtype="str").case_when(
+    [
+        (
+            limpia["factura"].duplicated(keep=False),
+            "factura con dos versiones",
+        ),
+        (limpia["nit"].isna(), "NIT faltante"),
+        (~limpia["nit"].isin(clientes["nit"]), "NIT que no está en clientes"),
+        (limpia["valor_factura"] <= 0, "valor cero o negativo"),
+        (
+            limpia["fecha_pago"] < limpia["fecha_emision"],
+            "pago anterior a la emisión",
+        ),
+        (
+            limpia["pagada"] != limpia["fecha_pago"].notna(),
+            "pagada y fecha de pago no coinciden",
+        ),
+        (
+            limpia["pagada"] & (limpia["saldo"] != 0),
+            "pagada con saldo pendiente",
+        ),
+        (
+            limpia["saldo"] > limpia["valor_factura"],
+            "saldo mayor que el valor",
+        ),
+    ]
+)
 cuarentena = limpia[motivo.notna()].assign(motivo=motivo)
-limpia = limpia[motivo.isna()].assign(revisar=lambda d: d["valor_factura"] > 50e6)
+limpia = limpia[motivo.isna()].assign(
+    revisar=lambda d: d["valor_factura"] > 50e6
+)
 
 print(cuarentena["motivo"].value_counts())
 reporte = auditar(limpia, reglas_cartera(clientes))
 print(reporte[reporte["filas"] > 0])
 print(len(limpia), len(cuarentena), n_copias, bitacora)
-```
-
-```text
-motivo
-factura con dos versiones              4
-pagada con saldo pendiente             3
-pago anterior a la emisión             3
-NIT que no está en clientes            3
-valor cero o negativo                  3
-NIT faltante                           3
-pagada y fecha de pago no coinciden    2
-saldo mayor que el valor               2
-Name: count, dtype: int64
-              regla      dimension severidad  filas
-13  valor_plausible  Plausibilidad  advierte      1
-379 23 4 {'NIT de nueve dígitos': 4, 'Ciudad escrita de otra forma': 11, 'Ciudad faltante': 4, 'Emisión posterior al corte': 1, 'Calificación fuera de 1 a 5': 3}
 ```
 
 La regla "factura con dos versiones" se evalúa después de `drop_duplicates()`, así que `duplicated(keep=False)` solo encuentra las facturas que siguen repetidas con contenido distinto. Para importar las reglas con `from scripts.auditoria_cartera import ...`, Python debe ejecutarse desde la carpeta raíz de los materiales, que es lo que hace Positron al abrir la carpeta.
@@ -922,7 +990,9 @@ En DuckDB, la limpieza completa es una consulta con varios pasos encadenados con
 
 ```{r}
 #| label: limpieza-completa-duckdb
-dbExecute(con, r"(
+dbExecute(
+  con,
+  r"(
   CREATE OR REPLACE TABLE cartera_revisada AS
   WITH sin_copias AS (
     SELECT DISTINCT * FROM 'datos/cap06/cartera_2026_t1.parquet'
@@ -955,19 +1025,281 @@ dbExecute(con, r"(
          END AS motivo,
          valor_factura > 50e6 AS revisar
   FROM corregida
-)")
+)"
+)
 
-dbGetQuery(con, r"(
+dbGetQuery(
+  con,
+  r"(
   SELECT coalesce(motivo, '(limpia)') AS destino, count(*) AS filas
   FROM cartera_revisada
   GROUP BY ALL
   ORDER BY filas DESC
-)")
+)"
+)
 ```
 
 `SELECT * REPLACE (...)` reemplaza columnas existentes sin repetir las demás, y `EXCLUDE` quita las que trajeron las uniones. La tabla `cartera_revisada` tiene todas las filas con su `motivo`; la limpia y la cuarentena son dos filtros sobre ella. Escrita así, la misma limpieza funciona igual con 400 facturas que con 40 millones: es la forma de limpiar cuando el volumen supera la memoria, como vimos en el @sec-volumen.
 
 :::
+
+## Ejemplo guiado 8.8: clasificar texto libre con un modelo de lenguaje {#sec-clasificar-ia}
+
+La tabla de equivalencias del Ejemplo guiado 8.3 funciona porque las ciudades se escriben de pocas formas: con la frecuencia de cada variante se arma la tabla, y la tabla se revisa a mano. El texto libre no tiene esa propiedad. En `reclamos_2026_t1.csv`, los clientes escribieron 400 reclamos con sus propias palabras, y casi ningún texto se repite. Para saber cuántos reclamos son por entregas tardías y cuántos por cobros, alguien tendría que leerlos todos.
+
+Un **modelo de lenguaje** puede leerlos y proponer una categoría para cada uno. Lo trataremos como lo que es: una fuente de datos más, que se equivoca, y cuyas respuestas se miden antes de usarse. El método tiene cuatro pasos: proteger los datos, preguntar de forma reproducible, medir contra una revisión humana y decidir qué se acepta.
+
+```{r}
+#| label: reclamos-leer
+reclamos <- read_csv("datos/cap08/reclamos_2026_t1.csv", show_col_types = FALSE)
+nrow(reclamos)
+head(reclamos$texto, 4)
+```
+
+**Paso 1: proteger los datos antes de enviarlos.** Enviar un texto a un modelo que corre en un servicio externo es entregarle esos datos a un tercero. Algunos reclamos traen el celular, el correo o la cédula de quien escribe, y nada de eso hace falta para clasificar. Antes de enviar, los ocultamos con las expresiones regulares de la @sec-regex. En Colombia, además, la Ley 1581 de 2012 regula el tratamiento de datos personales; volveremos a ella en la @sec-habeas-data.
+
+::: {.panel-tabset group="lenguaje"}
+
+### R
+
+```{r}
+#| label: reclamos-ocultar
+patrones_personales <- c(
+  correo = r"([\w.+-]+@[\w-]+(\.[\w-]+)+)",
+  celular = r"(\b3\d{9}\b)",
+  cedula = r"(\b\d{1,3}(\.\d{3}){2,3}\b)"
+)
+
+ocultar <- function(texto) {
+  for (tipo in names(patrones_personales)) {
+    texto <- str_replace_all(
+      texto,
+      patrones_personales[[tipo]],
+      paste0("[", tipo, "]")
+    )
+  }
+  texto
+}
+
+reclamos <- mutate(reclamos, texto_envio = ocultar(texto))
+sapply(patrones_personales, \(p) sum(str_detect(reclamos$texto, p)))
+sum(reclamos$texto != reclamos$texto_envio)
+head(reclamos$texto_envio[reclamos$texto != reclamos$texto_envio], 3)
+```
+
+### Python
+
+```{python}
+reclamos = pd.read_csv("datos/cap08/reclamos_2026_t1.csv")
+
+patrones_personales = {
+    "correo": r"[\w.+-]+@[\w-]+(?:\.[\w-]+)+",
+    "celular": r"\b3\d{9}\b",
+    "cedula": r"\b\d{1,3}(?:\.\d{3}){2,3}\b",
+}
+texto_envio = reclamos["texto"]
+for tipo, patron in patrones_personales.items():
+    texto_envio = texto_envio.str.replace(patron, f"[{tipo}]", regex=True)
+reclamos["texto_envio"] = texto_envio
+print((reclamos["texto"] != reclamos["texto_envio"]).sum())
+```
+
+:::
+
+56 reclamos llevaban algún dato personal. El modelo recibirá `texto_envio`, con marcas como `[celular]` en su lugar; el texto original no sale del equipo.
+
+**Paso 2: preguntar de forma reproducible.** El código siguiente envía cada reclamo a un modelo de Anthropic y le pide una respuesta **estructurada**: una sola categoría, tomada de una lista cerrada. Sin esa restricción, el modelo podría responder «parece un problema de entrega» o inventar una categoría nueva, y habría que limpiar también sus respuestas. En R usamos el paquete [ellmer](https://ellmer.tidyverse.org/), que también funciona con modelos de otras empresas; en Python, el SDK oficial de Anthropic (`uv add anthropic`). Los dos necesitan una clave de la API guardada en una variable de entorno, como se explica en la @sec-proteger.
+
+::: {.panel-tabset group="lenguaje"}
+
+### R
+
+```{r}
+#| label: reclamos-llm-r
+#| eval: false
+library(ellmer)
+
+categorias <- c(
+  "entrega_tardia",
+  "producto_danado",
+  "pedido_incompleto",
+  "cobro",
+  "atencion",
+  "otro"
+)
+instrucciones <- paste(
+  "Clasificas reclamos de clientes de una red de distribución.",
+  "Asigna una sola categoría a cada reclamo."
+)
+
+chat <- chat_anthropic(
+  model = "claude-opus-5-5",
+  system_prompt = instrucciones
+)
+tipo_respuesta <- type_object(
+  categoria = type_enum(values = categorias, description = "Categoría")
+)
+
+respuestas <- parallel_chat_structured(
+  chat,
+  as.list(reclamos$texto_envio),
+  type = tipo_respuesta
+)
+
+reclamos |>
+  select(reclamo) |>
+  mutate(
+    categoria_modelo = respuestas$categoria,
+    version_prompt = "v1",
+    consultado = Sys.Date()
+  ) |>
+  write_csv("datos/cap08/reclamos_clasificados.csv")
+```
+
+`parallel_chat_structured()` envía los textos en paralelo, cada uno en una conversación independiente, y devuelve una tabla con una columna por campo de la respuesta.
+
+### Python
+
+```{python}
+#| eval: false
+from typing import Literal
+
+import anthropic
+from pydantic import BaseModel
+
+INSTRUCCIONES = (
+    "Clasificas reclamos de clientes de una red de distribución. "
+    "Asigna una sola categoría a cada reclamo."
+)
+
+
+class Clasificacion(BaseModel):
+    categoria: Literal[
+        "entrega_tardia",
+        "producto_danado",
+        "pedido_incompleto",
+        "cobro",
+        "atencion",
+        "otro",
+    ]
+
+
+cliente = anthropic.Anthropic()  # lee la clave de ANTHROPIC_API_KEY
+
+
+def clasificar(texto):
+    respuesta = cliente.messages.parse(
+        model="claude-opus-5-5",
+        max_tokens=2048,
+        system=INSTRUCCIONES,
+        messages=[{"role": "user", "content": texto}],
+        output_format=Clasificacion,
+        output_config={"effort": "low"},
+    )
+    if respuesta.stop_reason == "refusal":
+        return None
+    return respuesta.parsed_output.categoria
+
+
+clasificados = reclamos[["reclamo"]].assign(
+    categoria_modelo=reclamos["texto_envio"].map(clasificar),
+    version_prompt="v1",
+    consultado=pd.Timestamp.today().date(),
+)
+clasificados.to_csv("datos/cap08/reclamos_clasificados.csv", index=False)
+```
+
+`messages.parse()` valida la respuesta contra la clase `Clasificacion`: si el modelo devolviera una categoría que no está en la lista, el error aparece aquí y no tres pasos después. Antes de leer la respuesta se revisa `stop_reason`, porque el modelo puede negarse a responder. `effort="low"` le pide al modelo que no se extienda razonando: clasificar un texto corto no lo necesita, y cada consulta sale más barata y más rápida.
+
+:::
+
+Tres decisiones hacen que este paso sea reproducible, aunque el modelo no lo sea:
+
+- **Las respuestas se guardan.** El mismo texto puede recibir respuestas distintas en dos consultas, y cada consulta cuesta dinero. Por eso se pregunta una vez, se guarda el resultado en un archivo y el análisis trabaja sobre ese archivo, como trabaja sobre cualquier dato crudo.
+- **El modelo queda escrito en el código**, con su identificador exacto (`claude-opus-5-5`), en lugar de dejar que la herramienta elija uno por defecto que puede cambiar con la próxima versión del paquete.
+- **Las instrucciones tienen versión.** La columna `version_prompt` dice con qué instrucciones se obtuvo cada respuesta. Si mañana se cambian, las respuestas nuevas no se mezclan con las viejas sin saberlo.
+
+Este libro no ejecuta esos bloques al renderizarse, porque requieren una cuenta y una clave. El archivo `reclamos_clasificados.csv` de los materiales trae respuestas **simuladas**, con errores parecidos a los que suelen cometer estos modelos, para que el ejemplo sea reproducible. Con un modelo real las cifras cambian; el método no.
+
+**Paso 3: medir contra una revisión humana.** Una persona clasificó a mano una muestra de 150 reclamos elegidos al azar: es `reclamos_revision.csv`. Esa muestra es la referencia. Sin ella, no hay forma de saber si el modelo acierta.
+
+::: {.panel-tabset group="lenguaje"}
+
+### R
+
+```{r}
+#| label: reclamos-medir
+clasificados <- read_csv(
+  "datos/cap08/reclamos_clasificados.csv",
+  show_col_types = FALSE
+)
+revision <- read_csv(
+  "datos/cap08/reclamos_revision.csv",
+  show_col_types = FALSE
+)
+
+comparar <- revision |>
+  left_join(clasificados, by = "reclamo", relationship = "one-to-one")
+
+mean(comparar$categoria_modelo == comparar$categoria_revisor)
+
+comparar |>
+  summarise(
+    propuestas = n(),
+    correctas = sum(categoria_modelo == categoria_revisor),
+    .by = categoria_modelo
+  ) |>
+  mutate(precision = round(100 * correctas / propuestas)) |>
+  arrange(desc(precision))
+```
+
+### Python
+
+```{python}
+clasificados = pd.read_csv("datos/cap08/reclamos_clasificados.csv")
+revision = pd.read_csv("datos/cap08/reclamos_revision.csv")
+
+comparar = revision.merge(clasificados, on="reclamo", validate="1:1")
+acierto = comparar["categoria_modelo"] == comparar["categoria_revisor"]
+print(round(acierto.mean(), 3))
+
+calidad = (
+    comparar.assign(correcta=acierto)
+    .groupby("categoria_modelo")["correcta"]
+    .agg(propuestas="size", correctas="sum")
+    .assign(
+        precision=lambda d: (100 * d["correctas"] / d["propuestas"]).round()
+    )
+    .sort_values("precision", ascending=False)
+)
+print(calidad)
+```
+
+:::
+
+El modelo acierta en el 86,7 % de la muestra. Parece mucho, pero el promedio esconde lo importante. La **precisión** de cada categoría responde a la pregunta útil: cuando el modelo dice «cobro», ¿cuántas veces tiene razón? En cobros y productos dañados, todas las veces en la muestra. En «otro», apenas la mitad.
+
+Los errores no están repartidos al azar. Leerlos dice por qué:
+
+```{r}
+#| label: reclamos-errores
+errores <- comparar |>
+  filter(categoria_modelo != categoria_revisor) |>
+  left_join(select(reclamos, reclamo, texto_envio), by = "reclamo")
+
+count(errores, categoria_revisor, categoria_modelo, sort = TRUE)
+head(errores$texto_envio, 4)
+```
+
+Dos patrones explican casi todos los errores. Los reclamos **irónicos** («Felicitaciones, récord de lentitud») se clasifican como «otro» o «atención», y los que tienen **dos problemas** («Llegó tarde y sin el aceite») se clasifican como entrega tardía, cuando la regla del negocio dice que lo que falta pesa más que el retraso. El segundo error no es del modelo: nadie le dio esa regla.
+
+**Paso 4: decidir qué se acepta.** La decisión se toma por categoría, con los mismos principios del capítulo:
+
+- Las categorías con precisión alta en la muestra, cobro y producto dañado, se aceptan. Son 141 de los 400 reclamos que nadie tendrá que leer. La muestra es pequeña: 22 aciertos en 22 no garantizan un modelo perfecto, así que conviene revisar una muestra nueva cada trimestre.
+- Las demás van a **cuarentena** para revisión humana, como los registros que no se podían decidir en la limpieza de la cartera.
+- Los errores sistemáticos se corrigen en las instrucciones, no en los datos. Una versión `v2` agregaría la regla «si falta producto, es pedido incompleto aunque haya llegado tarde» y un aviso sobre la ironía. Después se mide otra vez contra la misma muestra, y solo se cambia de versión si mejora.
+
+La pregunta de fondo no es si el modelo es bueno, sino **para qué es suficientemente bueno**. Para contar reclamos por categoría en un informe mensual, un 87 % de acierto con errores conocidos puede bastar. Para decidir a qué cliente se le devuelve dinero, no.
 
 ## Ejercicio 8.1: limpiar los recaudos {#sec-ejercicio-limpiar-recaudos}
 
@@ -980,6 +1312,77 @@ En el Ejercicio 6.1 auditaste `datos/cap06/recaudos_2026_t1.parquet`. Ahora lím
 5. Arma la bitácora y vuelve a auditar con tus reglas del Ejercicio 6.1.
 
 Para comprobar tu resultado: después de quitar las 2 filas idénticas quedan 181 recaudos; la cuarentena por factura inexistente, fecha y valor reúne 7; de las 4 facturas cobradas de más, quedan 2 cuando se eliminan las copias, y esas sí son cobros dobles con identificadores distintos.
+
+## Auditoría 8.1: la limpieza en tres líneas {#sec-auditoria-limpiar}
+
+Como en las auditorías anteriores, el pedido es corto: *«Limpia clientes_crm.csv: quita los duplicados y los registros incompletos, y estandariza las ciudades»*. La respuesta típica también lo es:
+
+::: {.panel-tabset group="lenguaje"}
+
+### R
+
+```{r}
+#| label: auditoria-8-1
+crm_crudo <- read_csv("datos/cap08/clientes_crm.csv", show_col_types = FALSE)
+
+crm_rapido <- crm_crudo |>
+  mutate(ciudad = str_to_title(str_trim(ciudad))) |>
+  na.omit() |>
+  distinct(nit, .keep_all = TRUE)
+
+c(antes = nrow(crm_crudo), despues = nrow(crm_rapido))
+```
+
+### Python
+
+```{python}
+crm_crudo = pd.read_csv("datos/cap08/clientes_crm.csv", dtype=str)
+
+crm_rapido = (
+    crm_crudo.assign(ciudad=crm_crudo["ciudad"].str.strip().str.title())
+    .dropna()
+    .drop_duplicates(subset="nit")
+)
+print(len(crm_crudo), len(crm_rapido))
+```
+
+:::
+
+De 255 registros quedan 198 en R y 186 en Python, sin duplicados y sin vacíos. ¿Cuántos clientes tiene ahora el CRM?
+
+::: {.callout-tip collapse="true"}
+## Solución de la auditoría 8.1
+
+**Todavía hay clientes repetidos.** `distinct(nit)` compara el NIT tal como está escrito, y en el CRM el mismo NIT aparece con puntos, sin el cero inicial o con un espacio. Con el NIT normalizado, como en la @sec-regex, se ve el problema:
+
+```{r}
+#| label: auditoria-8-1-nit
+normalizar_nit <- \(x) str_pad(str_remove_all(x, "[^0-9]"), 10, pad = "0")
+
+c(
+  filas = nrow(crm_rapido),
+  clientes_distintos = n_distinct(normalizar_nit(crm_rapido$nit)),
+  clientes_en_el_crm = n_distinct(normalizar_nit(crm_crudo$nit))
+)
+```
+
+Las 198 filas son 179 clientes: 19 siguen repetidos.
+
+**Y faltan clientes.** `na.omit()` borra una fila si le falta cualquier dato. Muchos clientes no tienen correo o teléfono en algún registro, y si todos sus registros tenían un vacío, el cliente desapareció: de los 200 clientes del CRM quedan 179. El pedido decía «quita los registros incompletos», y el código lo cumplió al pie de la letra. Lo que el negocio necesitaba era otra cosa: consolidar cada cliente con lo mejor de sus registros, como en el Ejemplo guiado 8.4, que conserva los 200. En Python la pérdida es mayor, porque `pandas` lee `N/A` como vacío por defecto y `dropna()` borra todavía más filas: quedan 169 clientes.
+
+**Las ciudades no quedaron estandarizadas.** `str_to_title()` arregla las mayúsculas, pero «Bogota», «Bogotá D.c.» y «B/Quilla» siguen siendo distintas:
+
+```{r}
+#| label: auditoria-8-1-ciudades
+count(crm_rapido, ciudad, sort = TRUE)
+```
+
+Son 18 formas de escribir 8 ciudades. Estandarizarlas exige la tabla de equivalencias del Ejemplo guiado 8.3.
+
+**Lo que no se ve:** cuando hay duplicados, `distinct()` se queda con el primer registro que encuentra, no con el más reciente. Y no hay bitácora: nadie podrá saber después qué filas se borraron ni por qué.
+
+La lección: **una instrucción ambigua produce una limpieza que la cumple al pie de la letra**. «Quitar los incompletos» y «quitar los duplicados» no son reglas, son intenciones. Las reglas de este capítulo dicen qué cuenta como duplicado, qué se hace con cada columna y qué se registra. Definirlas es el trabajo que un asistente no puede hacer por ti, porque depende de lo que el negocio necesita.
+:::
 
 ## Cierre: datos listos para guardar y analizar {#sec-cierre-limpiar}
 

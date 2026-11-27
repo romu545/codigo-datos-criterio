@@ -16,14 +16,29 @@ execute:
 #| label: datos
 source("../scripts/flujo_entregas.R", chdir = TRUE)
 carpeta <- "../datos/cap13"
-rutas <- c(list.files(file.path(carpeta, "entregas"), pattern = "\\.csv$", full.names = TRUE),
-           file.path(carpeta, "abril", "entregas_2026_04.csv"))
+rutas <- c(
+  list.files(
+    file.path(carpeta, "entregas"),
+    pattern = "\\.csv$",
+    full.names = TRUE
+  ),
+  file.path(carpeta, "abril", "entregas_2026_04.csv")
+)
 pedidos <- leer_crudo(rutas) |> armonizar() |> validar()
 a_domicilio <- pedidos |>
   dplyr::filter(canal != "retiro") |>
-  dplyr::transmute(pedido, fecha = format(fecha, "%Y-%m-%d"), mes = substr(fecha, 1, 7),
-                   sucursal, canal, distancia_km, tiempo_entrega_h, valor_pedido,
-                   calificacion, devuelto)
+  dplyr::transmute(
+    pedido,
+    fecha = format(fecha, "%Y-%m-%d"),
+    mes = substr(fecha, 1, 7),
+    sucursal,
+    canal,
+    distancia_km,
+    tiempo_entrega_h,
+    valor_pedido,
+    calificacion,
+    devuelto
+  )
 ojs_define(datos = a_domicilio)
 ```
 

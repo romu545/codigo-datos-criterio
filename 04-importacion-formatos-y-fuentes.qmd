@@ -2,13 +2,13 @@
 
 En el capítulo anterior (@sec-importacion) construimos el contrato de lectura con archivos de texto: declarar cómo está escrito el archivo, qué tipo tiene cada columna y qué columnas necesitamos. Ahora aplicamos ese mismo método a otras fuentes frecuentes: hojas de cálculo, archivos Parquet, respuestas JSON de APIs y bases de datos. Las herramientas cambian; las preguntas no.
 
-Seguimos con el mismo caso, las operaciones comerciales y los recaudos de una red regional de distribución. Los archivos de este capítulo están en la carpeta `datos/cap04/` del repositorio de materiales; el proyecto integrador también usa `ventas_2026_01.csv`, que está en `datos/cap03/`. El capítulo cierra con una guía para elegir formato y con un proyecto integrador que reúne cuatro fuentes en un solo archivo Parquet. Está pensado para una sesión de estudio de unas dos horas.
+Seguimos con el mismo caso, las operaciones comerciales y los recaudos de una red regional de distribución. Los archivos de este capítulo están en la carpeta `datos/cap04/` del repositorio de materiales; el proyecto integrador también usa `ventas_2026_01.csv`, que está en `datos/cap03/`. El capítulo cierra con una guía para elegir formato y con un proyecto integrador que reúne cuatro fuentes en un solo archivo Parquet.
 
 ::: {.callout-tip}
 ## Antes de empezar
 
 1. Abre de nuevo la carpeta de materiales en Positron para que las rutas relativas `datos/cap04/...` y `datos/cap03/...` funcionen.
-2. Los paquetes de R y de Python son los que instalaste al comienzo del capítulo anterior (@sec-importacion). No necesitas nada nuevo.
+2. Los paquetes de R y de Python son los que instalaste en la @sec-instalar-paquetes. No necesitas nada nuevo.
 3. Para leer Excel desde DuckDB se descarga la extensión `excel` la primera vez que se usa, así que necesitarás conexión a internet en ese paso.
 :::
 
@@ -20,11 +20,17 @@ Como en el capítulo anterior, las pestañas de DuckDB usan R, y declaramos al i
 use("readxl", c("excel_sheets", "read_excel"))
 use("readr", c("read_csv", "cols", "col_character"))
 use("purrr", c("map", "list_rbind"))
-use("arrow", c("write_parquet", "read_parquet", "write_dataset", "open_dataset"))
+use(
+  "arrow",
+  c("write_parquet", "read_parquet", "write_dataset", "open_dataset")
+)
 use("jsonlite", "fromJSON")
 use("dplyr", c("as_tibble", "rename", "count"))
 use("httr2", c("request", "req_url_query", "req_perform", "resp_body_string"))
-use("DBI", c("dbConnect", "dbGetQuery", "dbExecute", "dbListTables", "dbDisconnect"))
+use(
+  "DBI",
+  c("dbConnect", "dbGetQuery", "dbExecute", "dbListTables", "dbDisconnect")
+)
 use("duckdb", "duckdb")
 
 con <- dbConnect(duckdb())
@@ -72,7 +78,7 @@ sucursales
 
 ### Python
 
-```python
+```{python}
 import pandas as pd
 
 ruta_excel = "datos/cap04/catalogo_sucursales.xlsx"
@@ -89,19 +95,6 @@ sucursales = pd.read_excel(
 print(sucursales)
 ```
 
-```text
-['Portada', 'Sucursales', 'Metas_2026']
-  codigo_sucursal        nombre_sucursal        ciudad codigo_dane    region
-0             S01        Sucursal Bogotá        Bogotá       11001    Andina
-1             S02      Sucursal Medellín      Medellín       05001    Andina
-2             S03          Sucursal Cali          Cali       76001  Pacífico
-3             S04  Sucursal Barranquilla  Barranquilla       08001    Caribe
-4             S05     Sucursal Cartagena     Cartagena       13001    Caribe
-5             S06        Sucursal Cúcuta        Cúcuta       54001    Andina
-6             S07         Sucursal Pasto         Pasto       52001  Pacífico
-7             S08   Sucursal Santa Marta   Santa Marta       47001    Caribe
-```
-
 `pandas` necesita el paquete `openpyxl` para leer archivos `.xlsx`, que instalamos al inicio del capítulo anterior.
 
 ### DuckDB
@@ -111,7 +104,9 @@ print(sucursales)
 dbExecute(con, "INSTALL excel")
 dbExecute(con, "LOAD excel")
 
-dbGetQuery(con, r"(
+dbGetQuery(
+  con,
+  r"(
   SELECT *
   FROM read_xlsx(
     'datos/cap04/catalogo_sucursales.xlsx',
@@ -120,7 +115,8 @@ dbGetQuery(con, r"(
     stop_at_empty = true,
     all_varchar = true
   )
-)")
+)"
+)
 ```
 
 DuckDB lee Excel mediante su extensión `excel`, que se descarga la primera vez que se usa (requiere conexión a internet). En lugar de `skip`, indicamos el `range` de celdas que queremos leer: aquí, las columnas `A` a `E` desde la fila 4. Un rango abierto como `A4:E` tiene una trampa: DuckDB lo lee hasta la última fila posible de Excel y devuelve más de un millón de filas vacías. `stop_at_empty = true` le indica que se detenga en la primera fila vacía. DuckDB solo lee archivos `.xlsx`, no `.xls`. Consulta la [documentación de la extensión](https://duckdb.org/docs/stable/core_extensions/excel) para ver todas las opciones.
@@ -163,7 +159,7 @@ Nombrar el vector de hojas antes de `map()` tiene un propósito: `list_rbind(nam
 
 ### Python
 
-```python
+```{python}
 import re
 import pandas as pd
 
@@ -172,23 +168,19 @@ ruta_mensual = "datos/cap04/ventas_2025_por_mes.xlsx"
 hojas = pd.ExcelFile(ruta_mensual).sheet_names
 hojas_ventas = [h for h in hojas if re.match(r"^Ventas_", h)]
 
-por_hoja = pd.read_excel(ruta_mensual, sheet_name=hojas_ventas,
-                         dtype={"codigo_dane": str, "nit_cliente": str})
-ventas_2025 = (pd.concat(por_hoja, names=["hoja", None])
-               .reset_index(level="hoja")
-               .reset_index(drop=True))
+por_hoja = pd.read_excel(
+    ruta_mensual,
+    sheet_name=hojas_ventas,
+    dtype={"codigo_dane": str, "nit_cliente": str},
+)
+ventas_2025 = (
+    pd.concat(por_hoja, names=["hoja", None])
+    .reset_index(level="hoja")
+    .reset_index(drop=True)
+)
 
 print(ventas_2025.shape)
 print(ventas_2025["hoja"].value_counts().head(3))
-```
-
-```text
-(480, 5)
-hoja
-Ventas_Ene    40
-Ventas_Feb    40
-Ventas_Mar    40
-Name: count, dtype: int64
 ```
 
 Cuando `sheet_name` recibe una lista, `pandas` devuelve un diccionario con una tabla por hoja. `pd.concat()` las apila y usa las llaves del diccionario como columna `hoja`.
@@ -199,16 +191,23 @@ Cuando `sheet_name` recibe una lista, `pandas` devuelve un diccionario con una t
 #| label: duckdb-varias-hojas
 consultas <- sprintf(
   "SELECT '%1$s' AS hoja, * FROM read_xlsx('%2$s', sheet = '%1$s')",
-  hojas_ventas, ruta_mensual
+  hojas_ventas,
+  ruta_mensual
 )
 
-dbExecute(con, paste(
-  "CREATE OR REPLACE TABLE ventas_2025 AS",
-  paste(consultas, collapse = "\nUNION ALL BY NAME\n")
-))
+dbExecute(
+  con,
+  paste(
+    "CREATE OR REPLACE TABLE ventas_2025 AS",
+    paste(consultas, collapse = "\nUNION ALL BY NAME\n")
+  )
+)
 
-dbGetQuery(con, r"(SELECT hoja, count(*) AS filas FROM ventas_2025
-                 GROUP BY hoja ORDER BY hoja LIMIT 3)")
+dbGetQuery(
+  con,
+  r"(SELECT hoja, count(*) AS filas FROM ventas_2025
+                 GROUP BY hoja ORDER BY hoja LIMIT 3)"
+)
 ```
 
 `read_xlsx()` lee una sola hoja por llamada y DuckDB no tiene una función para listar las hojas de un libro. Por eso repartimos el trabajo: R descubre las hojas (el `hojas_ventas` de la pestaña de R) y arma una consulta por hoja, y DuckDB las lee y las une con `UNION ALL BY NAME`, que alinea las columnas por nombre. Es el patrón híbrido del capítulo anterior: cada herramienta hace lo que mejor sabe hacer. El resultado queda como una tabla de DuckDB, `ventas_2025`, que usaremos más adelante.
@@ -229,7 +228,7 @@ En lugar de crear una variable suelta por hoja, conviene guardarlas juntas en un
 #| label: excel-lista-hojas
 contrato_catalogo <- list(
   sucursales = list(sheet = "Sucursales", skip = 3, col_types = "text"),
-  metas      = list(sheet = "Metas_2026", col_types = c("text", "numeric"))
+  metas = list(sheet = "Metas_2026", col_types = c("text", "numeric"))
 )
 
 catalogo <- contrato_catalogo |>
@@ -245,7 +244,7 @@ Si todas las hojas compartieran el mismo contrato, bastaría con un vector de no
 
 ### Python
 
-```python
+```{python}
 ruta_excel = "datos/cap04/catalogo_sucursales.xlsx"
 
 contrato_catalogo = {
@@ -262,14 +261,6 @@ print({nombre: tabla.shape for nombre, tabla in catalogo.items()})
 print(catalogo["metas"].head(3))
 ```
 
-```text
-{'sucursales': (8, 5), 'metas': (8, 2)}
-  codigo_sucursal  meta_ventas
-0             S01    565000000
-1             S02    832000000
-2             S03    876000000
-```
-
 Es la misma idea de la pestaña de R: un diccionario con el contrato de cada hoja y una comprensión de diccionario que lo recorre. `**opciones` pasa el contenido de cada diccionario interno como argumentos de `read_excel()`.
 
 `pandas` ofrece un atajo: si `sheet_name` recibe una lista, como `["Sucursales", "Metas_2026"]`, devuelve directamente un diccionario con una tabla por hoja (`sheet_name=None` lee todas las hojas). Pero los demás argumentos se aplican a todas las hojas por igual: sin `skiprows=3`, las filas decorativas de `Sucursales` quedan como encabezado, y con `skiprows=3` la hoja `Metas_2026` perdería su encabezado y sus primeras filas. El atajo sirve cuando todas las hojas comparten el mismo contrato.
@@ -278,17 +269,23 @@ Es la misma idea de la pestaña de R: un diccionario con el contrato de cada hoj
 
 ```{r}
 #| label: duckdb-hojas-distintas
-dbExecute(con, r"(
+dbExecute(
+  con,
+  r"(
   CREATE OR REPLACE TABLE sucursales AS
   SELECT * FROM read_xlsx('datos/cap04/catalogo_sucursales.xlsx',
                           sheet = 'Sucursales', range = 'A4:E',
                           stop_at_empty = true, all_varchar = true)
-)")
-dbExecute(con, r"(
+)"
+)
+dbExecute(
+  con,
+  r"(
   CREATE OR REPLACE TABLE metas AS
   SELECT * FROM read_xlsx('datos/cap04/catalogo_sucursales.xlsx',
                           sheet = 'Metas_2026')
-)")
+)"
+)
 
 dbListTables(con)
 ```
@@ -299,7 +296,9 @@ En DuckDB el contenedor natural es la propia base de datos: una tabla por hoja, 
 
 ```{r}
 #| label: duckdb-variant
-dbExecute(con, r"(
+dbExecute(
+  con,
+  r"(
   CREATE OR REPLACE TABLE libro AS
   SELECT 'sucursales' AS hoja, list(t)::VARIANT AS filas
   FROM read_xlsx('datos/cap04/catalogo_sucursales.xlsx', sheet = 'Sucursales',
@@ -307,15 +306,19 @@ dbExecute(con, r"(
   UNION ALL
   SELECT 'metas', list(t)::VARIANT
   FROM read_xlsx('datos/cap04/catalogo_sucursales.xlsx', sheet = 'Metas_2026') AS t
-)")
+)"
+)
 
-dbGetQuery(con, r"(
+dbGetQuery(
+  con,
+  r"(
   SELECT unnest(filas::STRUCT(codigo_sucursal VARCHAR, meta_ventas DOUBLE)[],
                 recursive := true)
   FROM libro
   WHERE hoja = 'metas'
   LIMIT 3
-)")
+)"
+)
 ```
 
 Funciona, pero va contra la herramienta: para consultar una hoja hay que declarar otra vez su estructura y desanidarla con `unnest()`, y se pierden los tipos y las estadísticas que DuckDB usa para consultar rápido. Para guardar juntas tablas con estructuras distintas, DuckDB no es el contenedor más eficiente; su ventaja aparece cuando cada hoja es una tabla y se van a combinar con SQL.
@@ -395,8 +398,12 @@ Guardamos las ventas consolidadas del Ejemplo 4.2 en un conjunto particionado po
 #| label: parquet-particiones
 ventas_2025$mes <- as.integer(format(ventas_2025$fecha, "%m"))
 
-write_dataset(ventas_2025, "datos/cap04/ventas_2025_particionado",
-              format = "parquet", partitioning = "mes")
+write_dataset(
+  ventas_2025,
+  "datos/cap04/ventas_2025_particionado",
+  format = "parquet",
+  partitioning = "mes"
+)
 
 list.files("datos/cap04/ventas_2025_particionado") |> head(3)
 
@@ -411,7 +418,7 @@ nrow(diciembre)
 
 ### Python
 
-```python
+```{python}
 ventas_2025["mes"] = ventas_2025["fecha"].dt.month
 
 ventas_2025.to_parquet(
@@ -421,13 +428,10 @@ ventas_2025.to_parquet(
     existing_data_behavior="delete_matching",
 )
 
-diciembre = pd.read_parquet("datos/cap04/ventas_2025_particionado",
-                            filters=[("mes", "==", 12)])
+diciembre = pd.read_parquet(
+    "datos/cap04/ventas_2025_particionado", filters=[("mes", "==", 12)]
+)
 print(len(diciembre))
-```
-
-```text
-40
 ```
 
 `partition_cols` crea una carpeta por mes y `filters` lee solo las carpetas que cumplen la condición. La opción `existing_data_behavior="delete_matching"` reemplaza las particiones existentes; sin ella, cada ejecución agregaría archivos nuevos y duplicaría las filas.
@@ -436,18 +440,24 @@ print(len(diciembre))
 
 ```{r}
 #| label: duckdb-particiones
-dbExecute(con, r"(
+dbExecute(
+  con,
+  r"(
   COPY (SELECT *, month(fecha) AS mes FROM ventas_2025)
   TO 'datos/cap04/ventas_2025_particionado_duckdb'
   (FORMAT parquet, PARTITION_BY (mes), OVERWRITE_OR_IGNORE)
-)")
+)"
+)
 
-dbGetQuery(con, r"(
+dbGetQuery(
+  con,
+  r"(
   SELECT count(*) AS filas_diciembre
   FROM read_parquet('datos/cap04/ventas_2025_particionado_duckdb/*/*.parquet',
                     hive_partitioning = true)
   WHERE mes = 12
-)")
+)"
+)
 ```
 
 `PARTITION_BY` escribe una carpeta por mes y `hive_partitioning = true` recupera la columna `mes` a partir del nombre de cada carpeta. El filtro `WHERE mes = 12` hace que DuckDB lea solo la carpeta de diciembre.
@@ -463,7 +473,9 @@ Las afirmaciones sobre rendimiento se comprueban. Mide con tus propios datos y t
 ```{r}
 #| label: generar-historico
 #| eval: false
-dbExecute(con, r"(
+dbExecute(
+  con,
+  r"(
   COPY (
     SELECT
       i + 1 AS id_venta,
@@ -483,7 +495,8 @@ dbExecute(con, r"(
     ) AS s ON s.k = hash(i, 'sucursal') % 8
     ORDER BY id_venta
   ) TO 'datos/cap04/ventas_historico_grande.csv' (HEADER, DELIMITER ',')
-)")
+)"
+)
 ```
 
 DuckDB construye los 2,5 millones de filas con `range()` y las escribe directamente al disco, sin pasar por la memoria de R; en un equipo corriente tarda unos segundos. Los valores salen de `hash()` en lugar de números aleatorios, así que con la misma versión de DuckDB el archivo es idéntico cada vez que se genera, y tus resultados se pueden comparar con los de otras personas. La misma consulta funciona en Python dentro de `duckdb.sql()`.
@@ -518,12 +531,17 @@ round(file.size(c(csv, parquet)) / 1024^2, 1)
 
 # 3. Tiempos: cinco repeticiones de cada lectura
 resultados <- bench::mark(
-  csv_completo     = read_csv(csv, col_types = tipos),
+  csv_completo = read_csv(csv, col_types = tipos),
   parquet_completo = read_parquet(parquet),
-  csv_2col         = read_csv(csv, col_types = tipos,
-                              col_select = c(codigo_dane, valor_venta)),
-  parquet_2col     = read_parquet(parquet,
-                                  col_select = c(codigo_dane, valor_venta)),
+  csv_2col = read_csv(
+    csv,
+    col_types = tipos,
+    col_select = c(codigo_dane, valor_venta)
+  ),
+  parquet_2col = read_parquet(
+    parquet,
+    col_select = c(codigo_dane, valor_venta)
+  ),
   iterations = 5,
   check = FALSE
 )
@@ -535,7 +553,8 @@ resultados[, c("expression", "min", "median", "mem_alloc")]
 
 ### Python
 
-```python
+```{python}
+#| eval: false
 import statistics
 import time
 from pathlib import Path
@@ -546,6 +565,7 @@ parquet = "datos/cap04/ventas_historico.parquet"
 esquema = {"codigo_dane": pl.String, "nit_cliente": pl.String}
 dos_columnas = ["codigo_dane", "valor_venta"]
 
+
 def medir(funcion, repeticiones=5):
     """Mediana, en segundos, de varias ejecuciones de la función."""
     tiempos = []
@@ -555,6 +575,7 @@ def medir(funcion, repeticiones=5):
         tiempos.append(time.perf_counter() - inicio)
     return round(statistics.median(tiempos), 2)
 
+
 # 1. Convertir a Parquet
 pl.read_csv(csv, schema_overrides=esquema).write_parquet(parquet)
 
@@ -562,10 +583,23 @@ pl.read_csv(csv, schema_overrides=esquema).write_parquet(parquet)
 print([round(Path(p).stat().st_size / 1024**2, 1) for p in (csv, parquet)])
 
 # 3. Tiempos (segundos)
-print("CSV completo:    ", medir(lambda: pl.read_csv(csv, schema_overrides=esquema)))
+print(
+    "CSV completo:    ",
+    medir(lambda: pl.read_csv(csv, schema_overrides=esquema)),
+)
 print("Parquet completo:", medir(lambda: pl.read_parquet(parquet)))
-print("CSV 2 columnas:  ", medir(lambda: pl.read_csv(csv, columns=dos_columnas, schema_overrides=esquema)))
-print("Parquet 2 col.:  ", medir(lambda: pl.read_parquet(parquet, columns=dos_columnas)))
+print(
+    "CSV 2 columnas:  ",
+    medir(
+        lambda: pl.read_csv(
+            csv, columns=dos_columnas, schema_overrides=esquema
+        )
+    ),
+)
+print(
+    "Parquet 2 col.:  ",
+    medir(lambda: pl.read_parquet(parquet, columns=dos_columnas)),
+)
 ```
 
 ### DuckDB
@@ -581,17 +615,33 @@ lectura_csv <- sprintf(
 )
 
 # 1. Convertir a Parquet (sin cargar todo el CSV en la memoria de R)
-dbExecute(con, sprintf("COPY (SELECT * FROM %s) TO '%s' (FORMAT parquet)",
-                       lectura_csv, parquet))
+dbExecute(
+  con,
+  sprintf(
+    "COPY (SELECT * FROM %s) TO '%s' (FORMAT parquet)",
+    lectura_csv,
+    parquet
+  )
+)
 
 # 3. Tiempos: cinco repeticiones de cada consulta
 bench::mark(
-  csv_completo     = dbGetQuery(con, sprintf("SELECT * FROM %s", lectura_csv)),
+  csv_completo = dbGetQuery(con, sprintf("SELECT * FROM %s", lectura_csv)),
   parquet_completo = dbGetQuery(con, sprintf("SELECT * FROM '%s'", parquet)),
-  csv_2col         = dbGetQuery(con, sprintf(
-    "SELECT codigo_dane, valor_venta FROM %s", lectura_csv)),
-  parquet_2col     = dbGetQuery(con, sprintf(
-    "SELECT codigo_dane, valor_venta FROM '%s'", parquet)),
+  csv_2col = dbGetQuery(
+    con,
+    sprintf(
+      "SELECT codigo_dane, valor_venta FROM %s",
+      lectura_csv
+    )
+  ),
+  parquet_2col = dbGetQuery(
+    con,
+    sprintf(
+      "SELECT codigo_dane, valor_venta FROM '%s'",
+      parquet
+    )
+  ),
   iterations = 5,
   check = FALSE
 )[, c("expression", "min", "median")]
@@ -646,7 +696,7 @@ operaciones
 
 ### Python
 
-```python
+```{python}
 import json
 import pandas as pd
 
@@ -655,22 +705,11 @@ with open("datos/cap04/respuesta_api_trm.json", encoding="utf-8") as f:
 
 print(respuesta["status"], respuesta["paginacion"])
 
-operaciones = (
-    pd.json_normalize(respuesta["resultados"], sep="_")
-    .rename(columns={"cliente_nit": "nit", "cliente_ciudad": "ciudad"})
+operaciones = pd.json_normalize(respuesta["resultados"], sep="_").rename(
+    columns={"cliente_nit": "nit", "cliente_ciudad": "ciudad"}
 )
 
 print(operaciones.head())
-```
-
-```text
-ok {'pagina': 1, 'por_pagina': 50, 'total': 50}
-   id_operacion       fecha  monto_usd         nit        ciudad
-0             1  2026-01-20    1721.34  0516815654        Bogotá
-1             2  2026-01-14    2875.45  0360653251  Barranquilla
-2             3  2026-01-04     961.34  0277069447        Bogotá
-3             4  2026-01-08     808.72  0128781621        Bogotá
-4             5  2026-01-27    2287.10  0736913884     Cartagena
 ```
 
 `json_normalize()` aplana el objeto anidado: el separador `sep="_"` forma los nombres `cliente_nit` y `cliente_ciudad`.
@@ -679,7 +718,9 @@ ok {'pagina': 1, 'por_pagina': 50, 'total': 50}
 
 ```{r}
 #| label: duckdb-json
-operaciones_duck <- dbGetQuery(con, r"(
+operaciones_duck <- dbGetQuery(
+  con,
+  r"(
   SELECT
     r.id_operacion,
     r.fecha,
@@ -690,7 +731,8 @@ operaciones_duck <- dbGetQuery(con, r"(
     SELECT unnest(resultados) AS r
     FROM read_json('datos/cap04/respuesta_api_trm.json')
   )
-)")
+)"
+)
 
 head(operaciones_duck)
 ```
@@ -716,12 +758,13 @@ texto <- request("https://www.datos.gov.co/resource/xdk5-pm3f.json") |>
   req_perform() |>
   resp_body_string()
 
-writeLines(texto, "datos/cap04/copia_api.json")   # copia local
+writeLines(texto, "datos/cap04/copia_api.json") # copia local
 ```
 
 ### Python
 
-```python
+```{python}
+#| eval: false
 import requests
 from pathlib import Path
 
@@ -739,10 +782,13 @@ Path("datos/cap04/copia_api.json").write_text(r.text, encoding="utf-8")
 ```{r}
 #| label: api-duckdb
 #| eval: false
-dbExecute(con, r"(
+dbExecute(
+  con,
+  r"(
   COPY (SELECT * FROM read_json('https://www.datos.gov.co/resource/xdk5-pm3f.json?$limit=5'))
   TO 'datos/cap04/copia_api.parquet' (FORMAT parquet)
-)")
+)"
+)
 ```
 
 :::
@@ -774,7 +820,9 @@ con_ops <- dbConnect(
 
 dbListTables(con_ops)
 
-resumen <- dbGetQuery(con_ops, r"(
+resumen <- dbGetQuery(
+  con_ops,
+  r"(
   SELECT c.ciudad,
          count(*)                       AS n_facturas,
          round(sum(f.valor_factura), 2) AS total_facturado
@@ -783,7 +831,9 @@ resumen <- dbGetQuery(con_ops, r"(
   WHERE f.fecha BETWEEN ? AND ?
   GROUP BY c.ciudad
   ORDER BY total_facturado DESC
-)", params = list(as.Date("2026-01-01"), as.Date("2026-01-31")))
+)",
+  params = list(as.Date("2026-01-01"), as.Date("2026-01-31"))
+)
 
 dbDisconnect(con_ops)
 resumen
@@ -791,14 +841,15 @@ resumen
 
 ### Python
 
-```python
+```{python}
 import duckdb
 
 con = duckdb.connect("datos/cap04/operaciones.duckdb", read_only=True)
 
 print(con.sql("SHOW TABLES").fetchall())
 
-resumen = con.execute("""
+resumen = con.execute(
+    """
     SELECT c.ciudad,
            count(*)                       AS n_facturas,
            round(sum(f.valor_factura), 2) AS total_facturado
@@ -807,23 +858,12 @@ resumen = con.execute("""
     WHERE f.fecha BETWEEN ? AND ?
     GROUP BY c.ciudad
     ORDER BY total_facturado DESC
-""", ["2026-01-01", "2026-01-31"]).df()
+""",
+    ["2026-01-01", "2026-01-31"],
+).df()
 
 con.close()
 print(resumen)
-```
-
-```text
-[('clientes',), ('facturas',)]
-         ciudad  n_facturas  total_facturado
-0          Cali         161     1.617864e+08
-1   Santa Marta         140     1.449221e+08
-2        Cúcuta         127     1.394620e+08
-3  Barranquilla         127     1.379247e+08
-4        Bogotá         117     1.162478e+08
-5     Cartagena         121     1.144355e+08
-6      Medellín         105     1.118805e+08
-7         Pasto         108     1.062495e+08
 ```
 
 :::
@@ -869,19 +909,19 @@ Antes de escribir código, completa el **contrato de lectura** de cada fuente: q
 # llámalas con el paquete delante, por ejemplo readr::read_delim().
 
 # 1. Ventas (CSV)
-ventas <- ...          # TODO
+ventas <- ... # TODO
 
 # 2. Sucursales (Excel)
-sucursales <- ...      # TODO
+sucursales <- ... # TODO
 
 # 3. Operaciones (JSON)
-operaciones <- ...     # TODO
+operaciones <- ... # TODO
 
 # 4. Clientes (base de datos)
-clientes <- ...        # TODO
+clientes <- ... # TODO
 
 # 5. Consolidar y verificar
-consolidado <- ...     # TODO
+consolidado <- ... # TODO
 
 # 6. Exportar
 write_parquet(consolidado, "datos/cap04/consolidado_cap04.parquet")
@@ -889,25 +929,26 @@ write_parquet(consolidado, "datos/cap04/consolidado_cap04.parquet")
 
 ### Python
 
-```python
+```{python}
+#| eval: false
 import json
 import duckdb
 import pandas as pd
 
 # 1. Ventas (CSV)
-ventas = ...           # TODO
+ventas = ...  # TODO
 
 # 2. Sucursales (Excel)
-sucursales = ...       # TODO
+sucursales = ...  # TODO
 
 # 3. Operaciones (JSON)
-operaciones = ...      # TODO
+operaciones = ...  # TODO
 
 # 4. Clientes (base de datos)
-clientes = ...         # TODO
+clientes = ...  # TODO
 
 # 5. Consolidar y verificar
-consolidado = ...      # TODO
+consolidado = ...  # TODO
 
 # 6. Exportar
 consolidado.to_parquet("datos/cap04/consolidado_cap04.parquet", index=False)

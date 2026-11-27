@@ -17,8 +17,14 @@ execute:
 source("../scripts/flujo_entregas.R", chdir = TRUE)
 library(ggplot2)
 carpeta <- "../datos/cap13"
-rutas <- c(list.files(file.path(carpeta, "entregas"), pattern = "\\.csv$", full.names = TRUE),
-           file.path(carpeta, "abril", "entregas_2026_04.csv"))
+rutas <- c(
+  list.files(
+    file.path(carpeta, "entregas"),
+    pattern = "\\.csv$",
+    full.names = TRUE
+  ),
+  file.path(carpeta, "abril", "entregas_2026_04.csv")
+)
 pedidos <- leer_crudo(rutas) |> armonizar() |> validar()
 a_domicilio <- dplyr::filter(pedidos, canal != "retiro")
 indicadores <- resumir(pedidos)
@@ -35,9 +41,23 @@ theme_set(theme_minimal(base_size = 18))
 #| fig-height: 5
 #| fig-alt: "Porcentaje de entregas tardías por mes: Cali en negro, muy por encima de las demás sucursales en gris."
 ggplot(indicadores, aes(mes, pct_tardias, group = sucursal)) +
-  geom_line(data = dplyr::filter(indicadores, sucursal != "S03"), color = "grey80") +
-  geom_line(data = dplyr::filter(indicadores, sucursal == "S03"), linewidth = 1.5) +
-  annotate("text", x = 4.1, y = 29, label = "Cali", hjust = 0, fontface = "bold", size = 6) +
+  geom_line(
+    data = dplyr::filter(indicadores, sucursal != "S03"),
+    color = "grey80"
+  ) +
+  geom_line(
+    data = dplyr::filter(indicadores, sucursal == "S03"),
+    linewidth = 1.5
+  ) +
+  annotate(
+    "text",
+    x = 4.1,
+    y = 29,
+    label = "Cali",
+    hjust = 0,
+    fontface = "bold",
+    size = 6
+  ) +
   labs(x = NULL, y = "% de entregas de más de 20 horas")
 ```
 

@@ -29,11 +29,15 @@ dias <- seq(as.Date("2026-01-02"), as.Date("2026-03-31"), by = "day")
 peso_dia <- ifelse(format(dias, "%u") == "7", 0.35, 1)
 
 pedidos <- data.frame(
-  pedido   = sprintf("PD-%05d", seq_len(n)),
-  fecha    = sort(sample(dias, n, replace = TRUE, prob = peso_dia)),
+  pedido = sprintf("PD-%05d", seq_len(n)),
+  fecha = sort(sample(dias, n, replace = TRUE, prob = peso_dia)),
   sucursal = sample(sucursales, n, replace = TRUE, prob = peso),
-  canal    = sample(c("domicilio", "web", "retiro"), n, replace = TRUE,
-                    prob = c(0.45, 0.35, 0.20))
+  canal = sample(
+    c("domicilio", "web", "retiro"),
+    n,
+    replace = TRUE,
+    prob = c(0.45, 0.35, 0.20)
+  )
 )
 
 # Distancia: no aplica al retiro en tienda (faltante estructural)
@@ -55,7 +59,7 @@ pedidos$valor_pedido <- round(rlnorm(n, log(180000), 0.7), -2)
 corporativos <- sample(n, 6)
 pedidos$valor_pedido[corporativos] <- round(runif(6, 12e6, 30e6), -3)
 pedidos$unidades[corporativos] <- sample(300:900, 6)
-pedidos$valor_pedido[sample(n, 22)] <- NA            # faltantes al azar
+pedidos$valor_pedido[sample(n, 22)] <- NA # faltantes al azar
 
 # Calificación de 1 a 5: baja cuando la entrega es tardía
 tardia <- !is.na(pedidos$tiempo_entrega_h) & pedidos$tiempo_entrega_h > 20

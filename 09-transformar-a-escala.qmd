@@ -7,7 +7,7 @@ tablero <- left_join(ventas_mes, recaudos_mes, by = c("sucursal", "mes"))
 tablero <- left_join(tablero, visitas_mes, by = c("sucursal", "mes"))
 tablero <- left_join(tablero, devoluciones_mes, by = c("sucursal", "mes"))
 
-tablero$valor_ventas    <- round(tablero$valor_ventas / 1e6, 1)
+tablero$valor_ventas <- round(tablero$valor_ventas / 1e6, 1)
 tablero$valor_recaudado <- round(tablero$valor_recaudado / 1e6, 1)
 ```
 
@@ -41,22 +41,59 @@ La última parte del capítulo responde una pregunta que suele resolverse por co
 #| message: false
 use("arrow", "read_parquet")
 use("readr", c("read_csv", "cols"))
-use("dplyr", c("select", "filter", "arrange", "desc", "mutate", "summarise", "count",
-               "n", "left_join", "full_join", "join_by", "distinct", "case_when",
-               "coalesce", "across", "where", "starts_with", "rename_with", "tibble"))
+use(
+  "dplyr",
+  c(
+    "select",
+    "filter",
+    "arrange",
+    "desc",
+    "mutate",
+    "summarise",
+    "count",
+    "n",
+    "left_join",
+    "full_join",
+    "join_by",
+    "distinct",
+    "case_when",
+    "coalesce",
+    "across",
+    "where",
+    "starts_with",
+    "rename_with",
+    "tibble"
+  )
+)
 use("tidyr", c("complete", "nest", "unnest"))
-use("purrr", c("map", "map_int", "map_dbl", "map_chr", "map_lgl", "reduce",
-               "accumulate", "safely", "list_rbind", "walk"))
+use(
+  "purrr",
+  c(
+    "map",
+    "map_int",
+    "map_dbl",
+    "map_chr",
+    "map_lgl",
+    "reduce",
+    "accumulate",
+    "safely",
+    "list_rbind",
+    "walk"
+  )
+)
 use("DBI", c("dbConnect", "dbGetQuery", "dbExecute", "dbDisconnect"))
 use("duckdb", "duckdb")
+use("collapse", c("fgroup_by", "fsummarise", "fsum", "fmean"))
 
 con <- dbConnect(duckdb())
 segundos <- function(expr) round(system.time(expr)[["elapsed"]], 3)
 
 ventas <- read_parquet("datos/cap07/ventas_2026_t1.parquet") |>
-  mutate(valor_bruto = unidades * precio_unitario,
-         valor_neto  = valor_bruto * (1 - descuento),
-         mes         = as.integer(format(fecha, "%m")))
+  mutate(
+    valor_bruto = unidades * precio_unitario,
+    valor_neto = valor_bruto * (1 - descuento),
+    mes = as.integer(format(fecha, "%m"))
+  )
 ```
 
 `segundos()` es la función del Ejemplo 7.7 para medir tiempos; la volvemos a usar al comparar formas de iterar.
@@ -101,13 +138,17 @@ Queremos, por sucursal, el total y el promedio por venta de las unidades, el val
 #| label: across-resumen
 resumen <- ventas |>
   summarise(
-    across(c(unidades, valor_bruto, valor_neto),
-           list(total = sum, prom = mean),
-           .names = "{.col}_{.fn}"),
+    across(
+      c(unidades, valor_bruto, valor_neto),
+      list(total = sum, prom = mean),
+      .names = "{.col}_{.fn}"
+    ),
     .by = sucursal
   ) |>
-  mutate(across(starts_with("valor"), \(x) round(x / 1e6, 2)),
-         across(starts_with("unidades"), \(x) round(x, 1))) |>
+  mutate(
+    across(starts_with("valor"), \(x) round(x / 1e6, 2)),
+    across(starts_with("unidades"), \(x) round(x, 1))
+  ) |>
   arrange(sucursal)
 
 head(resumen, 3)
@@ -125,7 +166,9 @@ columnas_valor <- grep("^valor", names(resumen), value = TRUE)
 columnas_valor
 
 resumen_base <- resumen
-resumen_base[columnas_valor] <- lapply(resumen_base[columnas_valor], \(x) x * 1e6)
+resumen_base[columnas_valor] <- lapply(resumen_base[columnas_valor], \(x) {
+  x * 1e6
+})
 resumen_base[1, columnas_valor]
 
 vapply(ventas, is.numeric, logical(1))
@@ -135,7 +178,7 @@ vapply(ventas, is.numeric, logical(1))
 
 ### Python
 
-```python
+```{python}
 import pandas as pd
 import numpy as np
 
@@ -147,33 +190,24 @@ ventas = ventas.assign(
     mes=lambda d: d["fecha"].dt.month,
 )
 
-resumen = (ventas
-           .groupby("sucursal")[["unidades", "valor_bruto", "valor_neto"]]
-           .agg(["sum", "mean"]))
+resumen = ventas.groupby("sucursal")[
+    ["unidades", "valor_bruto", "valor_neto"]
+].agg(["sum", "mean"])
 print(resumen.columns[:2].tolist())
-```
-
-```text
-[('unidades', 'sum'), ('unidades', 'mean')]
 ```
 
 Con una lista de funciones, `agg()` devuelve columnas de dos niveles: la columna y la función. Para trabajar con ellas conviene aplanarlas en un solo nombre, con una **comprensión de listas** que recorre los pares:
 
-```python
+```{python}
 nombres = {"sum": "total", "mean": "prom"}
 resumen.columns = [f"{col}_{nombres[fun]}" for col, fun in resumen.columns]
 
 valor = resumen.filter(like="valor").columns
 resumen[valor] = (resumen[valor] / 1e6).round(2)
-resumen = resumen.round({"unidades_total": 1, "unidades_prom": 1}).reset_index()
+resumen = resumen.round(
+    {"unidades_total": 1, "unidades_prom": 1}
+).reset_index()
 print(resumen.head(3).to_string())
-```
-
-```text
-  sucursal  unidades_total  unidades_prom  valor_bruto_total  valor_bruto_prom  valor_neto_total  valor_neto_prom
-0      S01           13627           14.0             219.01              0.22            212.35             0.22
-1      S02           13244           14.5             196.95              0.22            190.51             0.21
-2      S03           11358           14.2             175.31              0.22            169.56             0.21
 ```
 
 En `pandas` las operaciones aritméticas ya trabajan sobre varias columnas a la vez: `resumen[valor] / 1e6` divide todas las columnas elegidas. Por eso no hace falta un equivalente de `across()` para casos como este. `select_dtypes("number")` elige las columnas por tipo.
@@ -182,7 +216,9 @@ En `pandas` las operaciones aritméticas ya trabajan sobre varias columnas a la 
 
 ```{r}
 #| label: duckdb-columns
-dbGetQuery(con, r"(
+dbGetQuery(
+  con,
+  r"(
   SELECT sucursal,
          sum(unidades)           AS unidades_total,
          round(avg(unidades), 1) AS unidades_prom,
@@ -196,7 +232,8 @@ dbGetQuery(con, r"(
   GROUP BY sucursal
   ORDER BY sucursal
   LIMIT 3
-)")
+)"
+)
 ```
 
 `COLUMNS()` con una expresión regular se expande a todas las columnas cuyo nombre coincide, y la función que lo rodea se aplica a cada una. El grupo de la expresión, entre paréntesis, se puede usar en el alias como `\1`: así `"\1_total"` produce `valor_bruto_total` y `valor_neto_total`. Las unidades van aparte porque no se pasan a millones: cuando dos grupos de columnas llevan un tratamiento distinto, cada grupo tiene su propio `COLUMNS()`, igual que en R cada grupo tiene su propio `across()`.
@@ -204,6 +241,70 @@ dbGetQuery(con, r"(
 `COLUMNS()` también acepta una función anónima que recibe el nombre de cada columna, como `COLUMNS(lambda c: c LIKE 'valor%')`. En DuckDB 2.0 las funciones anónimas se escriben con `lambda`, como en Python.
 
 :::
+
+### Otra herramienta: `collapse` {#sec-otra-collapse}
+
+Este libro escribe el código de R con `dplyr`, porque es la sintaxis que más gente lee y la que más ayuda encuentra. Pero no es la única, y elegir bien exige saber cuándo otra rinde más. En las secciones «Otra herramienta» resolvemos el mismo problema con una alternativa y decimos cuándo conviene.
+
+[collapse](https://sebkrantz.github.io/collapse/) reescribe en C y C++ las operaciones estadísticas más comunes. Sus funciones empiezan por `f` (`fsum()`, `fmean()`, `fgroup_by()`, `fsummarise()`) y se leen casi igual que las de `dplyr`. El resumen del Ejemplo guiado 9.1:
+
+```{r}
+#| label: collapse-resumen
+resumen_collapse <- ventas |>
+  fgroup_by(sucursal) |>
+  fsummarise(across(
+    c(unidades, valor_bruto, valor_neto),
+    list(total = fsum, prom = fmean)
+  ))
+
+names(resumen_collapse)
+```
+
+Los mismos nombres y, sin redondear, los mismos valores. En una sola ejecución sobre 6.000 filas, la diferencia de velocidad no importa: las dos tardan milésimas de segundo. Importa cuando **el mismo resumen se repite miles de veces**, como en una simulación o en el remuestreo que veremos en el @sec-explorar. Aquí, 1.000 remuestreos del valor neto medio por sucursal, con las dos herramientas trabajando sobre los mismos datos:
+
+```{r}
+#| label: collapse-repetir
+remuestrear <- function(resumir, veces = 1000) {
+  set.seed(2026)
+  for (i in seq_len(veces)) {
+    filas <- sample(nrow(ventas), replace = TRUE)
+    resumir(ventas$valor_neto[filas], ventas$sucursal[filas])
+  }
+}
+
+con_dplyr <- \(valor, sucursal) {
+  summarise(tibble(valor, sucursal), prom = mean(valor), .by = sucursal)
+}
+con_collapse <- \(valor, sucursal) fmean(valor, g = sucursal)
+
+tiempos <- c(
+  dplyr = segundos(remuestrear(con_dplyr)),
+  collapse = segundos(remuestrear(con_collapse))
+)
+tiempos
+```
+
+`collapse` tarda `r round(tiempos[["dplyr"]] / tiempos[["collapse"]])` veces menos. Y buena parte de su tiempo se va en `sample()`, no en resumir. La diferencia viene de que `summarise()` hace en cada llamada un trabajo fijo (construir la tabla, revisar los grupos y armar el resultado) que en una ejecución no se nota y en mil sí.
+
+**Una diferencia que no se ve.** `fmean()` no es `mean()` con otro nombre: por defecto ignora los faltantes.
+
+```{r}
+#| label: collapse-na
+c(mean = mean(c(1, NA, 3)), fmean = fmean(c(1, NA, 3)))
+```
+
+Con `mean()`, un faltante produce `NA` y obliga a decidir qué hacer con él. Con `fmean()`, el faltante desaparece del cálculo sin aviso. Ninguna de las dos es incorrecta, pero cambiar de herramienta sin saberlo cambia los resultados. Es la clase de detalle que hay que revisar antes de reemplazar una función por otra «equivalente».
+
+| Conviene `dplyr` cuando... | Conviene `collapse` cuando... |
+|---|---|
+| El código lo van a leer y mantener otras personas. | El mismo resumen se repite miles de veces: simulaciones, remuestreo, funciones dentro de bucles. |
+| El cálculo se ejecuta una vez y tarda poco. | Hay muchos grupos o muchas filas, y la memoria y el tiempo importan. |
+| Se necesita el resto del ecosistema: `tidyr`, `ggplot2`, DuckDB con `duckplyr`. | Un script de producción debe tener pocas dependencias: `collapse` solo depende de `Rcpp`. |
+| Se quiere el comportamiento de R base ante los faltantes. | Se conoce y se quiere su manejo de faltantes por defecto. |
+
+: Cuándo elegir `dplyr` o `collapse` {#tbl-dplyr-collapse}
+
+En Python, `pandas` ya ejecuta sus resúmenes por grupo en código compilado, así que la distancia es menor; cuando el resumen se repite mucho, la alternativa equivalente es trabajar con los arreglos de `numpy` directamente, o pasar a `polars`.
 
 ## Muchas tablas: reducir una lista {#sec-reducir}
 
@@ -230,7 +331,11 @@ Primero leemos todos los archivos en una lista con nombre, como en el @sec-impor
 
 ```{r}
 #| label: reducir-leer
-rutas <- list.files("datos/cap09/indicadores", pattern = "\\.csv$", full.names = TRUE)
+rutas <- list.files(
+  "datos/cap09/indicadores",
+  pattern = "\\.csv$",
+  full.names = TRUE
+)
 names(rutas) <- tools::file_path_sans_ext(basename(rutas))
 
 indicadores <- map(rutas, read_csv, show_col_types = FALSE)
@@ -255,7 +360,9 @@ Como en el @sec-transformar, la forma de que el problema detenga el código es d
 ```{r}
 #| label: reducir-relacion
 #| error: true
-unir <- \(x, y) left_join(x, y, by = c("sucursal", "mes"), relationship = "one-to-one")
+unir <- \(x, y) {
+  left_join(x, y, by = c("sucursal", "mes"), relationship = "one-to-one")
+}
 tablero <- reduce(otras, unir, .init = indicadores$ventas_mes)
 ```
 
@@ -280,7 +387,7 @@ En R base, la misma reducción es `Reduce(unir, otras, indicadores$ventas_mes)`.
 
 ### Python
 
-```python
+```{python}
 from functools import reduce
 from itertools import accumulate
 from pathlib import Path
@@ -289,46 +396,41 @@ rutas = sorted(Path("datos/cap09/indicadores").glob("*.csv"))
 indicadores = {ruta.stem: pd.read_csv(ruta) for ruta in rutas}
 print({nombre: len(tabla) for nombre, tabla in indicadores.items()})
 
+
 def unir(x, y):
     return x.merge(y, on=["sucursal", "mes"], how="left")
 
-base = indicadores["ventas_mes"]
-otras = [tabla for nombre, tabla in indicadores.items() if nombre != "ventas_mes"]
-print([len(paso) for paso in accumulate(otras, unir, initial=base)])
-```
 
-```text
-{'devoluciones_mes': 25, 'recaudos_mes': 24, 'ventas_mes': 24, 'visitas_mes': 23}
-[24, 25, 25, 25]
+base = indicadores["ventas_mes"]
+otras = [
+    tabla for nombre, tabla in indicadores.items() if nombre != "ventas_mes"
+]
+print([len(paso) for paso in accumulate(otras, unir, initial=base)])
 ```
 
 La **comprensión de diccionarios** `{ruta.stem: ... for ruta in rutas}` arma un diccionario con el nombre del archivo como clave y la tabla como valor: el equivalente de la lista con nombre de R. `accumulate()` de `itertools` recibe la función y el valor inicial en `initial`. Con `validate="1:1"` en `merge()`, la reducción se detiene en la tabla con la clave repetida:
 
-```python
+```{python}
+#| error: true
 def unir(x, y):
     return x.merge(y, on=["sucursal", "mes"], how="left", validate="1:1")
+
 
 tablero = reduce(unir, otras, base)
 ```
 
-```text
-MergeError: Merge keys are not unique in right dataset; not a one-to-one merge
-```
-
-```python
-indicadores = {nombre: tabla.drop_duplicates() for nombre, tabla in indicadores.items()}
+```{python}
+indicadores = {
+    nombre: tabla.drop_duplicates() for nombre, tabla in indicadores.items()
+}
 base = indicadores["ventas_mes"]
-otras = [tabla for nombre, tabla in indicadores.items() if nombre != "ventas_mes"]
+otras = [
+    tabla for nombre, tabla in indicadores.items() if nombre != "ventas_mes"
+]
 
 tablero = reduce(unir, otras, base)
 print(tablero.shape)
 print(tablero[tablero["visitas"].isna()])
-```
-
-```text
-(24, 6)
-   sucursal  mes  valor_ventas  devoluciones  valor_recaudado  visitas
-20      S07    3      45034850             3         38393000      NaN
 ```
 
 `functools.reduce()` tiene el mismo orden de argumentos que `Reduce()` de R base: la función, la lista y el valor inicial.
@@ -340,17 +442,26 @@ En SQL las uniones se encadenan en la misma consulta, así que no hace falta una
 ```{r}
 #| label: duckdb-vistas
 walk(names(rutas), \(nombre) {
-  dbExecute(con, sprintf("CREATE OR REPLACE VIEW %s AS SELECT DISTINCT * FROM read_csv('%s')",
-                         nombre, rutas[[nombre]]))
+  dbExecute(
+    con,
+    sprintf(
+      "CREATE OR REPLACE VIEW %s AS SELECT DISTINCT * FROM read_csv('%s')",
+      nombre,
+      rutas[[nombre]]
+    )
+  )
 })
 
-dbGetQuery(con, r"(
+dbGetQuery(
+  con,
+  r"(
   SELECT count(*) AS filas, count(visitas) AS con_visitas
   FROM ventas_mes
   LEFT JOIN recaudos_mes     USING (sucursal, mes)
   LEFT JOIN devoluciones_mes USING (sucursal, mes)
   LEFT JOIN visitas_mes      USING (sucursal, mes)
-)")
+)"
+)
 ```
 
 `SELECT DISTINCT *` resuelve la fila repetida al crear la vista. `count(visitas)` cuenta solo los valores no faltantes: 23 de 24. Aquí el texto de la consulta se arma con `sprintf()` porque el nombre de la vista cambia en cada vuelta. Eso es razonable con nombres de archivo que controlamos; con valores que vienen de un usuario no lo es, porque un texto malintencionado podría cambiar la consulta. Para esos casos `DBI` admite consultas con parámetros: `dbGetQuery(con, "SELECT * FROM ventas_mes WHERE sucursal = ?", params = list("S03"))`.
@@ -395,16 +506,20 @@ Desde `dplyr` 1.1, `join_by()` describe uniones que no son por igualdad. `closes
 ```{r}
 #| label: rango-vigente
 ventas_precio <- ventas |>
-  left_join(precios,
-            by = join_by(producto, closest(fecha >= vigente_desde)),
-            relationship = "many-to-one")
+  left_join(
+    precios,
+    by = join_by(producto, closest(fecha >= vigente_desde)),
+    relationship = "many-to-one"
+  )
 nrow(ventas_precio)
 
 ventas_precio |>
   filter(precio_unitario != precio) |>
-  summarise(ventas     = n(),
-            diferencia = sum(unidades * (precio - precio_unitario) * (1 - descuento)),
-            .by = c(producto, vigente_desde)) |>
+  summarise(
+    ventas = n(),
+    diferencia = sum(unidades * (precio - precio_unitario) * (1 - descuento)),
+    .by = c(producto, vigente_desde)
+  ) |>
   arrange(desc(diferencia))
 ```
 
@@ -420,9 +535,11 @@ tramos
 
 comisiones <- tablero |>
   select(sucursal, mes, valor_ventas) |>
-  left_join(tramos,
-            by = join_by(valor_ventas >= desde, valor_ventas < hasta),
-            relationship = "many-to-one") |>
+  left_join(
+    tramos,
+    by = join_by(valor_ventas >= desde, valor_ventas < hasta),
+    relationship = "many-to-one"
+  ) |>
   mutate(comision = round(valor_ventas * comision_pct / 100))
 
 count(comisiones, tramo, comision_pct)
@@ -435,57 +552,63 @@ Los tramos usan `>=` en un extremo y `<` en el otro a propósito. Con `between()
 
 En `pandas`, la unión por fecha vigente es `merge_asof()`. Exige que ambas tablas estén ordenadas por la columna de la fecha:
 
-```python
-precios = pd.read_csv("datos/cap09/precios_historial.csv", parse_dates=["vigente_desde"])
-precios["vigente_desde"] = precios["vigente_desde"].astype(ventas["fecha"].dtype)
+```{python}
+precios = pd.read_csv(
+    "datos/cap09/precios_historial.csv", parse_dates=["vigente_desde"]
+)
+precios["vigente_desde"] = precios["vigente_desde"].astype(
+    ventas["fecha"].dtype
+)
 
 ventas_precio = pd.merge_asof(
-    ventas.sort_values("fecha"), precios.sort_values("vigente_desde"),
-    left_on="fecha", right_on="vigente_desde", by="producto",
+    ventas.sort_values("fecha"),
+    precios.sort_values("vigente_desde"),
+    left_on="fecha",
+    right_on="vigente_desde",
+    by="producto",
     direction="backward",
 )
 print(len(ventas_precio))
 
-desfase = ventas_precio[ventas_precio["precio_unitario"] != ventas_precio["precio"]]
-print(desfase
-      .assign(diferencia=lambda d: d["unidades"] * (d["precio"] - d["precio_unitario"])
-                                   * (1 - d["descuento"]))
-      .groupby(["producto", "vigente_desde"], as_index=False)
-      .agg(ventas=("id_venta", "size"), diferencia=("diferencia", "sum"))
-      .sort_values("diferencia", ascending=False)
-      .head(3))
-```
-
-```text
-6000
-  producto vigente_desde  ventas  diferencia
-3      P05    2026-02-01     335   8956315.0
-2      P04    2026-02-01     337   5871515.0
-0      P01    2026-02-01     329   5091350.0
+desfase = ventas_precio[
+    ventas_precio["precio_unitario"] != ventas_precio["precio"]
+]
+print(
+    desfase.assign(
+        diferencia=lambda d: (
+            d["unidades"]
+            * (d["precio"] - d["precio_unitario"])
+            * (1 - d["descuento"])
+        )
+    )
+    .groupby(["producto", "vigente_desde"], as_index=False)
+    .agg(ventas=("id_venta", "size"), diferencia=("diferencia", "sum"))
+    .sort_values("diferencia", ascending=False)
+    .head(3)
+)
 ```
 
 `direction="backward"` busca hacia atrás: el precio más reciente que no sea posterior a la venta. `by="producto"` hace la búsqueda dentro de cada producto. Si las tablas no están ordenadas, `merge_asof()` da un error en lugar de un resultado equivocado. También exige que las dos fechas tengan exactamente el mismo tipo, incluida la resolución: en `pandas` 3, la fecha que viene del Parquet queda en microsegundos (`datetime64[us]`) y la que se lee del CSV, en segundos (`datetime64[s]`). Sin la conversión de la segunda línea, `merge_asof()` da el error `incompatible merge keys`.
 
 `pandas` no tiene uniones por rango. Para los tramos, la herramienta es `pd.cut()`, que asigna cada valor a un intervalo; después se une por el nombre del tramo, una unión por igualdad común y corriente:
 
-```python
+```{python}
 tramos = pd.read_csv("datos/cap09/tramos_comision.csv")
 limites = [*tramos["desde"], np.inf]
 
-comisiones = tablero[["sucursal", "mes", "valor_ventas"]].assign(
-    tramo=lambda d: pd.cut(d["valor_ventas"], bins=limites,
-                           labels=tramos["tramo"], right=False).astype(str)
-).merge(tramos[["tramo", "comision_pct"]], on="tramo", validate="m:1")
+comisiones = (
+    tablero[["sucursal", "mes", "valor_ventas"]]
+    .assign(
+        tramo=lambda d: pd.cut(
+            d["valor_ventas"],
+            bins=limites,
+            labels=tramos["tramo"],
+            right=False,
+        ).astype(str)
+    )
+    .merge(tramos[["tramo", "comision_pct"]], on="tramo", validate="m:1")
+)
 print(comisiones["tramo"].value_counts().sort_index())
-```
-
-```text
-tramo
-A     4
-B    13
-C     5
-D     2
-Name: count, dtype: int64
 ```
 
 `right=False` cierra los intervalos por la izquierda y los abre por la derecha, como el `>=` y `<` de R. `[*tramos["desde"], np.inf]` arma la lista de límites: los inicios de cada tramo y, al final, infinito.
@@ -496,15 +619,20 @@ DuckDB tiene las dos uniones. La de fecha vigente es `ASOF JOIN`, y la de rangos
 
 ```{r}
 #| label: duckdb-asof
-dbGetQuery(con, r"(
+dbGetQuery(
+  con,
+  r"(
   SELECT count(*) AS ventas,
          count(*) FILTER (WHERE v.precio_unitario <> p.precio) AS con_precio_viejo
   FROM 'datos/cap07/ventas_2026_t1.parquet' AS v
   ASOF LEFT JOIN 'datos/cap09/precios_historial.csv' AS p
     ON v.producto = p.producto AND v.fecha >= p.vigente_desde
-)")
+)"
+)
 
-dbGetQuery(con, r"(
+dbGetQuery(
+  con,
+  r"(
   SELECT t.tramo, t.comision_pct, count(*) AS meses
   FROM ventas_mes AS v
   JOIN 'datos/cap09/tramos_comision.csv' AS t
@@ -512,7 +640,8 @@ dbGetQuery(con, r"(
    AND (t.hasta IS NULL OR v.valor_ventas < t.hasta)
   GROUP BY ALL
   ORDER BY tramo
-)")
+)"
+)
 ```
 
 En `ASOF JOIN`, la condición de igualdad (`producto`) dice dentro de qué grupo buscar y la desigualdad (`>=`) dice en qué dirección. En los tramos, el techo vacío se trata en la condición con `t.hasta IS NULL OR ...`, sin modificar la tabla. `FILTER (WHERE ...)` cuenta solo las filas que cumplen la condición, como `count_if()`.
@@ -558,8 +687,10 @@ ventas |>
   filter(producto == "P05") |>
   summarise(unidades = sum(unidades), .by = c(sucursal, fecha)) |>
   summarise(promedio_sin_completar = mean(unidades), .by = sucursal) |>
-  left_join(summarise(demanda_p05, promedio_completo = mean(unidades), .by = sucursal),
-            by = "sucursal") |>
+  left_join(
+    summarise(demanda_p05, promedio_completo = mean(unidades), .by = sucursal),
+    by = "sucursal"
+  ) |>
   arrange(sucursal) |>
   head(4)
 ```
@@ -572,27 +703,22 @@ La diferencia entre los dos promedios es grande: sin completar, el promedio solo
 
 En `pandas` se arma el universo con `MultiIndex.from_product()`, que produce todas las combinaciones, y se reindexa la tabla sobre él:
 
-```python
+```{python}
 dias = np.sort(ventas["fecha"].unique())
 sucursales = sorted(ventas["sucursal"].unique())
 
-universo = pd.MultiIndex.from_product([sucursales, dias], names=["sucursal", "fecha"])
-demanda_p05 = (ventas[ventas["producto"] == "P05"]
-               .groupby(["sucursal", "fecha"])["unidades"].sum()
-               .reindex(universo, fill_value=0)
-               .reset_index())
+universo = pd.MultiIndex.from_product(
+    [sucursales, dias], names=["sucursal", "fecha"]
+)
+demanda_p05 = (
+    ventas[ventas["producto"] == "P05"]
+    .groupby(["sucursal", "fecha"])["unidades"]
+    .sum()
+    .reindex(universo, fill_value=0)
+    .reset_index()
+)
 print(len(demanda_p05))
 print(demanda_p05.groupby("sucursal")["unidades"].mean().round(2).head(4))
-```
-
-```text
-712
-sucursal
-S01    12.67
-S02    10.70
-S03    10.85
-S04    10.28
-Name: unidades, dtype: float64
 ```
 
 `reindex()` alinea la serie con el nuevo índice: conserva los valores que existen y llena con `fill_value` las combinaciones nuevas.
@@ -603,7 +729,9 @@ En SQL, el universo se construye con un `CROSS JOIN`, que combina cada fila de u
 
 ```{r}
 #| label: duckdb-completar
-dbGetQuery(con, r"(
+dbGetQuery(
+  con,
+  r"(
   WITH v AS (FROM 'datos/cap07/ventas_2026_t1.parquet'),
   universo AS (
     SELECT s.sucursal, d.fecha
@@ -621,7 +749,8 @@ dbGetQuery(con, r"(
   GROUP BY sucursal
   ORDER BY sucursal
   LIMIT 4
-)")
+)"
+)
 ```
 
 `WITH` define consultas con nombre que se usan después como tablas, y evita anidar subconsultas. `coalesce(unidades, 0)` convierte en cero las combinaciones sin ventas.
@@ -660,10 +789,12 @@ por_sucursal$data[[1]] |> head(3)
 ```{r}
 #| label: anidar-modelos
 tendencias <- por_sucursal |>
-  mutate(modelo    = map(data, \(d) lm(valor ~ fecha, data = d)),
-         pendiente = map_dbl(modelo, \(m) coef(m)[["fecha"]]),
-         por_mes   = round(30 * pendiente, 2),
-         dias      = map_int(data, nrow))
+  mutate(
+    modelo = map(data, \(d) lm(valor ~ fecha, data = d)),
+    pendiente = map_dbl(modelo, \(m) coef(m)[["fecha"]]),
+    por_mes = round(30 * pendiente, 2),
+    dias = map_int(data, nrow)
+  )
 
 tendencias |> select(sucursal, dias, por_mes) |> arrange(desc(por_mes))
 ```
@@ -677,9 +808,11 @@ La familia de `map()` se distingue por el tipo de lo que devuelve: `map()` devue
 ```{r}
 #| label: tabla-archivos
 tibble(archivo = names(rutas), ruta = rutas) |>
-  mutate(datos    = map(ruta, read_csv, show_col_types = FALSE),
-         filas    = map_int(datos, nrow),
-         columnas = map_chr(datos, \(d) paste(names(d), collapse = ", "))) |>
+  mutate(
+    datos = map(ruta, read_csv, show_col_types = FALSE),
+    filas = map_int(datos, nrow),
+    columnas = map_chr(datos, \(d) paste(names(d), collapse = ", "))
+  ) |>
   select(archivo, filas, columnas)
 ```
 
@@ -687,27 +820,27 @@ tibble(archivo = names(rutas), ruta = rutas) |>
 
 `pandas` admite columnas con objetos (de tipo `object`), pero no tiene un flujo cómodo para trabajar con ellas. La forma habitual es `groupby().apply()`, que pasa a una función la tabla de cada grupo:
 
-```python
-diario = (ventas.groupby(["sucursal", "fecha"], as_index=False)["valor_neto"].sum()
-          .assign(valor=lambda d: d["valor_neto"] / 1e6))
+```{python}
+diario = (
+    ventas.groupby(["sucursal", "fecha"], as_index=False)["valor_neto"]
+    .sum()
+    .assign(valor=lambda d: d["valor_neto"] / 1e6)
+)
+
 
 def pendiente(d):
     dias = (d["fecha"] - d["fecha"].min()).dt.days
     return np.polyfit(dias, d["valor"], deg=1)[0]
 
-tendencias = (diario.groupby("sucursal")[["fecha", "valor"]]
-              .apply(pendiente)
-              .mul(30).round(2)
-              .sort_values(ascending=False))
-print(tendencias.head(3))
-```
 
-```text
-sucursal
-S06    0.14
-S04    0.13
-S08    0.10
-dtype: float64
+tendencias = (
+    diario.groupby("sucursal")[["fecha", "valor"]]
+    .apply(pendiente)
+    .mul(30)
+    .round(2)
+    .sort_values(ascending=False)
+)
+print(tendencias.head(3))
 ```
 
 `np.polyfit(x, y, deg=1)` ajusta una recta y devuelve sus coeficientes, primero la pendiente. Seleccionar las columnas antes de `apply()` (`[["fecha", "valor"]]`) evita que la función reciba también la columna de agrupación.
@@ -718,7 +851,9 @@ Para una recta, SQL no necesita anidar: `regr_slope()` es una función de resume
 
 ```{r}
 #| label: duckdb-listas
-dbGetQuery(con, r"(
+dbGetQuery(
+  con,
+  r"(
   WITH diario AS (
     SELECT sucursal, fecha,
            sum(unidades * precio_unitario * (1 - descuento)) / 1e6 AS valor
@@ -732,7 +867,8 @@ dbGetQuery(con, r"(
   GROUP BY sucursal
   ORDER BY por_mes DESC
   LIMIT 3
-)")
+)"
+)
 ```
 
 `epoch(fecha) / 86400` convierte la fecha en días. `list(... ORDER BY fecha)` guarda los valores de cada sucursal en una lista ordenada, y `[1:3]` toma sus tres primeros elementos. Las listas de DuckDB tienen sus propias funciones, como `list_transform(lista, lambda x: x * 2)`, que aplica una función a cada elemento: un `map()` dentro de SQL.
@@ -769,21 +905,40 @@ set.seed(9)
 u <- sample(1:40, 1e6, replace = TRUE)
 
 tamano <- function(x) {
-  if (x >= 30) "grande" else if (x >= 10) "mediano" else "pequeño"
+  if (x >= 30) {
+    "grande"
+  } else if (x >= 10) {
+    "mediano"
+  } else {
+    "pequeño"
+  }
 }
 
 t_vector <- segundos(
-  r_vector <- case_when(u >= 30 ~ "grande", u >= 10 ~ "mediano", .default = "pequeño")
+  r_vector <- case_when(
+    u >= 30 ~ "grande",
+    u >= 10 ~ "mediano",
+    .default = "pequeño"
+  )
 )
 t_map <- segundos(r_map <- map_chr(u, tamano))
 t_vapply <- segundos(r_vapply <- vapply(u, tamano, character(1)))
 t_for <- segundos({
   r_for <- character(length(u))
-  for (i in seq_along(u)) r_for[i] <- tamano(u[i])
+  for (i in seq_along(u)) {
+    r_for[i] <- tamano(u[i])
+  }
 })
 
-data.frame(forma    = c("case_when()", "map_chr()", "vapply()", "for con resultado reservado"),
-           segundos = c(t_vector, t_map, t_vapply, t_for))
+data.frame(
+  forma = c(
+    "case_when()",
+    "map_chr()",
+    "vapply()",
+    "for con resultado reservado"
+  ),
+  segundos = c(t_vector, t_map, t_vapply, t_for)
+)
 identical(r_vector, r_for)
 ```
 
@@ -795,28 +950,31 @@ Entre `map()` y `for`, entonces, la razón para preferir `map()` no es la veloci
 
 ```{r}
 #| label: iterar-sapply
-sapply(c(2, 2), seq_len)   # una matriz
-sapply(c(1, 2), seq_len)   # una lista
-sapply(c(), seq_len)       # una lista vacía
+sapply(c(2, 2), seq_len) # una matriz
+sapply(c(1, 2), seq_len) # una lista
+sapply(c(), seq_len) # una lista vacía
 ```
 
 La misma línea devuelve tres tipos distintos según los datos. En un análisis interactivo no importa; dentro de un script que corre cada mes, es un error que aparece el mes en que los datos cambian. `vapply()` y `map_*()` declaran el tipo esperado y dan un error claro cuando no se cumple.
 
 ### Python
 
-```python
+```{python}
 import time
 
 rng = np.random.default_rng(9)
 u = rng.integers(1, 41, size=1_000_000)
 
+
 def tamano(x):
     return "grande" if x >= 30 else "mediano" if x >= 10 else "pequeño"
+
 
 def medir(f):
     inicio = time.perf_counter()
     resultado = f()
     return round(time.perf_counter() - inicio, 3), resultado
+
 
 def con_bucle():
     r = [None] * len(u)
@@ -824,22 +982,19 @@ def con_bucle():
         r[i] = tamano(x)
     return r
 
+
 tiempos = {
-    "np.select()": medir(lambda: np.select([u >= 30, u >= 10], ["grande", "mediano"],
-                                           default="pequeño")),
+    "np.select()": medir(
+        lambda: np.select(
+            [u >= 30, u >= 10], ["grande", "mediano"], default="pequeño"
+        )
+    ),
     "comprensión de listas": medir(lambda: [tamano(x) for x in u]),
     "Series.map()": medir(lambda: pd.Series(u).map(tamano)),
     "for": medir(con_bucle),
 }
 for forma, (segundos, _) in tiempos.items():
     print(f"{forma:<22} {segundos}")
-```
-
-```text
-np.select()            0.035
-comprensión de listas  0.288
-Series.map()           0.418
-for                    0.424
 ```
 
 El patrón es el mismo de R: la forma vectorizada gana con claridad, y entre las demás la diferencia es pequeña. En Python la forma idiomática de aplicar una función a cada elemento es la **comprensión de listas**, `[tamano(x) for x in u]`. `apply()` y `map()` de `pandas` también llaman a la función una vez por elemento: son bucles con otra sintaxis, no operaciones vectorizadas.
@@ -850,7 +1005,9 @@ SQL no tiene bucles: cada consulta describe un resultado sobre un conjunto de fi
 
 ```{r}
 #| label: duckdb-iterar
-dbGetQuery(con, r"(
+dbGetQuery(
+  con,
+  r"(
   SELECT CASE WHEN u >= 30 THEN 'grande'
               WHEN u >= 10 THEN 'mediano'
               ELSE 'pequeño' END AS tamano,
@@ -858,7 +1015,8 @@ dbGetQuery(con, r"(
   FROM (SELECT 1 + floor(random() * 40) AS u FROM range(1000000))
   GROUP BY ALL
   ORDER BY tamano
-)")
+)"
+)
 ```
 
 `range(1000000)` genera un millón de filas sin leer ningún archivo. La pregunta "¿bucle o no?" no se plantea en SQL; reaparece cuando un paso depende del anterior, como en el Ejemplo 9.7.
@@ -876,9 +1034,23 @@ n <- 10000
 tabla <- data.frame(x = numeric(n))
 vector <- numeric(n)
 
-c(celda_de_tabla = segundos(for (i in seq_len(n)) tabla[i, "x"] <- i),
-  columna        = segundos(for (i in seq_len(n)) tabla$x[i] <- i),
-  vector         = segundos(for (i in seq_len(n)) vector[i] <- i))
+c(
+  celda_de_tabla = segundos(
+    for (i in seq_len(n)) {
+      tabla[i, "x"] <- i
+    }
+  ),
+  columna = segundos(
+    for (i in seq_len(n)) {
+      tabla$x[i] <- i
+    }
+  ),
+  vector = segundos(
+    for (i in seq_len(n)) {
+      vector[i] <- i
+    }
+  )
+)
 ```
 
 La regla práctica: dentro de un bucle, trabaja sobre vectores y arma la tabla al final. `tracemem(tabla)` muestra un mensaje cada vez que R copia el objeto, y sirve para comprobarlo. `data.table` evita el problema con la asignación por referencia `:=` (Ejemplo 7.7). En `pandas`, con *Copy-on-Write*, asignar una celda con `.loc` dentro de un bucle también es lento por la sobrecarga de cada llamada; la solución es la misma: trabajar con listas o arreglos de NumPy y crear la tabla al final.
@@ -896,23 +1068,30 @@ El inventario de hoy depende del de ayer, y de si ayer se hizo un pedido, que a 
 
 ```{r}
 #| label: inventario-funcion
-simular_inventario <- function(demanda, inicial = 120, reorden = 50,
-                               lote = 100, espera = 5) {
+simular_inventario <- function(
+  demanda,
+  inicial = 120,
+  reorden = 50,
+  lote = 100,
+  espera = 5
+) {
   n <- length(demanda)
-  inventario <- numeric(n)      # resultados reservados desde el principio
-  perdidas   <- numeric(n)
+  inventario <- numeric(n) # resultados reservados desde el principio
+  perdidas <- numeric(n)
   disponible <- inicial
-  llegada    <- NA              # día en que llega el pedido en camino
+  llegada <- NA # día en que llega el pedido en camino
 
   for (t in seq_len(n)) {
     if (!is.na(llegada) && t == llegada) {
       disponible <- disponible + lote
       llegada <- NA
     }
-    vendido     <- min(demanda[t], disponible)
+    vendido <- min(demanda[t], disponible)
     perdidas[t] <- demanda[t] - vendido
-    disponible  <- disponible - vendido
-    if (disponible < reorden && is.na(llegada)) llegada <- t + espera
+    disponible <- disponible - vendido
+    if (disponible < reorden && is.na(llegada)) {
+      llegada <- t + espera
+    }
     inventario[t] <- disponible
   }
   data.frame(inventario, perdidas)
@@ -931,10 +1110,12 @@ simulacion <- demanda_p05 |>
   unnest(c(data, resultado))
 
 simulacion |>
-  summarise(demanda      = sum(unidades),
-            perdidas     = sum(perdidas),
-            dias_sin_inv = sum(inventario == 0),
-            .by = sucursal) |>
+  summarise(
+    demanda = sum(unidades),
+    perdidas = sum(perdidas),
+    dias_sin_inv = sum(inventario == 0),
+    .by = sucursal
+  ) |>
   mutate(pct_perdido = round(100 * perdidas / demanda, 1)) |>
   arrange(desc(pct_perdido))
 ```
@@ -945,7 +1126,7 @@ Con esta política todas las sucursales pierden ventas, y `S01`, la de mayor dem
 
 En Python el bucle se escribe igual. Sobre listas o arreglos de NumPy, no sobre la tabla:
 
-```python
+```{python}
 def simular_inventario(demanda, inicial=120, reorden=50, lote=100, espera=5):
     inventario, perdidas = [0] * len(demanda), [0] * len(demanda)
     disponible, llegada = inicial, None
@@ -961,23 +1142,26 @@ def simular_inventario(demanda, inicial=120, reorden=50, lote=100, espera=5):
         inventario[t] = disponible
     return pd.DataFrame({"inventario": inventario, "perdidas": perdidas})
 
+
 partes = []
 for sucursal, grupo in demanda_p05.groupby("sucursal"):
     resultado = simular_inventario(grupo["unidades"].to_numpy())
-    partes.append(resultado.assign(sucursal=sucursal, unidades=grupo["unidades"].to_numpy()))
+    partes.append(
+        resultado.assign(
+            sucursal=sucursal, unidades=grupo["unidades"].to_numpy()
+        )
+    )
 simulacion = pd.concat(partes, ignore_index=True)
 
-print(simulacion.groupby("sucursal")[["unidades", "perdidas"]].sum()
-      .assign(pct_perdido=lambda d: (100 * d["perdidas"] / d["unidades"]).round(1))
-      .sort_values("pct_perdido", ascending=False).head(3))
-```
-
-```text
-          unidades  perdidas  pct_perdido
-sucursal                                 
-S01           1128       190         16.8
-S03            966       119         12.3
-S04            915        95         10.4
+print(
+    simulacion.groupby("sucursal")[["unidades", "perdidas"]]
+    .sum()
+    .assign(
+        pct_perdido=lambda d: (100 * d["perdidas"] / d["unidades"]).round(1)
+    )
+    .sort_values("pct_perdido", ascending=False)
+    .head(3)
+)
 ```
 
 Aquí hay dos bucles con papeles distintos. El de adentro es necesario: cada día depende del anterior. El de afuera recorre los grupos y guarda cada resultado en una lista que se apila al final con `pd.concat()`; es el equivalente de `map()` seguido de `list_rbind()`. Agregar filas a una tabla dentro del bucle, con `pd.concat()` en cada vuelta, sería el mismo error que hacer crecer un vector en R.
@@ -988,7 +1172,9 @@ SQL puede expresar pasos que dependen del anterior con una **consulta recursiva*
 
 ```{r}
 #| label: duckdb-recursiva
-dbGetQuery(con, r"(
+dbGetQuery(
+  con,
+  r"(
   WITH RECURSIVE
   demanda AS (
     SELECT row_number() OVER (ORDER BY fecha) AS dia, fecha,
@@ -1008,7 +1194,8 @@ dbGetQuery(con, r"(
   SELECT min(fecha) FILTER (WHERE disponible = 0) AS primer_dia_sin_inventario,
          count(*) FILTER (WHERE disponible = 0)   AS dias_sin_inventario
   FROM inventario
-)")
+)"
+)
 ```
 
 La primera parte de `inventario` es el día 1; la segunda toma la fila del día anterior y calcula la del siguiente, hasta que no hay más días. Funciona, pero agregar los pedidos y la espera haría la consulta mucho más difícil de leer que el bucle de R o de Python. Es un buen ejemplo del patrón híbrido del libro: DuckDB prepara la demanda diaria, que es un trabajo de conjuntos, y R o Python hacen la simulación, que es un trabajo de pasos.
@@ -1034,8 +1221,10 @@ leer_conteo <- function(ruta) {
   }
   unidades <- suppressWarnings(as.integer(conteo$unidades_contadas))
   if (anyNA(unidades)) {
-    stop("unidades no numéricas: ",
-         paste(unique(conteo$unidades_contadas[is.na(unidades)]), collapse = ", "))
+    stop(
+      "unidades no numéricas: ",
+      paste(unique(conteo$unidades_contadas[is.na(unidades)]), collapse = ", ")
+    )
   }
   conteo$unidades_contadas <- unidades
   conteo
@@ -1060,8 +1249,10 @@ conteos <- map(rutas_conteo, leer_conteo)
 resultados <- map(rutas_conteo, safely(leer_conteo))
 fallaron <- map_lgl(resultados, \(r) !is.null(r$error))
 
-tibble(archivo = names(rutas_conteo)[fallaron],
-       error   = map_chr(resultados[fallaron], \(r) conditionMessage(r$error)))
+tibble(
+  archivo = names(rutas_conteo)[fallaron],
+  error = map_chr(resultados[fallaron], \(r) conditionMessage(r$error))
+)
 
 conteos <- resultados[!fallaron] |>
   map(\(r) r$result) |>
@@ -1075,7 +1266,7 @@ Seis archivos se leyeron bien y dos tienen problemas distintos, cada uno con su 
 
 En Python, la estructura natural es un bucle con `try` y `except`: el bloque `try` intenta la lectura y, si algo falla, el bloque `except` guarda el error y el bucle sigue con el siguiente archivo:
 
-```python
+```{python}
 def leer_conteo(ruta):
     conteo = pd.read_csv(ruta, dtype=str)
     if "unidades_contadas" not in conteo.columns:
@@ -1085,6 +1276,7 @@ def leer_conteo(ruta):
         malos = conteo.loc[unidades.isna(), "unidades_contadas"].unique()
         raise ValueError(f"unidades no numéricas: {', '.join(malos)}")
     return conteo.assign(unidades_contadas=unidades.astype(int))
+
 
 conteos, errores = [], []
 for ruta in sorted(Path("datos/cap09/conteos").glob("*.csv")):
@@ -1097,13 +1289,6 @@ print(pd.DataFrame(errores))
 print(pd.concat(conteos)["archivo"].nunique())
 ```
 
-```text
-          archivo                                  error
-0  conteo_S04.csv             unidades no numéricas: N/D
-1  conteo_S07.csv  no tiene la columna unidades_contadas
-6
-```
-
 `raise` es el `stop()` de Python. `except ValueError` atrapa solo ese tipo de error: si el archivo no existe o está dañado, `pandas` lanza otro tipo de error y el bucle sí se detiene. Atrapar todos los errores con un `except Exception` genérico parece más seguro, pero esconde los problemas que no esperabas.
 
 ### DuckDB
@@ -1112,7 +1297,9 @@ DuckDB lee todos los archivos con un patrón en una sola consulta, así que no h
 
 ```{r}
 #| label: duckdb-rechazos
-dbGetQuery(con, r"(
+dbGetQuery(
+  con,
+  r"(
   SELECT parse_filename(filename) AS archivo,
          count(*) AS filas,
          count(*) FILTER (WHERE unidades_contadas IS NULL) AS sin_columna,
@@ -1123,7 +1310,8 @@ dbGetQuery(con, r"(
   GROUP BY ALL
   HAVING sin_columna > 0 OR no_numericas > 0
   ORDER BY archivo
-)")
+)"
+)
 ```
 
 `union_by_name = true` alinea las columnas por nombre, así que el archivo de `S07`, con `cantidad` en lugar de `unidades_contadas`, aparece con esa columna vacía en sus 12 filas. `TRY_CAST()` intenta la conversión y devuelve `NULL` en lugar de un error cuando no puede: así se encuentra el `N/D` de `S04`. Con `HAVING` quedan solo los archivos con problemas, y la tabla resultante es la misma lista de errores de R y Python.
@@ -1150,23 +1338,30 @@ Con la función `simular_inventario()` y la demanda de `P05` del capítulo:
 #| label: ejercicio-9-1
 #| eval: false
 demanda_p11 <- ventas |>
-  filter(...) |>                                           # TODO
-  summarise(...) |>                                        # TODO
-  complete(...)                                            # TODO
+  filter(...) |> # TODO
+  summarise(...) |> # TODO
+  complete(...) # TODO
 
 demanda_s01 <- demanda_p05 |> filter(sucursal == "S01") |> _$unidades
 puntos <- seq(50, 200, by = 10)
-perdidas <- map_dbl(puntos, \(r) sum(simular_inventario(demanda_s01, ...)$perdidas))  # TODO
+perdidas <- map_dbl(puntos, \(r) {
+  sum(simular_inventario(demanda_s01, ...)$perdidas)
+}) # TODO
 tibble(reorden = puntos, perdidas)
 ```
 
 ### Python
 
-```python
-demanda_p11 = ...                                          # TODO: groupby + reindex
-demanda_s01 = demanda_p05.loc[demanda_p05["sucursal"] == "S01", "unidades"].to_numpy()
+```{python}
+#| eval: false
+demanda_p11 = ...  # TODO: groupby + reindex
+demanda_s01 = demanda_p05.loc[
+    demanda_p05["sucursal"] == "S01", "unidades"
+].to_numpy()
 puntos = range(50, 201, 10)
-perdidas = [simular_inventario(demanda_s01, ...)["perdidas"].sum() for r in puntos]  # TODO
+perdidas = [
+    simular_inventario(demanda_s01, ...)["perdidas"].sum() for r in puntos
+]  # TODO
 ```
 
 :::
